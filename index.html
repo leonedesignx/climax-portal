@@ -497,21 +497,65 @@ html[data-theme="light"] .detail-copy,html[data-theme="light"] .comment-box labe
 
       <div class="auth-view" data-auth-view="first-setup" hidden>
         <div class="auth-eyebrow">Primeiro acesso</div>
-        <h2>Crie sua nova senha.</h2>
-        <p class="auth-sub">Você entrou com uma senha temporária. Antes de acessar o portal, escolha uma senha só sua.</p>
+        <h2>Proteja seu acesso.</h2>
+        <p class="auth-sub">Troque a senha temporária e configure uma pergunta de recuperação. A Clímax nunca consegue visualizar sua senha definitiva.</p>
         <div class="auth-fields">
           <div><label>Nova senha</label><input id="firstPassword" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres"></div>
           <div><label>Confirme a nova senha</label><input id="firstPasswordConfirm" type="password" autocomplete="new-password" placeholder="Digite novamente"></div>
+          <div><label>Pergunta de recuperação</label><select id="firstRecoveryQuestion">
+            <option value="">Selecione uma pergunta</option>
+            <option value="favorite_media">Qual é seu filme ou série favorita?</option>
+            <option value="first_pet">Qual era o nome do seu primeiro pet?</option>
+            <option value="birth_city">Em qual cidade você nasceu?</option>
+            <option value="private_word">Qual é uma palavra que só você lembraria?</option>
+          </select></div>
+          <div><label>Resposta de recuperação</label><input id="firstRecoveryAnswer" type="text" autocomplete="off" maxlength="120" placeholder="Digite sua resposta"></div>
         </div>
-        <button class="btn auth-btn" id="firstAccessActivate">Salvar nova senha</button>
-        <div class="auth-help" style="margin-top:10px">Você só verá esta tela uma vez.</div>
+        <button class="btn auth-btn" id="firstAccessActivate">Salvar e entrar</button>
+        <div class="auth-help" style="margin-top:10px">Guarde sua resposta. Ela será usada caso você esqueça a senha.</div>
       </div>
 
       <div class="auth-view" data-auth-view="recovery-name" hidden>
         <div class="auth-eyebrow">Recuperar acesso</div>
         <h2>Esqueceu sua senha?</h2>
-        <p class="auth-sub">Por segurança, fale com a Clímax Studio. Vamos gerar uma nova senha temporária para você acessar e criar outra senha.</p>
-        <button class="btn auth-btn" id="recoveryContinue">Voltar para o login</button>
+        <p class="auth-sub">Informe seu nome de acesso para continuar.</p>
+        <div class="auth-fields"><div><label>Nome de acesso</label><input id="recoveryAccessName" type="text" autocomplete="username" placeholder="Digite seu nome de acesso"></div></div>
+        <button class="btn auth-btn" id="recoveryLookup">Continuar</button>
+        <div class="auth-links"><button class="auth-link" id="recoveryNoSetup">Não tenho recuperação configurada</button><button class="auth-link" id="recoveryBack">Voltar para o login</button></div>
+      </div>
+
+      <div class="auth-view" data-auth-view="recovery-answer" hidden>
+        <div class="auth-eyebrow">Recuperar acesso</div>
+        <h2>Confirme sua identidade.</h2>
+        <p class="auth-sub" id="recoveryQuestionText">Responda sua pergunta de recuperação.</p>
+        <div class="auth-fields">
+          <div><label>Resposta</label><input id="recoveryAnswer" type="text" autocomplete="off" maxlength="120" placeholder="Sua resposta"></div>
+          <div><label>Nova senha</label><input id="recoveryNewPassword" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres"></div>
+          <div><label>Confirme a nova senha</label><input id="recoveryNewPasswordConfirm" type="password" autocomplete="new-password" placeholder="Digite novamente"></div>
+        </div>
+        <button class="btn auth-btn" id="recoveryReset">Criar nova senha</button>
+        <div class="auth-links"><button class="auth-link" id="recoveryForgotAnswer">Não lembro minha resposta</button><button class="auth-link" id="recoveryAnswerBack">Voltar</button></div>
+      </div>
+
+      <div class="auth-view" data-auth-view="recovery-help" hidden>
+        <div class="auth-eyebrow">Suporte de acesso</div>
+        <h2>Vamos redefinir seu acesso.</h2>
+        <p class="auth-sub">Se você não lembra a resposta de recuperação, fale com a Clímax Studio. Um administrador poderá gerar uma nova senha temporária e você configurará tudo novamente no próximo login.</p>
+        <button class="btn auth-btn" id="recoveryHelpBack">Voltar para o login</button>
+        <div class="auth-links"><button class="auth-link" id="adminRescueOpen">Sou administrador e tenho um código de resgate</button></div>
+      </div>
+
+      <div class="auth-view" data-auth-view="admin-rescue" hidden>
+        <div class="auth-eyebrow">Resgate administrativo</div>
+        <h2>Recupere o acesso Admin.</h2>
+        <p class="auth-sub">Use o código de resgate de uso único gerado no SQL Editor do Supabase.</p>
+        <div class="auth-fields">
+          <div><label>Nome de acesso</label><input id="adminRescueAccess" type="text" autocomplete="username" placeholder="Leone"></div>
+          <div><label>Código de resgate</label><input id="adminRescueToken" type="text" autocomplete="off" placeholder="Cole o código gerado no Supabase"></div>
+          <div><label>Nova senha temporária</label><input id="adminRescuePassword" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres"></div>
+        </div>
+        <button class="btn auth-btn" id="adminRescueSubmit">Redefinir acesso</button>
+        <div class="auth-links"><button class="auth-link" id="adminRescueBack">Voltar</button></div>
       </div>
 
       <div class="auth-view" data-auth-view="success" hidden>
@@ -689,6 +733,8 @@ let lastLoginPassword='';
 let demandFilter='all';
 let calendarCursor=new Date(new Date().getFullYear(),new Date().getMonth(),1);
 let pendingEditorialItemComments=[];
+let clientAccessMap={};
+let recoveryState={accessName:'',questionKey:''};
 const PORTAL_PREFS_KEY='climax-portal-preferences-v1';
 function getPortalPrefs(){try{return {storageAlert:8,retention:30,portalName:'Clímax Portal',supportMessage:'Precisa falar com a Clímax? Envie uma mensagem para a equipe responsável pela sua conta.',...JSON.parse(localStorage.getItem(PORTAL_PREFS_KEY)||'{}')}}catch(e){return {storageAlert:8,retention:30,portalName:'Clímax Portal',supportMessage:'Precisa falar com a Clímax? Envie uma mensagem para a equipe responsável pela sua conta.'}}}
 function savePortalPrefs(p){try{localStorage.setItem(PORTAL_PREFS_KEY,JSON.stringify(p))}catch(e){}}
@@ -747,6 +793,8 @@ async function hydrateFromBackend(user){
   const {data:profile,error:profileError}=await db.from('profiles').select('id,full_name,role,client_id,access_name,auth_email,must_change_password').eq('id',user.id).single();
   if(profileError)throw new Error('Perfil não encontrado. Execute o schema.sql e configure o usuário: '+profileError.message);
   authProfile=profile;actualRole=profile.role;role=profile.role;
+  clientAccessMap={};
+  if(profile.role==='admin'){const {data:accessRows,error:accessError}=await db.from('profiles').select('id,full_name,role,client_id,access_name,must_change_password').eq('role','client');if(accessError)throw accessError;(accessRows||[]).forEach(x=>{if(x.client_id)clientAccessMap[x.client_id]={userId:x.id,fullName:x.full_name||'',accessName:x.access_name||'',mustChange:Boolean(x.must_change_password)}});}
 
   const {data:clientRows,error:clientError}=await db.from('clients').select('*').eq('active',true).order('name');
   if(clientError)throw clientError;
@@ -786,6 +834,16 @@ function accessNameToInternalEmail(value){
   return slug?`${slug}@auth.climaxportal.com.br`:'';
 }
 
+const RECOVERY_QUESTIONS={favorite_media:'Qual é seu filme ou série favorita?',first_pet:'Qual era o nome do seu primeiro pet?',birth_city:'Em qual cidade você nasceu?',private_word:'Qual é uma palavra que só você lembraria?'};
+async function callAuthGateway(action,payload={},requireAuth=false){
+  if(!CONFIG.SUPABASE_URL||!SUPABASE_PUBLIC_KEY)throw new Error('Configuração do Supabase incompleta.');
+  const headers={'Content-Type':'application/json','apikey':SUPABASE_PUBLIC_KEY};
+  if(requireAuth){const {data}=await db.auth.getSession();const token=data?.session?.access_token;if(!token)throw new Error('Sua sessão expirou. Entre novamente.');headers.Authorization=`Bearer ${token}`;}
+  const res=await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/auth-gateway`,{method:'POST',headers,body:JSON.stringify({action,...payload})});
+  let body={};try{body=await res.json()}catch(_){}if(!res.ok)throw new Error(body?.error||'Não foi possível concluir a solicitação.');return body;
+}
+function temporaryPasswordSuggestion(accessName=''){const base=String(accessName).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,24);return `climax@${base||'cliente'}`;}
+
 async function loginWithPassword(){
   const accessName=document.getElementById('authEmail').value.trim();
   const password=document.getElementById('authPassword').value;
@@ -809,31 +867,15 @@ async function loginWithPassword(){
 
 
 async function activateFirstAccess(){
-  const password=document.getElementById('firstPassword').value;
-  const confirm=document.getElementById('firstPasswordConfirm').value;
-  if(password.length<8){authMessage('Sua nova senha precisa ter pelo menos 8 caracteres.');return}
-  if(lastLoginPassword&&password===lastLoginPassword){authMessage('Escolha uma senha diferente da senha temporária.');return}
-  if(password!==confirm){authMessage('As senhas não coincidem.');return}
-  if(!db||!authUser){authMessage('Sua sessão expirou. Entre novamente com a senha temporária.');showAuthView('login');return}
-  const btn=document.getElementById('firstAccessActivate');
-  await runBusy(btn,'Salvando…',async()=>{
-    authMessage('');
-    const {error:updateError}=await db.auth.updateUser({password});
-    if(updateError){authMessage(formatError(updateError,'Não foi possível atualizar sua senha.'));return}
-    const {error:flagError}=await db.rpc('complete_first_access');
-    if(flagError){authMessage('A senha foi alterada, mas o portal não conseguiu concluir o primeiro acesso. Entre novamente com a NOVA senha.');console.error(flagError);return}
-    if(authProfile)authProfile.must_change_password=false;lastLoginPassword='';
-    showAuthView('success');
-  });
+  const password=document.getElementById('firstPassword').value,confirm=document.getElementById('firstPasswordConfirm').value,question=document.getElementById('firstRecoveryQuestion').value,answer=document.getElementById('firstRecoveryAnswer').value.trim();
+  if(password.length<8){authMessage('Sua nova senha precisa ter pelo menos 8 caracteres.');return}if(lastLoginPassword&&password===lastLoginPassword){authMessage('Escolha uma senha diferente da senha temporária.');return}if(password!==confirm){authMessage('As senhas não coincidem.');return}if(!question){authMessage('Escolha uma pergunta de recuperação.');return}if(answer.length<2){authMessage('Informe uma resposta de recuperação.');return}if(!db||!authUser){authMessage('Sua sessão expirou. Entre novamente com a senha temporária.');showAuthView('login');return}
+  const btn=document.getElementById('firstAccessActivate');await runBusy(btn,'Salvando…',async()=>{authMessage('');const {error:updateError}=await db.auth.updateUser({password});if(updateError){authMessage(formatError(updateError,'Não foi possível atualizar sua senha.'));return}try{await callAuthGateway('configure-recovery',{question_key:question,recovery_answer:answer},true);if(authProfile)authProfile.must_change_password=false;lastLoginPassword='';showAuthView('success')}catch(e){console.error(e);authMessage('A senha foi alterada, mas faltou concluir a recuperação. Entre novamente com a NOVA senha para continuar.')}});
 }
-async function finishActivatedLogin(){
-  hideAuth();
-  route='home';
-  render();
-  openHashTarget();
-}
-
-function forgotPassword(){showAuthView('recovery-name')}
+async function finishActivatedLogin(){hideAuth();route='home';render();openHashTarget();}
+function forgotPassword(){recoveryState={accessName:document.getElementById('authEmail')?.value.trim()||'',questionKey:''};showAuthView('recovery-name');const input=document.getElementById('recoveryAccessName');if(input)input.value=recoveryState.accessName;}
+async function lookupRecoveryQuestion(){const accessName=document.getElementById('recoveryAccessName').value.trim();if(!accessName){authMessage('Informe seu nome de acesso.');return}const btn=document.getElementById('recoveryLookup');await runBusy(btn,'Buscando…',async()=>{try{const result=await callAuthGateway('recovery-question',{access_name:accessName});recoveryState={accessName,questionKey:result.question_key};const q=RECOVERY_QUESTIONS[result.question_key]||result.question||'Responda sua pergunta de recuperação.';showAuthView('recovery-answer');document.getElementById('recoveryQuestionText').textContent=q}catch(e){authMessage(e.message||'Não foi possível recuperar este acesso.')}});}
+async function resetRecoveredPassword(){const answer=document.getElementById('recoveryAnswer').value.trim(),password=document.getElementById('recoveryNewPassword').value,confirm=document.getElementById('recoveryNewPasswordConfirm').value;if(!answer){authMessage('Informe sua resposta de recuperação.');return}if(password.length<8){authMessage('A nova senha precisa ter pelo menos 8 caracteres.');return}if(password!==confirm){authMessage('As senhas não coincidem.');return}const btn=document.getElementById('recoveryReset');await runBusy(btn,'Redefinindo…',async()=>{try{await callAuthGateway('recover-password',{access_name:recoveryState.accessName,recovery_answer:answer,new_password:password});const login=document.getElementById('authEmail');if(login)login.value=recoveryState.accessName;const pass=document.getElementById('authPassword');if(pass)pass.value='';showAuthView('login');authMessage('Senha redefinida. Entre com sua nova senha.',true)}catch(e){authMessage(e.message||'Não foi possível redefinir sua senha.')}});}
+async function rescueAdminAccess(){const accessName=document.getElementById('adminRescueAccess').value.trim(),token=document.getElementById('adminRescueToken').value.trim(),password=document.getElementById('adminRescuePassword').value;if(!accessName||!token){authMessage('Preencha nome de acesso e código de resgate.');return}if(password.length<8){authMessage('A senha temporária precisa ter pelo menos 8 caracteres.');return}const btn=document.getElementById('adminRescueSubmit');await runBusy(btn,'Redefinindo…',async()=>{try{await callAuthGateway('admin-rescue-reset',{access_name:accessName,rescue_token:token,temporary_password:password});document.getElementById('authEmail').value=accessName;document.getElementById('authPassword').value='';showAuthView('login');authMessage('Acesso administrativo redefinido. Entre com a senha temporária e crie uma nova senha.',true)}catch(e){authMessage(e.message||'Não foi possível usar o código de resgate.')}});}
 function continueRecovery(){showAuthView('login')}
 
 async function logout(){
@@ -878,12 +920,8 @@ async function createContentBackend(data){
   const payload={client_id:data.client,title:data.title,type:data.type,caption:data.caption||'',scheduled_at:data.scheduledAt||null,status:'draft',current_version:1,created_by:authUser.id};
   const r=await db.from('contents').insert(payload).select().single();if(r.error)throw r.error;return r.data;
 }
-async function createClientAccessBackend(data){
-  if(!backendEnabled||!backendReady)throw new Error('Supabase não está conectado.');
-  const authEmail=accessNameToInternalEmail(data.accessName);
-  const {data:result,error}=await db.rpc('link_existing_client_user',{p_name:data.name,p_access_name:data.accessName,p_auth_email:authEmail,p_contact_name:data.contact||'',p_contact_email:data.email||null,p_category:data.category||'Social Media',p_monthly_fee:data.commercial?.monthly_fee??null,p_deliverables:data.commercial?.deliverables_per_month??null,p_contract_status:data.commercial?.contract_status||'none',p_internal_notes:data.commercial?.internal_notes||null});
-  if(error)throw error;return result;
-}
+async function createClientAccessBackend(data){if(!backendEnabled||!backendReady)throw new Error('Supabase não está conectado.');return callAuthGateway('admin-create-client',{name:data.name,access_name:data.accessName,temporary_password:data.temporaryPassword,contact_name:data.contact||'',contact_email:data.email||null,category:data.category||'Social Media',commercial:data.commercial||{}},true)}
+async function resetClientAccessBackend(clientId,temporaryPassword){const access=clientAccessMap[clientId];if(!access?.userId)throw new Error('Este cliente ainda não possui um usuário vinculado.');const result=await callAuthGateway('admin-reset-access',{user_id:access.userId,temporary_password:temporaryPassword},true);access.mustChange=true;return result}
 async function newEditorialVersionBackend(ed){
   if(!backendEnabled||!backendReady)return;await ensureEditorialPersisted(ed);
   const next=(ed.version||1)+1;const r=await db.from('editorial_versions').insert({editorial_id:ed.dbEditorialId,version:next,status:'draft',created_by:authUser.id}).select().single();if(r.error)throw r.error;
@@ -999,7 +1037,7 @@ function clientHome(){
 }
 function clientsView(){
   return `${pageHead('Clientes','Workspaces, responsáveis e situação de cada carteira.',primaryBtn('Novo cliente','new-client'))}
-  <div class="client-grid">${clients.map(c=>{const cp=posts.filter(p=>p.client===c.id),w=cp.filter(p=>p.status==='waiting').length,a=cp.filter(p=>p.status==='approved').length;return `<article class="surface client-card" data-client="${c.id}"><div class="client-top"><div class="client-logo">${c.init}</div><div><h3>${c.name}</h3><p>${c.contact} · ${cp.length} conteúdos</p></div><div class="client-arrow">${ICONS.arrow}</div></div><div class="client-status-row">${w?`<span class="mini-badge st-waiting"><span class="dot"></span>${w} aguardando</span>`:''}${a?`<span class="mini-badge st-approved"><span class="dot"></span>${a} aprovado${a>1?'s':''}</span>`:''}</div><div class="client-foot"><span>${c.email}</span><span>Ver workspace →</span></div></article>`}).join('')}</div>`;
+  <div class="client-grid">${clients.map(c=>{const cp=posts.filter(p=>p.client===c.id),w=cp.filter(p=>p.status==='waiting').length,a=cp.filter(p=>p.status==='approved').length,access=clientAccessMap[c.id];return `<article class="surface client-card" data-client="${escapeHtml(c.id)}"><div class="client-top"><div class="client-logo">${escapeHtml(c.init)}</div><div><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.contact)} · ${cp.length} conteúdos</p></div><div class="client-arrow">${ICONS.arrow}</div></div><div class="client-status-row">${w?`<span class="mini-badge st-waiting"><span class="dot"></span>${w} aguardando</span>`:''}${a?`<span class="mini-badge st-approved"><span class="dot"></span>${a} aprovado${a>1?'s':''}</span>`:''}${access?`<span class="mini-badge ${access.mustChange?'st-waiting':'st-approved'}"><span class="dot"></span>${access.mustChange?'Primeiro acesso pendente':'Acesso ativo'}</span>`:''}</div><div class="client-foot"><span>${escapeHtml(access?.accessName||c.email||'Sem acesso')}</span><button class="card-action" data-access-client="${escapeHtml(c.id)}" type="button">Gerenciar acesso</button></div></article>`}).join('')}</div>`;
 }
 
 function editorialStatusCard(ed){const approved=ed.status==='approved',when=ed.approvedAt||'data registrada no sistema';return `<div class="editorial-status ${approved?'approved':''}"><small>Status do mês</small><strong>${escapeHtml(editorialStatusLabel[ed.status]||ed.status)}</strong><span>${approved?`Aprovado em ${escapeHtml(when)}. Produção liberada.`:`Versão ${ed.version}${ed.sentAt?' · enviada em '+escapeHtml(ed.sentAt):''}`}</span></div>`}
@@ -1061,6 +1099,7 @@ function bindUI(){
   document.querySelectorAll('[data-status-toggle]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();const idx=b.dataset.statusToggle;document.querySelectorAll('.status-menu').forEach(m=>{if(m.id!==`status-${idx}`)m.classList.remove('open')});document.getElementById(`status-${idx}`)?.classList.toggle('open')});
   document.querySelectorAll('[data-status-set]').forEach(b=>b.onclick=async(e)=>{e.stopPropagation();const [idx,s]=b.dataset.statusSet.split('|'),i=Number(idx),old=posts[i]?.status;if(!posts[i])return;posts[i].status=s;render();try{await persistContentStatus(i,s);toast('Status atualizado.')}catch(err){posts[i].status=old;render();toast(formatError(err,'Não foi possível atualizar o status.'),'error')}});
   document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>handleAction(b.dataset.action,b));
+  document.querySelectorAll('[data-access-client]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();openClientAccess(b.dataset.accessClient)});
   document.querySelectorAll('[data-client]').forEach(b=>b.onclick=()=>{currentClient=b.dataset.client;route='clientspace';activeFilter='all';render()});
   document.querySelectorAll('[data-demand-client]').forEach(b=>b.onclick=()=>{currentClient=b.dataset.demandClient;route='editorial';activeFilter='all';render()});
   document.querySelectorAll('[data-support]').forEach(b=>b.onclick=openSupport);document.querySelectorAll('[data-mobile-search]').forEach(b=>b.onclick=()=>{closeMobileMore();openMobileSearch()});document.querySelectorAll('[data-mobile-notifications]').forEach(b=>b.onclick=()=>{closeMobileMore();openNotifications()});
@@ -1100,8 +1139,13 @@ function openNewContent(){
   const create=document.getElementById('createContent');create.onclick=()=>runBusy(create,'Criando…',async()=>{const title=document.getElementById('newTitle').value.trim(),client=document.getElementById('newClient').value,type=document.getElementById('newType').value,date=document.getElementById('newDate').value,time=document.getElementById('newTime').value||'18:00',caption=document.getElementById('newCaption').value.trim();if(!title){document.getElementById('newTitle').focus();throw new Error('Informe o título do conteúdo.')}if(!date){document.getElementById('newDate').focus();throw new Error('Informe a data.')}const local=new Date(`${date}T${time}:00`);if(Number.isNaN(local.getTime()))throw new Error('Data ou horário inválido.');const scheduledAt=local.toISOString();try{let id=Date.now();if(backendEnabled&&backendReady){const row=await createContentBackend({client,title,type,caption,scheduledAt});id=row.id}posts.unshift({id,client,title,type,date:scheduledLabel(scheduledAt),scheduledAt,status:'draft',cover:'cv1',caption,version:1});closeModal();route='content';toast('Conteúdo criado.');render()}catch(err){toast(formatError(err,'Não foi possível criar o conteúdo.'),'error');throw err}}).catch(()=>{});
 }
 function openNewClient(){
-  openModal('Vincular novo cliente',`<div class="form-grid"><div class="field full"><label>Nome da marca / cliente</label><input id="clientName" maxlength="120" placeholder="Nome da marca ou cliente"></div><div class="field"><label>Responsável</label><input id="clientContact" maxlength="120" placeholder="Nome do contato"></div><div class="field"><label>Nome de acesso</label><input id="clientAccessName" maxlength="80" placeholder="Ex.: Iasmim França"><span class="hint">O portal transforma este nome em um e-mail técnico interno.</span></div><div class="field full"><label>E-mail técnico esperado</label><input id="clientTechnicalEmail" readonly placeholder="Preencha o nome de acesso acima"><span class="hint">Antes de vincular, crie esse usuário em Supabase → Authentication → Users com uma senha temporária e Auto Confirm ativado.</span></div><div class="field"><label>E-mail de contato</label><input id="clientEmail" type="email" placeholder="Opcional"></div><div class="field"><label>Categoria</label><select id="clientCategory"><option>Social Media</option><option>Edição de vídeo</option><option>Site</option><option>Branding</option><option>Outro</option></select></div><div class="field"><label>Valor mensal (R$)</label><input id="clientMonthlyFee" type="number" min="0" step="0.01" placeholder="Opcional"></div><div class="field"><label>Entregas por mês</label><input id="clientDeliverables" type="number" min="0" step="1" placeholder="Opcional"></div><div class="field"><label>Contrato</label><select id="clientContract"><option value="none">Sem contrato</option><option value="active">Contrato ativo</option><option value="informal">Acordo informal</option><option value="ended">Encerrado</option></select></div><div class="field full"><label>Observações internas</label><textarea id="clientNotes" maxlength="1000" placeholder="Informações que somente a Clímax verá..."></textarea></div></div>`,`<button class="btn btn-secondary" data-close-modal>Cancelar</button><button class="btn" id="createClientBtn">Vincular cliente</button>`);
-  const access=document.getElementById('clientAccessName'),tech=document.getElementById('clientTechnicalEmail');const sync=()=>tech.value=accessNameToInternalEmail(access.value);access.addEventListener('input',sync);sync();const btn=document.getElementById('createClientBtn');btn.onclick=()=>runBusy(btn,'Vinculando…',async()=>{const name=document.getElementById('clientName').value.trim(),contact=document.getElementById('clientContact').value.trim(),accessName=access.value.trim(),email=document.getElementById('clientEmail').value.trim(),category=document.getElementById('clientCategory').value,monthlyFee=document.getElementById('clientMonthlyFee').value,deliverables=document.getElementById('clientDeliverables').value,contract=document.getElementById('clientContract').value,notes=document.getElementById('clientNotes').value.trim();if(!name){document.getElementById('clientName').focus();throw new Error('Informe o nome do cliente.')}if(!accessName){access.focus();throw new Error('Informe o nome de acesso.')}try{const result=await createClientAccessBackend({name,contact,accessName,email,category,commercial:{services:[category],monthly_fee:monthlyFee?Number(monthlyFee):null,deliverables_per_month:deliverables?Number(deliverables):null,contract_status:contract,internal_notes:notes}});await hydrateFromBackend(authUser);currentClient=result.client_id;closeModal();route='clientspace';toast('Cliente vinculado. O primeiro login exigirá troca da senha temporária.');render()}catch(err){toast(formatError(err,'Não foi possível vincular. Confirme se o usuário técnico já foi criado no Authentication.'),'error');throw err}}).catch(()=>{});
+  openModal('Novo cliente',`<div class="form-grid"><div class="field full"><label>Nome da marca / cliente</label><input id="clientName" maxlength="120" placeholder="Nome da marca ou cliente"></div><div class="field"><label>Responsável</label><input id="clientContact" maxlength="120" placeholder="Nome do contato"></div><div class="field"><label>Nome de acesso</label><input id="clientAccessName" maxlength="80" placeholder="Digite o nome de acesso"><span class="hint">O cliente usará este nome para entrar no portal.</span></div><div class="field full"><label>Senha temporária</label><input id="clientTemporaryPassword" type="text" minlength="8" maxlength="72" placeholder="Ex.: climax@cliente"><span class="hint">O cliente será obrigado a trocar essa senha no primeiro login.</span></div><div class="field"><label>E-mail de contato</label><input id="clientEmail" type="email" placeholder="Opcional"></div><div class="field"><label>Categoria</label><select id="clientCategory"><option>Social Media</option><option>Edição de vídeo</option><option>Site</option><option>Branding</option><option>Outro</option></select></div><div class="field"><label>Valor mensal (R$)</label><input id="clientMonthlyFee" type="number" min="0" step="0.01" placeholder="Opcional"></div><div class="field"><label>Entregas por mês</label><input id="clientDeliverables" type="number" min="0" step="1" placeholder="Opcional"></div><div class="field"><label>Contrato</label><select id="clientContract"><option value="none">Sem contrato</option><option value="active">Contrato ativo</option><option value="informal">Acordo informal</option><option value="ended">Encerrado</option></select></div><div class="field full"><label>Observações internas</label><textarea id="clientNotes" maxlength="1000" placeholder="Informações que somente a Clímax verá..."></textarea></div></div>`,`<button class="btn btn-secondary" data-close-modal>Cancelar</button><button class="btn" id="createClientBtn">Criar cliente</button>`);
+  const access=document.getElementById('clientAccessName'),temp=document.getElementById('clientTemporaryPassword');let passwordTouched=false;temp.addEventListener('input',()=>passwordTouched=true);access.addEventListener('input',()=>{if(!passwordTouched)temp.value=temporaryPasswordSuggestion(access.value)});
+  const btn=document.getElementById('createClientBtn');btn.onclick=()=>runBusy(btn,'Criando…',async()=>{const name=document.getElementById('clientName').value.trim(),contact=document.getElementById('clientContact').value.trim(),accessName=access.value.trim(),temporaryPassword=temp.value,email=document.getElementById('clientEmail').value.trim(),category=document.getElementById('clientCategory').value,monthlyFee=document.getElementById('clientMonthlyFee').value,deliverables=document.getElementById('clientDeliverables').value,contract=document.getElementById('clientContract').value,notes=document.getElementById('clientNotes').value.trim();if(!name){document.getElementById('clientName').focus();throw new Error('Informe o nome do cliente.')}if(!accessName){access.focus();throw new Error('Informe o nome de acesso.')}if(temporaryPassword.length<8){temp.focus();throw new Error('A senha temporária precisa ter pelo menos 8 caracteres.')}try{const result=await createClientAccessBackend({name,contact,accessName,temporaryPassword,email,category,commercial:{services:[category],monthly_fee:monthlyFee?Number(monthlyFee):null,deliverables_per_month:deliverables?Number(deliverables):null,contract_status:contract,internal_notes:notes}});await hydrateFromBackend(authUser);currentClient=result.client_id;closeModal();route='clientspace';toast('Cliente criado. Envie o nome de acesso e a senha temporária.');render()}catch(err){toast(formatError(err,'Não foi possível criar o cliente.'),'error');throw err}}).catch(()=>{});
+}
+function openClientAccess(clientId){
+  const client=clientById(clientId),access=clientAccessMap[clientId];if(!client)return;if(!access){openModal('Gerenciar acesso',`<div class="empty-state"><strong>Usuário não vinculado</strong><p>Este cliente não possui um usuário de acesso vinculado.</p></div>`,'<button class="btn btn-secondary" data-close-modal>Fechar</button>');return}
+  const suggestion=temporaryPasswordSuggestion(access.accessName||client.name);openModal(`Acesso · ${client.name}`,`<div class="form-grid"><div class="field full"><label>Nome de acesso</label><input readonly value="${escapeHtml(access.accessName||'')}"></div><div class="field full"><label>Status</label><input readonly value="${access.mustChange?'Primeiro acesso / troca de senha pendente':'Acesso ativo'}"></div><div class="field full"><label>Nova senha temporária</label><input id="resetTemporaryPassword" type="text" minlength="8" maxlength="72" value="${escapeHtml(suggestion)}"><span class="hint">A senha atual nunca é exibida. Ao redefinir, esta senha temporária substitui a atual e o cliente será obrigado a criar outra no próximo login.</span></div></div>`,`<button class="btn btn-secondary" data-close-modal>Cancelar</button><button class="btn" id="resetClientAccessBtn">Redefinir acesso</button>`);const btn=document.getElementById('resetClientAccessBtn');btn.onclick=()=>runBusy(btn,'Redefinindo…',async()=>{const pw=document.getElementById('resetTemporaryPassword').value;if(pw.length<8)throw new Error('A senha temporária precisa ter pelo menos 8 caracteres.');await resetClientAccessBackend(clientId,pw);closeModal();toast('Acesso redefinido. O cliente deverá trocar a senha no próximo login.');render()}).catch(err=>toast(formatError(err,'Não foi possível redefinir o acesso.'),'error'));
 }
 
 function openEditorialItem(id=null){
@@ -1123,7 +1167,7 @@ async function openHistory(id){
   if(!entries.length)entries=[{at:p.scheduledAt||new Date().toISOString(),title:`Versão atual ${p.version}`,desc:statusLabel[p.status]||p.status}];openModal('Histórico do conteúdo',`<div class="timeline">${entries.map(x=>`<div class="timeline-item"><span class="timeline-mark"></span><div><strong>${escapeHtml(x.title)}</strong><span>${escapeHtml(shortDateTime(x.at)||x.at||'')}${x.desc?' · '+escapeHtml(x.desc):''}</span></div></div>`).join('')}</div>`,'<button class="btn btn-secondary" data-close-modal>Fechar</button>');
 }
 function openSupport(){const p=getPortalPrefs();openModal('Falar com a Clímax',`<p class="detail-copy" style="margin-top:0">${escapeHtml(p.supportMessage)}</p><div class="field" style="margin-top:14px"><label>Mensagem pronta</label><textarea id="supportText">Olá, equipe Clímax! Preciso de ajuda com meu portal.</textarea></div>`,`<button class="btn btn-secondary" data-close-modal>Fechar</button><button class="btn" id="copySupport">Copiar mensagem</button>`);document.getElementById('copySupport').onclick=async()=>{try{await navigator.clipboard.writeText(document.getElementById('supportText').value);toast('Mensagem copiada.')}catch(e){toast('Selecione e copie a mensagem manualmente.','error')}}}
-function openAccount(){const name=authProfile?.full_name||'Usuário',access=authProfile?.access_name||authUser?.email?.split('@')[0]||'',kind=actualRole==='admin'?'Administrador':'Cliente';openModal('Minha conta',`<div class="form-grid"><div class="field"><label>Nome</label><input readonly value="${escapeHtml(name)}"></div><div class="field"><label>Perfil</label><input readonly value="${escapeHtml(kind)}"></div><div class="field full"><label>Acesso técnico</label><input readonly value="${escapeHtml(access)}"></div></div><p class="hint" style="margin-top:12px">Para trocar a senha, use o fluxo de redefinição administrado pela Clímax ou a tela obrigatória do primeiro acesso.</p>`,'<button class="btn btn-secondary" data-close-modal>Fechar</button>')}
+function openAccount(){const name=authProfile?.full_name||'Usuário',access=authProfile?.access_name||authUser?.email?.split('@')[0]||'',kind=actualRole==='admin'?'Administrador':'Cliente';openModal('Minha conta',`<div class="form-grid"><div class="field"><label>Nome</label><input readonly value="${escapeHtml(name)}"></div><div class="field"><label>Perfil</label><input readonly value="${escapeHtml(kind)}"></div><div class="field full"><label>Acesso técnico</label><input readonly value="${escapeHtml(access)}"></div></div><p class="hint" style="margin-top:12px">Sua senha é privada e não pode ser visualizada nem pela Clímax. Se necessário, use “Esqueci minha senha” na tela de login.</p>`,'<button class="btn btn-secondary" data-close-modal>Fechar</button>')}
 
 function openProfile(anchor){
   const pop=document.getElementById('profilePopover'),r=anchor.getBoundingClientRect();pop.style.top=Math.min(window.innerHeight-260,r.bottom+8)+'px';pop.style.left=Math.max(10,Math.min(window.innerWidth-230,r.right-220))+'px';const preview=actualRole==='admin'?`<button data-switch-role>${role==='admin'?'Visualizar como cliente':'Voltar ao painel da Clímax'}</button><div class="popover-sep"></div>`:'',logoutButton=backendEnabled?`<div class="popover-sep"></div><button data-logout>Sair da conta</button>`:'';setSafeHTML(pop,`${preview}<button data-profile-theme>${currentTheme==='dark'?'☀ Modo claro':'☾ Modo escuro'}</button><button data-profile-account>Minha conta</button>${actualRole==='admin'?'<button data-profile-preferences>Preferências</button>':''}${logoutButton}`);pop.classList.add('open');const sw=pop.querySelector('[data-switch-role]');if(sw)sw.onclick=switchRole;pop.querySelector('[data-profile-theme]').onclick=()=>{toggleTheme();closeProfile();render()};pop.querySelector('[data-profile-account]').onclick=()=>{closeProfile();openAccount()};const pref=pop.querySelector('[data-profile-preferences]');if(pref)pref.onclick=()=>{closeProfile();route='settings';render()};const lo=pop.querySelector('[data-logout]');if(lo)lo.onclick=logout;
@@ -1141,7 +1185,7 @@ document.getElementById('themeToggle').onclick=e=>{e.stopPropagation();toggleThe
 document.getElementById('notificationButton').onclick=openNotifications;
 const globalSearch=document.getElementById('globalSearch');globalSearch.addEventListener('keydown',e=>{if(e.key==='Enter')openSearchResults(globalSearch.value)});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetail();closeModal();closeMobileMore();closeProfile()}});
-document.getElementById('authLogin').onclick=loginWithPassword;document.getElementById('authEmail').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.getElementById('authPassword').focus()}});document.getElementById('authPassword').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loginWithPassword()}});document.getElementById('authForgot').onclick=forgotPassword;document.getElementById('firstAccessActivate').onclick=activateFirstAccess;document.getElementById('firstPassword').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.getElementById('firstPasswordConfirm').focus()}});document.getElementById('firstPasswordConfirm').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();activateFirstAccess()}});document.getElementById('authSuccessContinue').onclick=finishActivatedLogin;document.getElementById('recoveryContinue').onclick=continueRecovery;
+document.getElementById('authLogin').onclick=loginWithPassword;document.getElementById('authEmail').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.getElementById('authPassword').focus()}});document.getElementById('authPassword').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loginWithPassword()}});document.getElementById('authForgot').onclick=forgotPassword;document.getElementById('firstAccessActivate').onclick=activateFirstAccess;document.getElementById('firstPassword').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.getElementById('firstPasswordConfirm').focus()}});document.getElementById('firstPasswordConfirm').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.getElementById('firstRecoveryQuestion').focus()}});document.getElementById('authSuccessContinue').onclick=finishActivatedLogin;document.getElementById('recoveryLookup').onclick=lookupRecoveryQuestion;document.getElementById('recoveryBack').onclick=continueRecovery;document.getElementById('recoveryNoSetup').onclick=()=>showAuthView('recovery-help');document.getElementById('recoveryAnswerBack').onclick=()=>showAuthView('recovery-name');document.getElementById('recoveryForgotAnswer').onclick=()=>showAuthView('recovery-help');document.getElementById('recoveryHelpBack').onclick=continueRecovery;document.getElementById('adminRescueOpen').onclick=()=>{showAuthView('admin-rescue');document.getElementById('adminRescueAccess').value=recoveryState.accessName||document.getElementById('authEmail').value.trim()};document.getElementById('adminRescueBack').onclick=()=>showAuthView('recovery-help');document.getElementById('adminRescueSubmit').onclick=rescueAdminAccess;document.getElementById('recoveryReset').onclick=resetRecoveredPassword;document.getElementById('recoveryAccessName').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();lookupRecoveryQuestion()}});document.getElementById('recoveryNewPasswordConfirm').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();resetRecoveredPassword()}});
 window.addEventListener('hashchange',()=>{if(backendReady)openHashTarget()});
 try{const mq=window.matchMedia('(prefers-color-scheme: light)');mq.addEventListener?.('change',e=>{if(!localStorage.getItem('climax-theme')){document.documentElement.dataset.themeSource='system';applyTheme(e.matches?'light':'dark',false);render()}})}catch(e){}
 bootApp();
