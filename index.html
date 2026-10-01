@@ -437,13 +437,13 @@ html[data-theme="light"] .auth-gate{background:radial-gradient(circle at 20% 10%
       <div class="auth-view" data-auth-view="login">
         <div class="auth-eyebrow">Clímax Portal</div>
         <h2>Bem-vindo de volta.</h2>
-        <p class="auth-sub">Entre usando seu nome de acesso e a senha que você criou.</p>
+        <p class="auth-sub">Entre com seu nome de acesso e sua senha. No primeiro acesso, use a senha temporária enviada pela Clímax.</p>
         <div class="auth-fields">
           <div><label>Nome de acesso</label><input id="authEmail" type="text" autocomplete="username" placeholder="Digite seu nome de acesso"></div>
           <div><label>Senha</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="••••••••"></div>
         </div>
         <button class="btn auth-btn" id="authLogin">Entrar no portal</button>
-        <div class="auth-links"><button class="auth-link primary" id="authFirstAccess">É meu primeiro acesso</button><button class="auth-link" id="authForgot">Esqueci minha senha</button></div>
+        <div class="auth-links"><span class="auth-help">Primeiro acesso? Entre normalmente com a senha temporária recebida.</span><button class="auth-link" id="authForgot">Esqueci minha senha</button></div>
       </div>
 
       <div class="auth-view" data-auth-view="first-code" hidden>
@@ -460,27 +460,22 @@ html[data-theme="light"] .auth-gate{background:radial-gradient(circle at 20% 10%
       </div>
 
       <div class="auth-view" data-auth-view="first-setup" hidden>
-        <div class="auth-progress"><span class="active"></span><span class="active"></span></div>
-        <div class="auth-eyebrow">Primeiro acesso · 2 de 2</div>
-        <h2>Crie seu acesso.</h2>
-        <p class="auth-sub">Escolha sua senha e configure uma forma de recuperar a conta caso esqueça.</p>
+        <div class="auth-eyebrow">Primeiro acesso</div>
+        <h2>Crie sua nova senha.</h2>
+        <p class="auth-sub">Você entrou com uma senha temporária. Antes de acessar o portal, escolha uma senha só sua.</p>
         <div class="auth-fields">
-          <div><label>Crie uma senha</label><input id="firstPassword" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres"></div>
-          <div><label>Confirme a senha</label><input id="firstPasswordConfirm" type="password" autocomplete="new-password" placeholder="Digite novamente"></div>
-          <div><label>Pergunta de recuperação</label><select id="firstRecoveryQuestion"><option value="favorite_show">Qual seu filme ou série favorita?</option><option value="childhood_cartoon">Qual era seu desenho favorito na infância?</option><option value="favorite_food">Qual sua comida favorita?</option><option value="dream_place">Qual lugar você mais gostaria de conhecer?</option></select></div>
-          <div><label>Resposta</label><input id="firstRecoveryAnswer" type="text" autocomplete="off" placeholder="Guarde essa resposta"><div class="auth-help">Use algo que outras pessoas não consigam descobrir facilmente.</div></div>
+          <div><label>Nova senha</label><input id="firstPassword" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres"></div>
+          <div><label>Confirme a nova senha</label><input id="firstPasswordConfirm" type="password" autocomplete="new-password" placeholder="Digite novamente"></div>
         </div>
-        <button class="btn auth-btn" id="firstAccessActivate">Ativar minha conta</button>
-        <div class="auth-links"><button class="auth-link" data-auth-go="first-code">← Voltar</button></div>
+        <button class="btn auth-btn" id="firstAccessActivate">Salvar nova senha</button>
+        <div class="auth-help" style="margin-top:10px">Você só verá esta tela uma vez.</div>
       </div>
 
       <div class="auth-view" data-auth-view="recovery-name" hidden>
         <div class="auth-eyebrow">Recuperar acesso</div>
         <h2>Esqueceu sua senha?</h2>
-        <p class="auth-sub">Informe seu nome de acesso. Se houver recuperação configurada, mostraremos sua pergunta de segurança.</p>
-        <div class="auth-fields"><div><label>Nome de acesso</label><input id="recoveryName" type="text" autocomplete="username" placeholder="Digite seu nome de acesso"></div></div>
-        <button class="btn auth-btn" id="recoveryContinue">Continuar</button>
-        <div class="auth-links"><button class="auth-link" data-auth-go="login">← Voltar para o login</button></div>
+        <p class="auth-sub">Por segurança, fale com a Clímax Studio. Vamos gerar uma nova senha temporária para você acessar e criar outra senha.</p>
+        <button class="btn auth-btn" id="recoveryContinue">Voltar para o login</button>
       </div>
 
       <div class="auth-view" data-auth-view="recovery-answer" hidden>
@@ -499,9 +494,9 @@ html[data-theme="light"] .auth-gate{background:radial-gradient(circle at 20% 10%
 
       <div class="auth-view" data-auth-view="success" hidden>
         <div class="auth-success">✓</div>
-        <div class="auth-eyebrow">Conta ativada</div>
+        <div class="auth-eyebrow">Senha atualizada</div>
         <h2>Seu acesso está pronto.</h2>
-        <p class="auth-sub">A partir de agora, use seu nome de acesso e a senha que acabou de criar.</p>
+        <p class="auth-sub">A partir de agora, use seu nome de acesso e a nova senha que acabou de criar.</p>
         <button class="btn auth-btn" id="authSuccessContinue">Entrar no Clímax Portal</button>
       </div>
 
@@ -705,7 +700,7 @@ function syncIdentityUI(){
 
 async function hydrateFromBackend(user){
   authUser=user;
-  const {data:profile,error:profileError}=await db.from('profiles').select('id,full_name,role,client_id').eq('id',user.id).single();
+  const {data:profile,error:profileError}=await db.from('profiles').select('id,full_name,role,client_id,must_change_password').eq('id',user.id).single();
   if(profileError)throw new Error('Perfil não encontrado. Execute o schema.sql e configure o usuário: '+profileError.message);
   authProfile=profile;actualRole=profile.role;role=profile.role;
 
@@ -748,22 +743,46 @@ function accessNameToInternalEmail(value){
 }
 
 async function loginWithPassword(){
-  const accessName=document.getElementById('authEmail').value.trim();const password=document.getElementById('authPassword').value;
+  const accessName=document.getElementById('authEmail').value.trim();
+  const password=document.getElementById('authPassword').value;
   if(!accessName||!password){authMessage('Preencha nome de acesso e senha.');return}
+
   if(!backendEnabled){
-    const accounts=demoAccounts(),key=normalizeAccessKey(accessName),account=accounts[key];
-    if(!account){authMessage('Nome de acesso não encontrado.');return}
-    if(!account.activated){authMessage('Este acesso ainda não foi ativado. Use “É meu primeiro acesso”.');return}
-    if(account.password!==password){authMessage('Senha incorreta.');return}
-    await demoEnter(account);return;
+    authMessage('O portal precisa estar conectado ao Supabase para entrar.');
+    return;
   }
+
   const email=accessNameToInternalEmail(accessName);
-  const btn=document.getElementById('authLogin');btn.disabled=true;btn.textContent='Entrando…';authMessage('');
+  const btn=document.getElementById('authLogin');
+  btn.disabled=true;
+  btn.textContent='Entrando…';
+  authMessage('');
+
   const {data,error}=await db.auth.signInWithPassword({email,password});
-  if(error){authMessage('Não foi possível entrar. Confira seu nome de acesso e senha.');btn.disabled=false;btn.textContent='Entrar no portal';return}
-  try{await hydrateFromBackend(data.user);hideAuth();route='home';render()}catch(e){authMessage(e.message)}finally{btn.disabled=false;btn.textContent='Entrar no portal'}
+  if(error){
+    authMessage('Nome de acesso ou senha incorretos.');
+    btn.disabled=false;
+    btn.textContent='Entrar no portal';
+    return;
+  }
+
+  try{
+    await hydrateFromBackend(data.user);
+    if(authProfile?.must_change_password){
+      showAuthView('first-setup');
+      return;
+    }
+    hideAuth();
+    route='home';
+    render();
+  }catch(e){
+    authMessage(e.message||String(e));
+  }finally{
+    btn.disabled=false;
+    btn.textContent='Entrar no portal';
+  }
 }
-function startFirstAccess(){showAuthView('first-code')}
+function startFirstAccess(){showAuthView('login')}function startFirstAccess(){showAuthView('first-code')}
 async function continueFirstAccess(){
   const accessName=document.getElementById('firstAccessName').value.trim();const code=document.getElementById('firstAccessCode').value.trim();
   if(!accessName||!code){authMessage('Informe seu nome de acesso e o código recebido da Clímax.');return}
@@ -780,52 +799,44 @@ async function continueFirstAccess(){
   pendingFirstAccess={accessName,code};showAuthView('first-setup');
 }
 async function activateFirstAccess(){
-  if(!pendingFirstAccess){showAuthView('first-code');return}
-  const password=document.getElementById('firstPassword').value;const confirm=document.getElementById('firstPasswordConfirm').value;const question=document.getElementById('firstRecoveryQuestion').value;const answer=document.getElementById('firstRecoveryAnswer').value.trim();
-  if(password.length<8){authMessage('Sua senha precisa ter pelo menos 8 caracteres.');return}
+  const password=document.getElementById('firstPassword').value;
+  const confirm=document.getElementById('firstPasswordConfirm').value;
+  if(password.length<8){authMessage('Sua nova senha precisa ter pelo menos 8 caracteres.');return}
   if(password!==confirm){authMessage('As senhas não coincidem.');return}
-  if(answer.length<2){authMessage('Digite uma resposta de recuperação.');return}
-  const btn=document.getElementById('firstAccessActivate');btn.disabled=true;btn.textContent='Ativando…';authMessage('');
+  if(!db||!authUser){authMessage('Sua sessão expirou. Entre novamente com a senha temporária.');showAuthView('login');return}
+
+  const btn=document.getElementById('firstAccessActivate');
+  btn.disabled=true;
+  btn.textContent='Salvando…';
+  authMessage('');
+
   try{
-    if(!backendEnabled){
-      const accounts=demoAccounts(),key=normalizeAccessKey(pendingFirstAccess.accessName),account=accounts[key];
-      if(!account)throw new Error('Acesso não encontrado.');
-      account.activated=true;account.password=password;account.recoveryQuestion=question;account.recoveryAnswer=normalizeAccessKey(answer);delete account.activationCode;accounts[key]=account;saveDemoAccounts(accounts);
-      pendingActivatedLogin={accessName:pendingFirstAccess.accessName,password,account};
-    }else{
-      const {data,error}=await db.functions.invoke('activate-account',{body:{action:'activate',access_name:pendingFirstAccess.accessName,activation_code:pendingFirstAccess.code,password,recovery_question:question,recovery_answer:answer}});
-      if(error)throw error;if(data?.error)throw new Error(data.error);pendingActivatedLogin={accessName:pendingFirstAccess.accessName,password};
-    }
-    pendingFirstAccess=null;showAuthView('success');
-  }catch(e){authMessage(e.message||String(e))}finally{btn.disabled=false;btn.textContent='Ativar minha conta'}
+    const {error:updateError}=await db.auth.updateUser({password});
+    if(updateError)throw updateError;
+
+    const {error:flagError}=await db.rpc('complete_first_access');
+    if(flagError)throw flagError;
+
+    if(authProfile)authProfile.must_change_password=false;
+    showAuthView('success');
+  }catch(e){
+    authMessage('Não foi possível criar sua nova senha. '+(e.message||String(e)));
+  }finally{
+    btn.disabled=false;
+    btn.textContent='Salvar nova senha';
+  }
 }
 async function finishActivatedLogin(){
-  if(!pendingActivatedLogin){showAuthView('login');return}
-  if(!backendEnabled){await demoEnter(pendingActivatedLogin.account);pendingActivatedLogin=null;return}
-  const email=accessNameToInternalEmail(pendingActivatedLogin.accessName);const {data,error}=await db.auth.signInWithPassword({email,password:pendingActivatedLogin.password});
-  if(error){authMessage('Conta ativada, mas não foi possível entrar automaticamente. Volte ao login e use sua nova senha.');showAuthView('login');return}
-  try{await hydrateFromBackend(data.user);pendingActivatedLogin=null;hideAuth();route='home';render()}catch(e){authMessage(e.message)}
+  hideAuth();
+  route='home';
+  render();
 }
-function forgotPassword(){showAuthView('recovery-name')}
+function forgotPassword(){showAuthView('recovery-name')}function forgotPassword(){showAuthView('recovery-name')}
 async function continueRecovery(){
-  const accessName=document.getElementById('recoveryName').value.trim();if(!accessName){authMessage('Digite seu nome de acesso.');return}
-  try{
-    let questionKey='favorite_show';
-    if(!backendEnabled){const account=demoAccounts()[normalizeAccessKey(accessName)];if(!account||!account.activated||!account.recoveryQuestion)throw new Error('Não encontramos uma recuperação configurada para esse acesso.');questionKey=account.recoveryQuestion}
-    else{const {data,error}=await db.functions.invoke('account-recovery',{body:{action:'question',access_name:accessName}});if(error)throw error;if(data?.error)throw new Error(data.error);questionKey=data.question_key||'favorite_show'}
-    pendingRecovery={accessName,questionKey};document.getElementById('recoveryQuestionText').textContent=RECOVERY_QUESTIONS[questionKey]||'Responda sua pergunta de recuperação.';showAuthView('recovery-answer');
-  }catch(e){authMessage(e.message||String(e))}
+  showAuthView('login');
 }
 async function resetRecoveredPassword(){
-  if(!pendingRecovery){showAuthView('recovery-name');return}
-  const answer=document.getElementById('recoveryAnswer').value.trim();const password=document.getElementById('recoveryPassword').value;const confirm=document.getElementById('recoveryPasswordConfirm').value;
-  if(!answer){authMessage('Digite sua resposta de recuperação.');return}if(password.length<8){authMessage('A nova senha precisa ter pelo menos 8 caracteres.');return}if(password!==confirm){authMessage('As senhas não coincidem.');return}
-  const btn=document.getElementById('recoveryReset');btn.disabled=true;btn.textContent='Alterando…';
-  try{
-    if(!backendEnabled){const accounts=demoAccounts(),key=normalizeAccessKey(pendingRecovery.accessName),account=accounts[key];if(!account||normalizeAccessKey(answer)!==account.recoveryAnswer)throw new Error('Resposta de recuperação incorreta.');account.password=password;accounts[key]=account;saveDemoAccounts(accounts)}
-    else{const {data,error}=await db.functions.invoke('account-recovery',{body:{action:'reset',access_name:pendingRecovery.accessName,recovery_answer:answer,new_password:password}});if(error)throw error;if(data?.error)throw new Error(data.error)}
-    const name=pendingRecovery.accessName;pendingRecovery=null;document.getElementById('authEmail').value=name;document.getElementById('authPassword').value='';showAuthView('login');authMessage('Senha alterada. Agora você já pode entrar.',true)
-  }catch(e){authMessage(e.message||String(e))}finally{btn.disabled=false;btn.textContent='Alterar senha'}
+  showAuthView('login');
 }
 async function logout(){if(db)await db.auth.signOut();authUser=null;authProfile=null;backendReady=false;setBackendBadge();showAuth();closeProfile()}
 
@@ -892,7 +903,12 @@ async function bootApp(){
   db=window.supabase.createClient(CONFIG.SUPABASE_URL,SUPABASE_PUBLIC_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   const {data:{session}}=await db.auth.getSession();
   if(!session){showAuth('login');return}
-  try{await hydrateFromBackend(session.user);hideAuth();render()}catch(e){console.error(e);authMessage(e.message);showAuth('login')}
+  try{
+    await hydrateFromBackend(session.user);
+    if(authProfile?.must_change_password){showAuth('first-setup');return}
+    hideAuth();
+    render();
+  }catch(e){console.error(e);authMessage(e.message);showAuth('login')}
 }
 
 const adminNav=[['home','Dashboard','home'],['demands','Minhas demandas','clock'],['clients','Clientes','users'],['editorial','Editorial','plan'],['content','Conteúdos','content'],['approval','Aprovações','check'],['calendar','Calendário','calendar'],['archive','Arquivos','files'],['settings','Configurações','settings']];
@@ -1233,10 +1249,7 @@ document.getElementById('themeToggle').onclick=(e)=>{e.stopPropagation();toggleT
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetail();closeModal();closeMobileMore();closeProfile()}});
 document.getElementById('authLogin').onclick=loginWithPassword;
 document.getElementById('authPassword').addEventListener('keydown',e=>{if(e.key==='Enter')loginWithPassword()});
-document.getElementById('authFirstAccess').onclick=startFirstAccess;
 document.getElementById('authForgot').onclick=forgotPassword;
-document.getElementById('firstAccessContinue').onclick=continueFirstAccess;
-document.getElementById('firstAccessCode').addEventListener('keydown',e=>{if(e.key==='Enter')continueFirstAccess()});
 document.getElementById('firstAccessActivate').onclick=activateFirstAccess;
 document.getElementById('authSuccessContinue').onclick=finishActivatedLogin;
 document.getElementById('recoveryContinue').onclick=continueRecovery;
