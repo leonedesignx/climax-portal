@@ -1,0 +1,5 @@
+window.CLIMAX_CONFIG = {
+  SUPABASE_URL: 'https://SEU-PROJETO.supabase.co',
+  SUPABASE_ANON_KEY: 'SUA_CHAVE_ANON_PUBLICA',
+  DEMO_MODE: false
+};
