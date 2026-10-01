@@ -1,6 +1,6 @@
 .DS_Store
 Thumbs.db
-.vscode/
 .env
 .env.*
-!.env.example
+supabase/functions/.env
+private/
