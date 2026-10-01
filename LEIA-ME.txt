@@ -1,0 +1,23 @@
+CLÍMAX PORTAL — LOGIN V2
+
+O que mudou:
+- Não existe mais código de primeiro acesso.
+- O cliente entra normalmente com Nome de acesso + senha temporária.
+- Se for o primeiro acesso, o portal obriga a criar uma nova senha.
+- Depois da troca, a senha temporária deixa de funcionar.
+- "Esqueci minha senha" orienta o cliente a falar com a Clímax Studio.
+- Não usa Edge Function para esse fluxo.
+
+INSTALAÇÃO
+1. No Supabase > SQL Editor > New query, cole e execute login-v2.sql.
+2. No seu projeto do VS Code, substitua SOMENTE o index.html pelo index.html desta pasta.
+3. NÃO substitua o config.js: mantenha o seu, que já tem URL e Publishable Key.
+4. No terminal:
+   git add index.html
+   git commit -m "Corrige fluxo de primeiro acesso"
+   git push origin main
+5. Aguarde o GitHub Pages atualizar e use Ctrl+F5.
+
+TESTE
+Iasmim França / climax@iasmim
+Depois do login, deve aparecer "Crie sua nova senha" antes de abrir o portal.
