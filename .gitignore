@@ -1,14 +1,6 @@
-# Sistema
 .DS_Store
 Thumbs.db
-
-# VS Code local
 .vscode/
-
-# Variáveis de ambiente futuras
 .env
 .env.*
 !.env.example
-
-# Dependências futuras
-node_modules/

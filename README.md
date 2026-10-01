@@ -1,35 +1,29 @@
-# Ápice Workspace
+# Clímax Portal
 
-Protótipo responsivo do workspace interno e portal de clientes da **Ápice Studio**.
+Portal operacional da Clímax Studio para planejamento editorial, produção, aprovações, calendário, arquivos e relacionamento com clientes.
 
-## Como abrir localmente
+## Interface atual
 
-### Opção 1 — VS Code + Live Server
-1. Abra esta pasta no VS Code.
-2. Instale a extensão **Live Server** (Ritwick Dey), se ainda não tiver.
-3. Clique com o botão direito em `index.html`.
-4. Selecione **Open with Live Server**.
+- Dashboard operacional
+- Minhas demandas
+- Clientes em navegação lateral
+- Editorial mensal com aprovação anterior à produção
+- Conteúdos e versões
+- Aprovações
+- Calendário editorial
+- Arquivos e backup
+- Modo claro/escuro
+- Painel administrativo e visão simplificada do cliente
+- Layout responsivo para desktop e celular
 
-### Opção 2 — Python
-No terminal aberto nesta pasta:
+## Rodar localmente
+
+Abra `index.html` com Live Server no VS Code ou use:
 
 ```bash
 python -m http.server 5500
 ```
 
-Depois abra `http://localhost:5500` no navegador.
+Depois acesse `http://localhost:5500`.
 
-## Estrutura
-
-```text
-apice-workspace/
-├── index.html
-├── README.md
-└── .gitignore
-```
-
-O protótipo atual está concentrado em um único `index.html` para facilitar testes e publicação. A identidade visual da Ápice está incorporada ao arquivo.
-
-## Publicação
-
-Para o protótipo, você pode publicar gratuitamente com GitHub Pages. Para a versão de produção, a arquitetura planejada é frontend + Supabase + Cloudflare R2.
+> Esta entrega fecha a interface/fluxo do protótipo. A conexão de autenticação, banco e mídia será feita com Supabase + Cloudflare R2.
