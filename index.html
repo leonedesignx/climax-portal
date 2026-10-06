@@ -434,6 +434,29 @@ html[data-theme="light"] .auth-gate{background:radial-gradient(circle at 20% 10%
 html[data-theme="light"] .payment-row{background:#f8faf6}
 @media(max-width:760px){.finance-grid{grid-template-columns:1fr}.payment-panel-grid{grid-template-columns:1fr}.finance-mini{align-items:flex-start;flex-wrap:wrap}.finance-mini .btn{width:100%}}
 
+/* ---------- UX controls / mídia / avatar ---------- */
+.st-rejected{background:rgba(255,95,95,.12)!important;color:#ff7777!important}
+.icon-action{width:31px;height:31px;padding:0;display:inline-grid;place-items:center;border-radius:9px;background:#171a14;border:1px solid var(--line);color:#aeb5aa;flex:0 0 auto}
+.icon-action svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8}
+.icon-action:hover{color:var(--text);border-color:#3a4136}.icon-action.danger:hover{color:#ff9b9b;border-color:rgba(255,139,139,.28);background:rgba(255,139,139,.08)}
+.review-quick-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:2px}.review-quick-row .review-reject{grid-column:1/-1}
+.review-btn{height:32px;border-radius:9px;border:1px solid var(--line);background:#171a14;color:#aeb5aa;font-size:9.5px;font-weight:800}.review-btn.primary{background:rgba(173,244,3,.1);border-color:rgba(173,244,3,.18);color:var(--lime)}.review-btn.danger{background:rgba(255,139,139,.08);border-color:rgba(255,139,139,.16);color:#ff9b9b}
+.upload-zone.active{border-style:solid;background:rgba(173,244,3,.035)}.upload-zone input[type=file]{width:100%;margin-top:10px;font-size:10px;color:var(--muted)}
+.media-attached{display:flex;align-items:center;gap:9px;margin-top:14px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:#10130e}.media-attached svg{width:16px;height:16px;stroke:var(--lime);fill:none}.media-attached div{flex:1;min-width:0}.media-attached strong{display:block;font-size:10.5px}.media-attached span{display:block;font-size:9px;color:var(--muted);margin-top:3px}
+.avatar{background-size:cover!important;background-position:center!important}.mobile-profile{background-size:cover!important;background-position:center!important}
+.account-avatar{width:78px;height:78px;border-radius:22px;background:#1a1e16;border:1px solid var(--line);display:grid;place-items:center;font:850 20px Manrope;color:var(--lime);background-size:cover;background-position:center;overflow:hidden}.account-avatar-row{display:flex;gap:14px;align-items:center;margin-bottom:18px}.account-avatar-copy{flex:1}.account-avatar-copy strong{display:block;font-size:12px}.account-avatar-copy span{display:block;color:var(--muted);font-size:9.5px;margin-top:4px;line-height:1.45}
+.integration-line{display:flex;align-items:center;justify-content:space-between;gap:12px}.integration-pill{display:inline-flex;align-items:center;min-height:25px;padding:0 9px;border-radius:999px;background:#1a1d17;border:1px solid var(--line);font-size:9px;color:var(--muted);font-weight:850}.integration-pill.live{color:var(--lime);background:rgba(173,244,3,.08);border-color:rgba(173,244,3,.18)}
+.cal-ev{display:flex;align-items:center;gap:4px;padding-right:4px}.cal-ev-text{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis}.cal-ev-actions{display:flex;gap:2px;opacity:0;transition:.15s}.cal-ev:hover .cal-ev-actions{opacity:1}.cal-mini-action{width:22px;height:22px;display:grid;place-items:center;border-radius:6px;background:rgba(6,8,5,.75);color:#aeb5aa}.cal-mini-action svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.9}.cal-mini-action.danger:hover{color:#ff9b9b}
+.agenda-actions{display:flex;gap:5px;align-items:center}
+.editorial-actions .mini-action.danger{color:#ff9b9b;border-color:rgba(255,139,139,.18);background:rgba(255,139,139,.06)}
+.confirm-copy{font-size:11px;line-height:1.65;color:#b8beb3}.confirm-copy strong{color:var(--text)}
+@media(max-width:760px){
+  .card-actions{flex-wrap:wrap}.card-actions .icon-action{display:inline-grid!important}.card-actions .card-action.primary{flex:1;min-width:110px}
+  .review-quick-row{grid-template-columns:1fr}.review-quick-row .review-reject{grid-column:auto}
+  .cal-ev-actions{opacity:1}.agenda-item{grid-template-columns:50px minmax(0,1fr) auto}.agenda-actions{grid-column:2/-1;justify-content:flex-end}
+  .account-avatar-row{align-items:flex-start}
+}
+
 /* ===== Clímax Portal V1.0 — QA hardening ===== */
 html,body{max-width:100%;overflow-x:hidden}
 button,input,select,textarea,a{font:inherit}
