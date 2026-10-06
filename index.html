@@ -457,6 +457,46 @@ html[data-theme="light"] .payment-row{background:#f8faf6}
   .account-avatar-row{align-items:flex-start}
 }
 
+/* ---------- mobile refinement / content links ---------- */
+.editorial-action-set{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.editorial-action-set.single{display:block}
+.editorial-action-set.single .btn{width:100%}
+.editorial-actions .mini-action{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.editorial-actions .mini-action svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.9;flex:0 0 auto}
+.input-with-icon{position:relative}
+.input-with-icon>svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:var(--muted);fill:none;stroke-width:1.8;pointer-events:none;z-index:1}
+.input-with-icon>input{padding-left:38px!important}
+.content-drive-link{display:grid;grid-template-columns:34px minmax(0,1fr) 18px;align-items:center;gap:10px;margin-top:11px;padding:12px 13px;border:1px solid rgba(173,244,3,.16);border-radius:12px;background:rgba(173,244,3,.045);text-decoration:none;color:var(--text)}
+.content-drive-link>svg{width:17px;height:17px;stroke:var(--lime);fill:none;stroke-width:1.8}.content-drive-link>svg:last-child{width:14px;height:14px;color:var(--muted);stroke:currentColor}
+.content-drive-link strong{display:block;font-size:10.5px}.content-drive-link small{display:block;margin-top:3px;color:var(--muted);font-size:9px;line-height:1.35}
+@media(max-width:840px){
+  .page-head:has(.editorial-action-set){display:grid;grid-template-columns:1fr;align-items:start}
+  .page-head:has(.editorial-action-set) .page-actions{display:block;width:100%}
+  .editorial-action-set{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);width:100%;gap:8px}
+  .editorial-action-set .btn,.page-actions .editorial-action-set .btn-secondary{display:inline-flex!important;width:100%;min-height:46px;border-radius:13px;padding:0 12px;font-size:11px}
+  .editorial-action-set.single{display:grid;grid-template-columns:1fr}
+  .editorial-item{position:relative}
+  .editorial-actions{width:100%;gap:6px}
+  .editorial-actions .mini-action{min-height:38px;padding:0 10px}
+  .modal .field input,.modal .field select{min-height:46px}
+  .modal .field textarea{min-height:104px}
+  .modal-actions{display:grid;grid-template-columns:1fr 1.25fr;gap:8px}
+  .modal-actions .btn{width:100%;min-height:46px}
+  .content-drive-link{grid-template-columns:30px minmax(0,1fr) 16px}
+}
+@media(max-width:430px){
+  .editorial-action-set{grid-template-columns:1fr 1fr}
+  .editorial-action-set .btn{font-size:10px;min-height:44px}
+  .editorial-action-set .btn svg{width:14px;height:14px}
+  .editorial-actions{grid-column:1/-1!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:2px}
+  .editorial-actions .mini-action{width:100%;font-size:9px;padding:0 6px}
+  .editorial-actions .mini-action:nth-child(2):last-child{grid-column:auto}
+  .modal{width:100%;max-height:94dvh;border-radius:20px 20px 0 0}
+  .modal-wrap{align-items:end}
+  .modal-actions{position:sticky;bottom:0;background:var(--panel);border-top:1px solid var(--line);z-index:3}
+  .content-drive-link{padding:11px}
+}
+
 /* ===== Clímax Portal V1.0 — QA hardening ===== */
 html,body{max-width:100%;overflow-x:hidden}
 button,input,select,textarea,a{font:inherit}
@@ -1349,9 +1389,9 @@ function openPost(id){
   detailPostId=id;
   const p=posts.find(x=>String(x.id)===String(id));if(!p)return;
   const c=clientById(p.client),overlay=document.getElementById('detailOverlay');
-  const media=p.mediaKey?`<div class="media-attached"><span>${ICONS.upload}</span><div><strong>Mídia anexada</strong><span>${escapeHtml(p.mediaType||'Arquivo de conteúdo')}</span></div><button class="card-action primary" data-open-media="${escapeHtml(p.id)}">Abrir mídia</button></div>`:'';
+  const media=p.mediaKey?`<div class="media-attached"><span>${ICONS.upload}</span><div><strong>Mídia anexada</strong><span>${escapeHtml(p.mediaType||'Arquivo de conteúdo')}</span></div><button class="card-action primary" data-open-media="${escapeHtml(p.id)}">Abrir mídia</button></div>`:'';const drive=safeUrl(p.driveUrl)?`<a class="content-drive-link" href="${escapeHtml(safeUrl(p.driveUrl))}" target="_blank" rel="noopener noreferrer">${ICONS.link}<span><strong>Abrir materiais no Drive</strong><small>Arquivo ou pasta externa vinculada a este conteúdo</small></span>${ICONS.arrow}</a>`:'';
   const clientComment=role==='client'&&p.status==='waiting'?`<div class="comment-box"><label style="font-size:10px;font-weight:750;color:#c7ccc1">Comentário para a Clímax</label><textarea id="clientComment" placeholder="Explique o que gostaria de mudar ou por que está reprovando..."></textarea></div>`:'';
-  setSafeHTML('#detailBody',`<div class="detail-preview ${p.type==='Story'?'story':''} ${escapeHtml(p.cover)}"><div class="cover-icon">${mediaIcon(p.type)}</div></div><div class="detail-title"><div><div class="detail-kicker">${escapeHtml(p.type)} · ${role==='admin'?escapeHtml(c.name):'Versão '+p.version}</div><h2>${escapeHtml(p.title)}</h2></div></div><div style="margin-top:12px">${statusPillHTML(p,posts.indexOf(p),role==='admin')}</div><p class="detail-copy">${escapeHtml(p.caption||'Sem legenda cadastrada.')}</p>${media}${clientComment}<div class="detail-block"><h4>Versão atual</h4><div class="timeline"><div class="timeline-item"><span class="timeline-mark"></span><div><strong>Versão ${p.version}</strong><span>${escapeHtml(statusLabel[p.status]||p.status)} · ${escapeHtml(p.date)}</span></div></div></div><button class="card-action" style="margin-top:10px" data-history="${escapeHtml(p.id)}">${ICONS.clock} Ver histórico completo</button></div>`);
+  setSafeHTML('#detailBody',`<div class="detail-preview ${p.type==='Story'?'story':''} ${escapeHtml(p.cover)}"><div class="cover-icon">${mediaIcon(p.type)}</div></div><div class="detail-title"><div><div class="detail-kicker">${escapeHtml(p.type)} · ${role==='admin'?escapeHtml(c.name):'Versão '+p.version}</div><h2>${escapeHtml(p.title)}</h2></div></div><div style="margin-top:12px">${statusPillHTML(p,posts.indexOf(p),role==='admin')}</div><p class="detail-copy">${escapeHtml(p.caption||'Sem legenda cadastrada.')}</p>${media}${drive}${clientComment}<div class="detail-block"><h4>Versão atual</h4><div class="timeline"><div class="timeline-item"><span class="timeline-mark"></span><div><strong>Versão ${p.version}</strong><span>${escapeHtml(statusLabel[p.status]||p.status)} · ${escapeHtml(p.date)}</span></div></div></div><button class="card-action" style="margin-top:10px" data-history="${escapeHtml(p.id)}">${ICONS.clock} Ver histórico completo</button></div>`);
   setSafeHTML('#detailActions',role==='client'
     ?(p.status==='waiting'?`<button class="btn btn-secondary" data-request-change>Pedir mudanças</button><button class="btn btn-danger" data-reject>Reprovar</button><button class="btn" data-approve>Aprovar</button>`:`<button class="btn btn-secondary" disabled>${escapeHtml(statusLabel[p.status]||p.status)}</button>`)
     :`<button class="btn btn-secondary" data-edit-content="${escapeHtml(p.id)}">${ICONS.edit} Editar</button><button class="btn btn-danger" data-delete-content="${escapeHtml(p.id)}">${ICONS.trash} Excluir</button><button class="btn btn-secondary" data-copy-link>${ICONS.link} Copiar link</button><button class="btn" data-new-version>Enviar nova versão</button>`);
