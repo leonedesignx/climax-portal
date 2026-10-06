@@ -821,17 +821,25 @@ function hideAuth(){const g=document.getElementById('authGate');g.classList.remo
 
 
 function setBackendBadge(){const s=document.getElementById('integrationStatus');if(!s)return;s.textContent=backendEnabled?(backendReady?'Conectado':'Conectando…'):'Indisponível';s.className='integration-pill '+(backendEnabled&&backendReady?'live':'')}
+function avatarPublicUrl(path){
+  if(!path||!db)return '';
+  try{return db.storage.from('profile-avatars').getPublicUrl(path).data?.publicUrl||''}catch(_){return ''}
+}
+function paintAvatar(el,url,initials){
+  if(!el)return;
+  if(url){el.textContent='';el.style.backgroundImage=`url("${String(url).replace(/"/g,'%22')}")`;el.classList.add('has-photo')}
+  else{el.style.backgroundImage='';el.textContent=initials;el.classList.remove('has-photo')}
+}
 function syncIdentityUI(){
   const client=actualRole==='client'?clientById(authProfile?.client_id):null;
   const name=client?.name||authProfile?.full_name||authUser?.email?.split('@')[0]||'Leone';
-  const initials=makeInitials(name);
+  const initials=makeInitials(name),avatarUrl=avatarPublicUrl(authProfile?.avatar_path);
   const mini=document.querySelector('#profileMini strong');if(mini)mini.textContent=name;
-  const av=document.querySelector('#profileMini .avatar');if(av)av.textContent=initials;
-  const mob=document.getElementById('mobileProfile');if(mob)mob.textContent=initials;
+  paintAvatar(document.querySelector('#profileMini .avatar'),avatarUrl,initials);
+  paintAvatar(document.getElementById('mobileProfile'),avatarUrl,initials);
   const roleEl=document.getElementById('profileRole');
   if(roleEl)roleEl.textContent=actualRole==='admin'?'Admin · Clímax Studio':(client?.displaySubtitle?client.displaySubtitle+' · Portal do cliente':'Portal do cliente');
 }
-
 async function hydrateFromBackend(user){
   authUser=user;
   const {data:profile,error:profileError}=await db.from('profiles').select('id,full_name,role,client_id,access_name,auth_email,must_change_password,avatar_path').eq('id',user.id).single();
