@@ -497,6 +497,11 @@ html[data-theme="light"] .payment-row{background:#f8faf6}
   .content-drive-link{padding:11px}
 }
 
+/* ---------- Lucide icon system ---------- */
+.lucide{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.nav-btn .lucide,.mobile-nav .lucide{width:17px;height:17px}
+.btn .lucide,.card-action .lucide,.mini-action .lucide,.icon-action .lucide{width:14px;height:14px}
+.page-actions .btn .lucide{width:15px;height:15px}
 /* ===== Clímax Portal V1.0 — QA hardening ===== */
 html,body{max-width:100%;overflow-x:hidden}
 button,input,select,textarea,a{font:inherit}
@@ -700,6 +705,7 @@ html[data-theme="light"] .detail-copy,html[data-theme="light"] .comment-box labe
 <div class="popover" id="profilePopover"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
 <script src="./config.js"></script>
 <script>
 window.__climaxBootStage='main-script-start';
@@ -741,26 +747,46 @@ function applyTheme(theme,persist=true){
 function toggleTheme(){applyTheme(currentTheme==='dark'?'light':'dark')}
 
 const ICONS={
-  home:'<svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"></path><path d="M5 10v10h14V10"></path><path d="M9 20v-6h6v6"></path></svg>',
-  users:'<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
-  content:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg>',
-  plan:'<svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"></path><path d="M8 3v4M16 3v4M8 11h8M8 15h5"></path></svg>',
-  check:'<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"></path><path d="M21 12a9 9 0 1 1-5.3-8.2"></path></svg>',
-  calendar:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>',
-  files:'<svg viewBox="0 0 24 24"><path d="M4 4h6l2 3h8v13H4z"></path></svg>',
-  settings:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.1A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1A1.7 1.7 0 0 0 3 13.6V10.4A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.1A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 .6 1 1.7 1.7 0 0 0 1 .4v3.2a1.7 1.7 0 0 0-1.6 1.4z"></path></svg>',
-  plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>',
-  arrow:'<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"></path></svg>',
-  play:'<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>',
-  image:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="8.5" cy="9" r="1.5"></circle><path d="m21 15-5-5L5 20"></path></svg>',
-  link:'<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"></path><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"></path></svg>',
-  clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>',
-  more:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></svg>',
-  edit:'<svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>',
-  trash:'<svg viewBox="0 0 24 24"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 15H6L5 6"></path><path d="M10 11v6M14 11v6"></path></svg>',
-  upload:'<svg viewBox="0 0 24 24"><path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M5 20h14"></path></svg>',
-  copy:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"></path></svg>'
-};
+  home:'<i data-lucide="layout-dashboard"></i>',
+  users:'<i data-lucide="users-round"></i>',
+  content:'<i data-lucide="files"></i>',
+  plan:'<i data-lucide="notebook-pen"></i>',
+  check:'<i data-lucide="circle-check-big"></i>',
+  calendar:'<i data-lucide="calendar-days"></i>',
+  files:'<i data-lucide="folder-open"></i>',
+  settings:'<i data-lucide="settings-2"></i>',
+  plus:'<i data-lucide="plus"></i>',
+  arrow:'<i data-lucide="chevron-right"></i>',
+  play:'<i data-lucide="square-play"></i>',
+  image:'<i data-lucide="image"></i>',
+  link:'<i data-lucide="link-2"></i>',
+  clock:'<i data-lucide="history"></i>',
+  more:'<i data-lucide="ellipsis"></i>',
+  edit:'<i data-lucide="pencil"></i>',
+  trash:'<i data-lucide="trash-2"></i>',
+  upload:'<i data-lucide="upload"></i>',
+  copy:'<i data-lucide="copy"></i>',
+  search:'<i data-lucide="search"></i>',
+  bell:'<i data-lucide="bell"></i>',
+  wallet:'<i data-lucide="wallet-cards"></i>',
+  user:'<i data-lucide="user-round"></i>',
+  camera:'<i data-lucide="camera"></i>',
+  lock:'<i data-lucide="lock-keyhole"></i>',
+  logout:'<i data-lucide="log-out"></i>',
+  external:'<i data-lucide="external-link"></i>',
+  send:'<i data-lucide="send"></i>',
+  save:'<i data-lucide="save"></i>',
+  alert:'<i data-lucide="triangle-alert"></i>',
+  info:'<i data-lucide="info"></i>',
+  video:'<i data-lucide="video"></i>',
+  story:'<i data-lucide="smartphone"></i>',
+  carousel:'<i data-lucide="gallery-horizontal"></i>',
+  file:'<i data-lucide="file-text"></i>',
+  download:'<i data-lucide="download"></i>',
+  refresh:'<i data-lucide="rotate-ccw"></i>',
+  message:'<i data-lucide="message-square-text"></i>',
+  reject:'<i data-lucide="circle-x"></i>'
+}
 
 const statusLabel={waiting:'Aguardando aprovação',approved:'Aprovado',material:'Aguardando material',changes:'Em alteração',rejected:'Reprovado',draft:'Rascunho'};
 const statusOrder=['waiting','approved','material','changes','rejected','draft'];
@@ -850,7 +876,14 @@ function sanitizeHTML(markup=''){
   });
   return tpl.innerHTML;
 }
-function setSafeHTML(target,markup){const el=typeof target==='string'?document.querySelector(target):target;if(el)el.innerHTML=sanitizeHTML(markup);return el}
+function hydrateLucideIcons(root=document){
+  try{
+    if(window.lucide&&typeof window.lucide.createIcons==='function'){
+      window.lucide.createIcons({attrs:{'stroke-width':'1.8'}});
+    }
+  }catch(err){console.warn('Lucide não pôde ser atualizado:',err)}
+}
+function setSafeHTML(target,markup){const el=typeof target==='string'?document.querySelector(target):target;if(el){el.innerHTML=sanitizeHTML(markup);hydrateLucideIcons(el)}return el}
 function toast(message,type='ok',timeout=3200){const stack=document.getElementById('toastStack');if(!stack)return;const el=document.createElement('div');el.className=`toast ${type}`;el.innerHTML=`<span class="toast-mark">${type==='error'?'!':'✓'}</span><span>${escapeHtml(message)}</span>`;stack.appendChild(el);setTimeout(()=>el.remove(),timeout)}
 async function runBusy(btn,label,fn){if(!btn||btn.disabled)return;const old=btn.innerHTML;btn.disabled=true;btn.setAttribute('aria-busy','true');btn.textContent=label;try{return await fn()}finally{btn.disabled=false;btn.removeAttribute('aria-busy');btn.innerHTML=old}}
 function formatError(err,fallback='Não foi possível concluir esta ação.'){const msg=err?.message||String(err||'');return msg&&msg!=='[object Object]'?`${fallback} ${msg}`:fallback}
@@ -1336,6 +1369,7 @@ function render(){
     bindUI();
     syncThemeUI();
     setBackendBadge();
+    hydrateLucideIcons(document);
   }catch(err){
     console.error('Falha geral de renderização do Clímax Portal:',err);
     const page=document.getElementById('page');
