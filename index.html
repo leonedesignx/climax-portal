@@ -962,11 +962,48 @@ async function saveEditorialItemBackend(ed,item){
   if(ed.status!=='draft'&&actualRole==='admin'){const reset=await db.from('editorial_versions').update({status:'draft',approved_at:null,approved_by:null}).eq('id',ed.versionId);if(reset.error)throw reset.error}
   return item;
 }
-async function newContentVersionBackend(p){
+function cleanFileName(name='arquivo'){return String(name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9._-]+/g,'-').replace(/-+/g,'-').slice(-120)||'arquivo'}
+async function uploadMediaObject(clientId,contentId,version,file){
+  if(!file)return null;
+  if(file.size>100*1024*1024)throw new Error('O arquivo precisa ter no máximo 100 MB.');
+  const key=`${clientId}/${contentId}/v${version}-${Date.now()}-${cleanFileName(file.name)}`;
+  const up=await db.storage.from('client-media').upload(key,file,{cacheControl:'3600',upsert:false,contentType:file.type||undefined});
+  if(up.error)throw up.error;
+  return {key,mediaType:file.type||'',size:file.size||null};
+}
+async function getSignedMediaUrl(key){
+  if(!key)return '';
+  const r=await db.storage.from('client-media').createSignedUrl(key,3600);
+  if(r.error)throw r.error;return r.data?.signedUrl||'';
+}
+async function removeMediaKeys(keys=[]){
+  const clean=[...new Set(keys.filter(Boolean))];if(!clean.length)return;
+  const r=await db.storage.from('client-media').remove(clean);if(r.error)throw r.error;
+}
+async function updateContentBackend(p,data){
   if(!backendEnabled||!backendReady)return;
-  const next=(p.version||1)+1;
-  const u=await db.from('contents').update({current_version:next,status:'waiting'}).eq('id',p.id);if(u.error)throw u.error;
-  const v=await db.from('content_versions').insert({content_id:p.id,version:next,notes:'Nova versão criada pelo painel.',created_by:authUser.id});if(v.error)throw v.error;
+  const payload={client_id:data.client,title:data.title,type:data.type,caption:data.caption||'',scheduled_at:data.scheduledAt||null,updated_at:new Date().toISOString()};
+  const r=await db.from('contents').update(payload).eq('id',p.id).select().single();if(r.error)throw r.error;return r.data;
+}
+async function deleteContentBackend(p){
+  if(!backendEnabled||!backendReady||!p)return;
+  const vr=await db.from('content_versions').select('media_key').eq('content_id',p.id);if(vr.error)throw vr.error;
+  await removeMediaKeys((vr.data||[]).map(x=>x.media_key));
+  const d=await db.from('contents').delete().eq('id',p.id);if(d.error)throw d.error;
+}
+async function deleteEditorialItemBackend(ed,item){
+  if(!backendEnabled||!backendReady||!item||!isUuid(item.id))return;
+  const d=await db.from('editorial_items').delete().eq('id',item.id);if(d.error)throw d.error;
+}
+async function newContentVersionBackend(p,file=null,notes=''){
+  if(!backendEnabled||!backendReady)return null;
+  const next=(p.version||1)+1;let media=null;
+  try{
+    media=await uploadMediaObject(p.client,p.id,next,file);
+    const v=await db.from('content_versions').insert({content_id:p.id,version:next,media_key:media?.key||null,media_type:media?.mediaType||null,size_bytes:media?.size||null,notes:notes||'Nova versão criada pelo painel.',created_by:authUser.id}).select().single();if(v.error)throw v.error;
+    const u=await db.from('contents').update({current_version:next,status:'waiting',updated_at:new Date().toISOString()}).eq('id',p.id);if(u.error)throw u.error;
+    return {next,media};
+  }catch(err){if(media?.key){try{await removeMediaKeys([media.key])}catch(_){}}throw err}
 }
 async function createContentBackend(data){
   const payload={client_id:data.client,title:data.title,type:data.type,caption:data.caption||'',scheduled_at:data.scheduledAt||null,status:'draft',current_version:1,created_by:authUser.id};
