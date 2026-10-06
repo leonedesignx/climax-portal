@@ -426,6 +426,14 @@ html[data-theme="light"] .auth-gate{background:radial-gradient(circle at 20% 10%
 @media(max-width:760px){.auth-gate{padding:0;align-items:stretch}.auth-layout{display:block;border:0;border-radius:0;min-height:100svh;background:var(--bg)}.auth-showcase{display:none}.auth-card{min-height:100svh;padding:26px 20px max(26px,env(safe-area-inset-bottom));justify-content:center;background:var(--bg)}.auth-mobile-brand{display:block;margin-bottom:34px}.auth-mobile-brand img{width:170px;max-height:58px;object-fit:contain;object-position:left center}.auth-card h2{font-size:30px}.auth-sub{font-size:12.5px}.auth-fields input,.auth-fields select,.auth-btn{height:50px}.auth-links{margin-top:15px}}
 
 
+/* ---------- financeiro / perfil colaborativo ---------- */
+.finance-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.finance-card{padding:18px;min-height:126px}.finance-card small{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.08em;font-weight:850}.finance-card strong{display:block;margin-top:13px;font:800 20px Manrope;letter-spacing:-.02em}.finance-card span{display:block;margin-top:5px;color:var(--muted);font-size:9.5px;line-height:1.45}
+.payment-panel{padding:18px;margin-top:14px}.payment-panel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}.payment-row{padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.015)}.payment-row small{display:block;color:var(--muted);font-size:8.5px;text-transform:uppercase;letter-spacing:.07em}.payment-row strong{display:block;margin-top:5px;font-size:11px;word-break:break-word}.finance-mini{display:flex;align-items:center;gap:14px;padding:15px 16px;margin:16px 0}.finance-mini-copy{flex:1;min-width:0}.finance-mini-copy small{display:block;color:var(--lime);font-size:8.5px;text-transform:uppercase;letter-spacing:.08em;font-weight:850}.finance-mini-copy strong{display:block;margin-top:4px;font-size:12px}.finance-mini-copy span{display:block;margin-top:3px;color:var(--muted);font-size:9.5px}
+.profile-subtitle{color:var(--lime)!important}
+html[data-theme="light"] .payment-row{background:#f8faf6}
+@media(max-width:760px){.finance-grid{grid-template-columns:1fr}.payment-panel-grid{grid-template-columns:1fr}.finance-mini{align-items:flex-start;flex-wrap:wrap}.finance-mini .btn{width:100%}}
+
 /* ===== Clímax Portal V1.0 — QA hardening ===== */
 html,body{max-width:100%;overflow-x:hidden}
 button,input,select,textarea,a{font:inherit}
@@ -1042,6 +1050,22 @@ function primaryBtn(label,action='new-content'){return `<button class="btn" data
 function filtersHTML(){
   const defs=[['all','Todos'],['waiting','Aguardando'],['approved','Aprovados'],['changes','Em alteração'],['draft','Rascunhos']];
   return `<div class="filters">${defs.map(([k,l])=>`<button class="chip ${activeFilter===k?'active':''}" data-filter="${k}">${l}</button>`).join('')}</div>`;
+}
+
+function moneyBRL(v){return v===null||v===undefined||v===''?'A definir':Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+function paymentStatusText(v){return ({paid:'Pago',pending:'Pendente',overdue:'Em atraso',not_set:'A definir'})[v]||'A definir'}
+function nextDueDateText(day){
+  const d=Number(day);if(!Number.isInteger(d)||d<1||d>31)return 'A definir';
+  const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  let y=now.getFullYear(),m=now.getMonth(),last=new Date(y,m+1,0).getDate(),candidate=new Date(y,m,Math.min(d,last));
+  if(candidate<today){m+=1;if(m>11){m=0;y+=1}last=new Date(y,m+1,0).getDate();candidate=new Date(y,m,Math.min(d,last))}
+  return candidate.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+}
+function financeView(){
+  const client=clientById(currentClient),fin=clientFinancials[client.id]||{},pay=portalPaymentSettings||{},due=nextDueDateText(fin.payment_due_day);
+  const action=role==='admin'?`<button class="btn" data-finance-client="${escapeHtml(client.id)}">Editar financeiro</button>`:'';
+  const paymentReady=pay.pix_key||pay.recipient_name||pay.bank_name;
+  return `${pageHead('Financeiro',role==='client'?'Valores, vencimento e dados de pagamento da sua conta.':'Resumo financeiro do cliente selecionado.',action)}<div class="finance-grid"><section class="surface finance-card"><small>Mensalidade</small><strong>${escapeHtml(moneyBRL(fin.monthly_fee))}</strong><span>Valor recorrente cadastrado para esta conta.</span></section><section class="surface finance-card"><small>Próximo vencimento</small><strong>${escapeHtml(due)}</strong><span>${fin.payment_due_day?'Todo dia '+escapeHtml(fin.payment_due_day):'Defina o dia de pagamento no painel administrativo.'}</span></section><section class="surface finance-card"><small>Status</small><strong>${escapeHtml(paymentStatusText(fin.payment_status))}</strong><span>${escapeHtml(fin.payment_note||'Sem observações financeiras no momento.')}</span></section></div><section class="surface payment-panel"><div class="section-head" style="margin:0"><h3>Dados para pagamento</h3></div>${paymentReady?`<div class="payment-panel-grid"><div class="payment-row"><small>Chave Pix</small><strong>${escapeHtml(pay.pix_key||'—')}</strong></div><div class="payment-row"><small>Tipo da chave</small><strong>${escapeHtml(pay.pix_key_type||'—')}</strong></div><div class="payment-row"><small>Titular</small><strong>${escapeHtml(pay.recipient_name||'—')}</strong></div><div class="payment-row"><small>Banco / instituição</small><strong>${escapeHtml(pay.bank_name||'—')}</strong></div>${pay.document_label?`<div class="payment-row"><small>CPF / CNPJ</small><strong>${escapeHtml(pay.document_label)}</strong></div>`:''}</div>${pay.instructions?`<p class="storage-copy" style="margin-top:13px">${escapeHtml(pay.instructions)}</p>`:''}${pay.pix_key?`<div style="margin-top:14px"><button class="btn btn-secondary" data-copy-pix>Copiar chave Pix</button></div>`:''}`:`<div class="empty-state"><strong>Dados de pagamento ainda não configurados</strong><p>A Clímax poderá cadastrar a chave Pix e os dados do recebedor nas configurações do portal.</p></div>`}</section>`;
 }
 
 function adminHome(){
