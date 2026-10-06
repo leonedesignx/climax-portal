@@ -941,9 +941,9 @@ async function ensureEditorialPersisted(ed){
 }
 async function saveEditorialItemBackend(ed,item){
   if(!backendEnabled||!backendReady)return item;await ensureEditorialPersisted(ed);
-  const payload={editorial_version_id:ed.versionId,publish_date:item.publishDate||`${ed.monthStart?.slice(0,8)||currentMonthStart().slice(0,8)}${item.day}`,format:item.type,title:item.title,idea:item.idea,objective:item.objective,reference_url:safeUrl(item.reference)||null,reference_label:item.referenceLabel||null,production_notes:item.notes,position:Number.isFinite(item.position)?item.position:ed.items.indexOf(item)};
+  const payload={editorial_version_id:ed.versionId,publish_date:item.publishDate||`${ed.monthStart?.slice(0,8)||currentMonthStart().slice(0,8)}${item.day}`,format:item.type,title:item.title,idea:item.idea,objective:item.objective,reference_url:safeUrl(item.reference)||null,reference_label:item.referenceLabel||null,caption_draft:item.caption||null,drive_url:safeUrl(item.drive)||null,production_notes:item.notes,position:Number.isFinite(item.position)?item.position:ed.items.indexOf(item)};
   if(!isUuid(item.id)){const r=await db.from('editorial_items').insert(payload).select().single();if(r.error)throw r.error;item.id=r.data.id;item.publishDate=r.data.publish_date}else{const r=await db.from('editorial_items').update(payload).eq('id',item.id).select().single();if(r.error)throw r.error}
-  if(ed.status!=='draft'){const reset=await db.from('editorial_versions').update({status:'draft',approved_at:null,approved_by:null}).eq('id',ed.versionId);if(reset.error)throw reset.error}
+  if(ed.status!=='draft'&&actualRole==='admin'){const reset=await db.from('editorial_versions').update({status:'draft',approved_at:null,approved_by:null}).eq('id',ed.versionId);if(reset.error)throw reset.error}
   return item;
 }
 async function newContentVersionBackend(p){
