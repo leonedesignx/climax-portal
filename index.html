@@ -565,9 +565,24 @@ html[data-theme="light"] .detail-copy,html[data-theme="light"] .comment-box labe
 }
 @media (max-width:350px){.stats,.client-summary{grid-template-columns:1fr}.mobile-nav button span{font-size:8px}.mobile-logo{width:116px}}
 
+/* ---------- boot loader ---------- */
+.boot-loader{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:var(--bg);transition:opacity .28s ease,visibility .28s ease}
+.boot-loader.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.boot-loader-card{display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center}
+.boot-loader-mark{width:64px;height:64px;border-radius:22px;display:grid;place-items:center;position:relative;background:#10140d;border:1px solid rgba(173,244,3,.16);box-shadow:0 18px 50px rgba(0,0,0,.25)}
+.boot-loader-mark:before{content:'';width:26px;height:26px;border:4px solid rgba(173,244,3,.16);border-top-color:var(--lime);border-radius:50%;animation:bootspin .8s linear infinite}
+.boot-loader-brand{font:800 17px/1 Manrope,sans-serif;letter-spacing:-.02em;color:var(--text)}
+.boot-loader-brand span{color:var(--lime)}
+.boot-loader-status{font-size:10px;color:var(--muted);min-height:15px}
+.boot-loader-bar{width:150px;height:3px;border-radius:999px;background:#181d15;overflow:hidden}
+.boot-loader-bar i{display:block;width:42%;height:100%;border-radius:inherit;background:var(--lime);animation:bootbar 1.15s ease-in-out infinite}
+@keyframes bootspin{to{transform:rotate(360deg)}}@keyframes bootbar{0%{transform:translateX(-120%)}100%{transform:translateX(340%)}}
+@media(max-width:760px){.boot-loader-mark{width:58px;height:58px;border-radius:19px}.boot-loader-brand{font-size:16px}}
+
 </style>
 </head>
 <body>
+<div class="boot-loader" id="bootLoader" aria-live="polite"><div class="boot-loader-card"><div class="boot-loader-mark"></div><div class="boot-loader-brand">Clímax <span>Portal</span></div><div class="boot-loader-status" id="bootLoaderStatus">Preparando seu portal…</div><div class="boot-loader-bar"><i></i></div></div></div>
 
 <div class="auth-gate" id="authGate" aria-hidden="true">
   <div class="auth-layout">
@@ -924,9 +939,12 @@ function demoEditorial(clientId){return {id:'local-'+clientId,dbEditorialId:null
 
 
 
+function setBootStatus(text){const el=document.getElementById('bootLoaderStatus');if(el)el.textContent=text||'Preparando seu portal…'}
+function showBootLoader(text='Preparando seu portal…'){const el=document.getElementById('bootLoader');if(!el)return;setBootStatus(text);el.classList.remove('hidden')}
+function hideBootLoader(){const el=document.getElementById('bootLoader');if(!el)return;el.classList.add('hidden');setTimeout(()=>{if(el.classList.contains('hidden'))el.style.display='none'},320)}
 function authMessage(text='',ok=false){const el=document.getElementById('authMessage');if(!el)return;el.textContent=text;el.classList.toggle('ok',ok)}
 function showAuthView(name){document.querySelectorAll('[data-auth-view]').forEach(v=>v.hidden=v.dataset.authView!==name);authMessage('');setTimeout(()=>{const el=document.querySelector(`[data-auth-view=\"${name}\"] input`);if(el)el.focus()},40)}
-function showAuth(view='login'){const g=document.getElementById('authGate');g.classList.add('open');g.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';showAuthView(view)}
+function showAuth(view='login'){const g=document.getElementById('authGate');g.classList.add('open');g.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';showAuthView(view);hideBootLoader()}
 function hideAuth(){const g=document.getElementById('authGate');g.classList.remove('open');g.setAttribute('aria-hidden','true');document.body.style.overflow=''}
 
 
@@ -955,29 +973,32 @@ async function hydrateFromBackend(user){
   const {data:profile,error:profileError}=await db.from('profiles').select('id,full_name,role,client_id,access_name,auth_email,must_change_password,avatar_path').eq('id',user.id).single();
   if(profileError)throw new Error('Perfil não encontrado. Execute o schema.sql e configure o usuário: '+profileError.message);
   authProfile=profile;actualRole=profile.role;role=profile.role;
-  clientAccessMap={};
-  if(profile.role==='admin'){const {data:accessRows,error:accessError}=await db.from('profiles').select('id,full_name,role,client_id,access_name,must_change_password').eq('role','client');if(accessError)throw accessError;(accessRows||[]).forEach(x=>{if(x.client_id)clientAccessMap[x.client_id]={userId:x.id,fullName:x.full_name||'',accessName:x.access_name||'',mustChange:Boolean(x.must_change_password)}});}
-
-  const {data:clientRows,error:clientError}=await db.from('clients').select('*').eq('active',true).order('name');
-  if(clientError)throw clientError;
-  clients=(clientRows||[]).map(c=>({id:c.id,name:c.name,init:c.initials||makeInitials(c.name),contact:c.contact_name||'',email:c.contact_email||'',whatsapp:c.whatsapp_phone||'',displaySubtitle:c.display_subtitle||''}));
-
-  const {data:financialRows,error:financialError}=await db.from('client_financials').select('*');
-  if(financialError)throw financialError;
-  clientFinancials={};(financialRows||[]).forEach(x=>clientFinancials[x.client_id]=x);
-  const {data:paymentRow,error:paymentError}=await db.from('portal_payment_settings').select('*').eq('id',1).maybeSingle();
-  if(paymentError)throw paymentError;
+  clientAccessMap={};setBootStatus('Carregando clientes e conteúdos…');
+  const accessPromise=profile.role==='admin'?db.from('profiles').select('id,full_name,role,client_id,access_name,must_change_password').eq('role','client'):Promise.resolve({data:[],error:null});
+  const [accessRes,clientRes,financialRes,paymentRes,contentRes,editorialRes]=await Promise.all([
+    accessPromise,
+    db.from('clients').select('*').eq('active',true).order('name'),
+    db.from('client_financials').select('*'),
+    db.from('portal_payment_settings').select('*').eq('id',1).maybeSingle(),
+    db.from('contents').select('*').order('scheduled_at',{ascending:true,nullsFirst:false}),
+    db.from('editorials').select('*').order('month_start',{ascending:false})
+  ]);
+  if(accessRes.error)throw accessRes.error;if(clientRes.error)throw clientRes.error;if(financialRes.error)throw financialRes.error;if(paymentRes.error)throw paymentRes.error;if(contentRes.error)throw contentRes.error;if(editorialRes.error)throw editorialRes.error;
+  (accessRes.data||[]).forEach(x=>{if(x.client_id)clientAccessMap[x.client_id]={userId:x.id,fullName:x.full_name||'',accessName:x.access_name||'',mustChange:Boolean(x.must_change_password)}});
+  const clientRows=clientRes.data||[],financialRows=financialRes.data||[],paymentRow=paymentRes.data||null,contentRows=contentRes.data||[],edRows=editorialRes.data||[];
+  clients=clientRows.map(c=>({id:c.id,name:c.name,init:c.initials||makeInitials(c.name),contact:c.contact_name||'',email:c.contact_email||'',whatsapp:c.whatsapp_phone||'',displaySubtitle:c.display_subtitle||''}));
+  clientFinancials={};financialRows.forEach(x=>clientFinancials[x.client_id]=x);
   portalPaymentSettings={id:1,pix_key:'',pix_key_type:'',recipient_name:'',bank_name:'',document_label:'',instructions:'',...(paymentRow||{})};
-
-  const {data:contentRows,error:contentError}=await db.from('contents').select('*').order('scheduled_at',{ascending:true,nullsFirst:false});
-  if(contentError)throw contentError;
-  const contentIds=(contentRows||[]).map(x=>x.id);let contentMediaRows=[];
-  if(contentIds.length){const mr=await db.from('content_versions').select('content_id,version,media_key,media_type,size_bytes,created_at').in('content_id',contentIds).order('version',{ascending:false});if(mr.error)throw mr.error;contentMediaRows=mr.data||[];}
+  const contentIds=contentRows.map(x=>x.id);let contentMediaRows=[],latestReview={};
+  if(contentIds.length){
+    const [mr,rr]=await Promise.all([
+      db.from('content_versions').select('content_id,version,media_key,media_type,size_bytes,created_at').in('content_id',contentIds).order('version',{ascending:false}),
+      db.from('reviews').select('content_id,action,note,created_at,version').in('content_id',contentIds).in('action',['changes','rejected']).order('created_at',{ascending:false})
+    ]);
+    if(mr.error)throw mr.error;if(rr.error)throw rr.error;contentMediaRows=mr.data||[];(rr.data||[]).forEach(x=>{if(!latestReview[x.content_id])latestReview[x.content_id]=x});
+  }
   const latestMedia={};contentMediaRows.forEach(m=>{if(!latestMedia[m.content_id]&&m.media_key)latestMedia[m.content_id]=m});
-  let latestReview={};if(contentIds.length){const rr=await db.from('reviews').select('content_id,action,note,created_at,version').in('content_id',contentIds).in('action',['changes','rejected']).order('created_at',{ascending:false});if(rr.error)throw rr.error;(rr.data||[]).forEach(x=>{if(!latestReview[x.content_id])latestReview[x.content_id]=x})}posts=(contentRows||[]).map((c,i)=>{const media=latestMedia[c.id]||{},rv=latestReview[c.id]||{};return {id:c.id,client:c.client_id,title:c.title,type:c.type,date:scheduledLabel(c.scheduled_at),status:c.status,cover:'cv'+((i%4)+1),caption:c.caption||'',driveUrl:c.drive_url||'',version:c.current_version||1,scheduledAt:c.scheduled_at,editorialItemId:c.editorial_item_id||null,mediaKey:media.media_key||'',mediaType:media.media_type||'',mediaSize:media.size_bytes||null,reviewNote:rv.note||'',reviewAction:rv.action||'',reviewAt:rv.created_at||null}});
-
-  const {data:edRows,error:edError}=await db.from('editorials').select('*').order('month_start',{ascending:false});
-  if(edError)throw edError;
+  posts=contentRows.map((c,i)=>{const media=latestMedia[c.id]||{},rv=latestReview[c.id]||{};return {id:c.id,client:c.client_id,title:c.title,type:c.type,date:scheduledLabel(c.scheduled_at),status:c.status,cover:'cv'+((i%4)+1),caption:c.caption||'',driveUrl:c.drive_url||'',version:c.current_version||1,scheduledAt:c.scheduled_at,editorialItemId:c.editorial_item_id||null,mediaKey:media.media_key||'',mediaType:media.media_type||'',mediaSize:media.size_bytes||null,reviewNote:rv.note||'',reviewAction:rv.action||'',reviewAt:rv.created_at||null}});
   const edIds=(edRows||[]).map(e=>e.id);
   let versionRows=[];let itemRows=[];
   if(edIds.length){
@@ -1160,16 +1181,17 @@ async function newEditorialVersionBackend(ed){
 }
 
 async function bootApp(){
-  setBackendBadge();applyTheme(currentTheme,false);
+  showBootLoader('Verificando sua sessão…');setBackendBadge();applyTheme(currentTheme,false);
   if(!backendEnabled){backendReady=false;render();showAuth('login');authMessage('Configuração incompleta ou biblioteca do Supabase indisponível. Verifique config.js e recarregue a página.');return}
   try{
     db=window.supabase.createClient(CONFIG.SUPABASE_URL,SUPABASE_PUBLIC_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
     const {data,error}=await db.auth.getSession();if(error)throw error;
     const session=data.session;
     if(!session){showAuth('login');return}
+    setBootStatus('Preparando seu painel…');
     await hydrateFromBackend(session.user);
     if(authProfile?.must_change_password){showAuth('first-setup');return}
-    hideAuth();render();openHashTarget();
+    hideAuth();render();openHashTarget();hideBootLoader();
   }catch(e){console.error(e);try{await db?.auth?.signOut()}catch(_){};showAuth('login');authMessage(e.message||'Não foi possível iniciar o portal.');}
 }
 
