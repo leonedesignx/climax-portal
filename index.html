@@ -515,6 +515,15 @@ html[data-theme="light"] .payment-row{background:#f8faf6}
 .whatsapp-compose-head{display:flex;align-items:flex-start;gap:11px;margin-bottom:17px;padding:12px;border-radius:12px;background:rgba(173,244,3,.055);border:1px solid rgba(173,244,3,.12)}.whatsapp-compose-head>.lucide{width:18px;height:18px;color:var(--lime);margin-top:1px}.whatsapp-compose-head strong{display:block;font-size:11px}.whatsapp-compose-head span{display:block;margin-top:4px;color:var(--muted);font-size:9px;line-height:1.4}.whatsapp-send{background:#adf403;color:#0b0d09}
 @media(max-width:760px){.change-request-card{grid-template-columns:24px 1fr}.change-request-detail{grid-template-columns:34px 1fr;padding:13px}.change-request-icon{width:34px;height:34px}.change-request-detail strong{font-size:11.5px}.whatsapp-compose textarea{min-height:190px!important}}
 
+@media(max-width:760px){
+  .page-actions [data-whatsapp-client]{display:inline-flex!important}
+  .page-head .page-actions:has([data-whatsapp-client]){display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+  .page-head .page-actions:has([data-whatsapp-client]) .btn{display:inline-flex!important;width:100%;justify-content:center}
+  .editorial-action-set:has([data-whatsapp-editorial]){grid-template-columns:1fr 1fr}
+  .editorial-action-set [data-whatsapp-editorial]{display:inline-flex!important}
+  .editorial-action-set .editorial-send-btn{grid-column:1/-1}
+}
+
 /* ===== Clímax Portal V1.0 — QA hardening ===== */
 html,body{max-width:100%;overflow-x:hidden}
 button,input,select,textarea,a{font:inherit}
@@ -1479,7 +1488,7 @@ function closeModal(){const w=document.getElementById('modalWrap');w.classList.r
 async function performContentReview(p,action,note=''){
   if(!p)return;
   await reviewContentBackend(p.id,action,note);
-  p.status=action==='approved'?'approved':action==='rejected'?'rejected':'changes';
+  p.status=action==='approved'?'approved':action==='rejected'?'rejected':'changes';if(action!=='approved'){p.reviewNote=note||'';p.reviewAction=action;p.reviewAt=new Date().toISOString()}
   toast(action==='approved'?'Conteúdo aprovado.':action==='rejected'?'Conteúdo reprovado e motivo enviado à Clímax.':'Pedido de mudanças enviado à Clímax.');
   renderNavigation();
 }
