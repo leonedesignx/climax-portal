@@ -936,6 +936,7 @@ function editorialForClient(id){return editorials.find(e=>e.client===id)}
 let role='admin';
 let route='home';
 let currentClient='c1';
+let adminViewClient='all';
 let activeFilter='all';
 let detailPostId=null;
 
@@ -1350,7 +1351,22 @@ const adminNav=[['home','Dashboard','home'],['demands','Minhas demandas','clock'
 const clientNav=[['home','Início','home'],['editorial','Planejamento','plan'],['content','Conteúdos','content'],['approval','Aprovações','check'],['finance','Financeiro','files'],['calendar','Calendário','calendar']];
 
 function clientById(id){return clients.find(c=>c.id===id)||{id:id||'',name:'Cliente',init:'CL',contact:'',email:'',displaySubtitle:''}}
-function visiblePosts(){return role==='client'?posts.filter(p=>p.client===currentClient):posts}
+function activeAdminScope(){return role==='admin'?adminViewClient:currentClient}
+function visiblePosts(){
+  if(role==='client')return posts.filter(p=>p.client===currentClient);
+  return adminViewClient==='all'?posts:posts.filter(p=>p.client===adminViewClient);
+}
+function contextSelectorHTML(kind='conteúdo'){
+  if(role!=='admin')return '';
+  const selected=adminViewClient==='all'?'all':adminViewClient;
+  const count=kind==='editorial'?(selected==='all'?editorials.length:editorials.filter(e=>e.client===selected).length):visiblePosts().length;
+  const countLabel=kind==='editorial'?'editorial'+(count===1?'':'ais'):kind==='aprovação'?'aprovação'+(count===1?'':'ões'):'conteúdo'+(count===1?'':'s');
+  return `<section class="view-context-bar"><div class="view-context-copy">${ICONS.users}<div><small>VOCÊ ESTÁ VENDO</small><strong>${selected==='all'?'Todos os clientes':escapeHtml(clientById(selected).name)}</strong><span>${count} ${countLabel} neste contexto</span></div></div><div class="view-context-select"><label for="viewClientScope">Filtrar cliente</label><div class="context-select-wrap"><select id="viewClientScope" data-view-client-scope><option value="all" ${selected==='all'?'selected':''}>Todos os clientes</option>${clients.map(c=>`<option value="${escapeHtml(c.id)}" ${selected===c.id?'selected':''}>${escapeHtml(c.name)}</option>`).join('')}</select>${ICONS.down}</div></div></section>`;
+}
+function editorialOverviewAll(){
+  const rows=clients.map(client=>{const ed=editorialForClient(client.id);if(!ed)return `<article class="surface editorial-overview-card empty"><div class="editorial-overview-avatar">${escapeHtml(client.init)}</div><div class="editorial-overview-main"><small>${escapeHtml(client.name)}</small><strong>Sem editorial disponível</strong><span>Nenhum planejamento encontrado para esta conta.</span></div><button class="btn btn-secondary" data-context-editorial-open="${escapeHtml(client.id)}">Selecionar cliente</button></article>`;return `<article class="surface editorial-overview-card"><div class="editorial-overview-avatar">${escapeHtml(client.init)}</div><div class="editorial-overview-main"><small>${escapeHtml(client.name)}</small><strong>${escapeHtml(ed.month)}</strong><span>${ed.items.length} publicações · versão ${ed.version}</span></div><span class="mini-badge st-${escapeHtml(ed.status)}"><span class="dot"></span>${escapeHtml(editorialStatusLabel[ed.status]||ed.status)}</span><button class="btn btn-secondary" data-context-editorial-open="${escapeHtml(client.id)}">Abrir editorial ${ICONS.right}</button></article>`}).join('');
+  return `<div class="editorial-overview-grid">${rows||'<section class="surface empty-state"><strong>Nenhum cliente cadastrado</strong></section>'}</div>`;
+}
 function filteredPosts(){
   const base=visiblePosts();
   if(activeFilter==='all') return base;
