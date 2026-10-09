@@ -1369,7 +1369,7 @@ function contextSelectorHTML(kind='conteúdo'){
   if(role!=='admin')return '';
   const selected=adminViewClient==='all'?'all':adminViewClient;
   const count=kind==='editorial'?(selected==='all'?editorials.length:editorials.filter(e=>e.client===selected).length):visiblePosts().length;
-  const countLabel=kind==='editorial'?'editorial'+(count===1?'':'ais'):kind==='aprovação'?'aprovação'+(count===1?'':'ões'):'conteúdo'+(count===1?'':'s');
+  const countLabel=kind==='editorial'?(count===1?'editorial':'editoriais'):kind==='aprovação'?(count===1?'aprovação':'aprovações'):(count===1?'conteúdo':'conteúdos');
   return `<section class="view-context-bar"><div class="view-context-copy">${ICONS.users}<div><small>VOCÊ ESTÁ VENDO</small><strong>${selected==='all'?'Todos os clientes':escapeHtml(clientById(selected).name)}</strong><span>${count} ${countLabel} neste contexto</span></div></div><div class="view-context-select"><label for="viewClientScope">Filtrar cliente</label><div class="context-select-wrap"><select id="viewClientScope" data-view-client-scope><option value="all" ${selected==='all'?'selected':''}>Todos os clientes</option>${clients.map(c=>`<option value="${escapeHtml(c.id)}" ${selected===c.id?'selected':''}>${escapeHtml(c.name)}</option>`).join('')}</select>${ICONS.down}</div></div></section>`;
 }
 function editorialOverviewAll(){
@@ -1382,6 +1382,7 @@ function filteredPosts(){
   if(activeFilter==='waiting') return base.filter(p=>p.status==='waiting');
   if(activeFilter==='approved') return base.filter(p=>p.status==='approved');
   if(activeFilter==='changes') return base.filter(p=>p.status==='changes');
+  if(activeFilter==='rejected') return base.filter(p=>p.status==='rejected');
   if(activeFilter==='draft') return base.filter(p=>p.status==='draft');
   return base;
 }
