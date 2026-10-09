@@ -524,6 +524,27 @@ html[data-theme="light"] .payment-row{background:#f8faf6}
   .editorial-action-set .editorial-send-btn{grid-column:1/-1}
 }
 
+/* ---------- Conteúdos visuais / carrosséis ---------- */
+.post-cover.has-image{background:#090a08;aspect-ratio:4/5}
+.post-cover-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.post-cover.has-image:after{z-index:1;background:linear-gradient(180deg,transparent 58%,rgba(0,0,0,.48))}
+.post-cover .media-type{z-index:2}.carousel-count{position:absolute;right:9px;top:9px;z-index:3;display:inline-flex;align-items:center;gap:5px;padding:6px 8px;border-radius:999px;background:rgba(8,10,7,.76);backdrop-filter:blur(10px);font-size:8px;font-weight:800;color:#fff;border:1px solid rgba(255,255,255,.12)}
+.carousel-count .lucide{width:12px;height:12px}.content-badges{display:flex;gap:6px;flex-wrap:wrap}.preview-badge{border-color:rgba(173,244,3,.18);color:#c9ff47;background:rgba(173,244,3,.06)}.drive-badge{display:inline-flex!important;align-items:center;gap:4px}.drive-badge .lucide{width:10px;height:10px}
+.content-visual-stage{margin-bottom:17px}.visual-stage-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px}.visual-stage-head small{display:block;font-size:7.5px;font-weight:900;letter-spacing:.1em;color:var(--lime)}.visual-stage-head strong{display:block;margin-top:4px;font-size:12px}.visual-stage-head>span{font-size:8.5px;color:var(--muted)}
+.preview-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding-bottom:5px;scrollbar-width:thin;scrollbar-color:#3b4435 transparent}.preview-slide{min-width:100%;scroll-snap-align:start;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#0a0c09}.preview-slide-image{position:relative;background:#070807;display:grid;place-items:center;min-height:300px;max-height:620px}.preview-slide-image img{display:block;width:100%;height:auto;max-height:620px;object-fit:contain}.preview-position{position:absolute;top:10px;right:10px;padding:6px 8px;border-radius:999px;background:rgba(0,0,0,.68);color:#fff;font-size:8px;font-weight:800;border:1px solid rgba(255,255,255,.12)}
+.preview-slide-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;border-top:1px solid var(--line)}.preview-slide-foot>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:8.5px}.preview-download{height:30px;display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:#11140f;color:var(--text);border-radius:9px;padding:0 9px;font-size:8.5px;font-weight:750}.preview-download .lucide{width:12px;height:12px}.preview-swipe-hint{text-align:center;color:var(--muted);font-size:8px;margin-top:7px}
+.caption-review{margin-top:15px;padding:12px 13px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.018)}.caption-review>small{font-size:7.5px;font-weight:900;letter-spacing:.08em;color:var(--muted)}.caption-review .detail-copy{margin-top:7px}
+.empty-preview-copy{text-align:center;margin-top:10px}.empty-preview-copy strong{display:block;font-size:10px}.empty-preview-copy span{display:block;margin-top:4px;font-size:8.5px;color:var(--muted)}
+.content-preview-manager{border:1px solid rgba(173,244,3,.11);border-radius:14px;padding:13px;background:rgba(173,244,3,.025)}.content-preview-manager.emphasized{border-color:rgba(173,244,3,.2);background:rgba(173,244,3,.045)}.preview-manager-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:11px}.preview-manager-head strong{display:block;font-size:10.5px}.preview-manager-head span:not(.preview-manager-count){display:block;margin-top:4px;color:var(--muted);font-size:8.5px;line-height:1.45}.preview-manager-head>.lucide{width:18px;height:18px;color:var(--lime)}.preview-manager-count{font-size:8px;color:var(--lime);font-weight:800}
+.preview-manage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px}.preview-manage-item{overflow:hidden;border:1px solid var(--line);border-radius:10px;background:#0c0e0b}.preview-manage-item img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover}.preview-manage-item>div{padding:7px}.preview-manage-item span{display:block;font-size:7.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.preview-remove{margin-top:6px;width:100%;height:26px;border-radius:7px;border:1px solid rgba(255,100,100,.14);background:rgba(255,100,100,.06);color:#ff9999;font-size:7.5px;display:flex;align-items:center;justify-content:center;gap:4px}.preview-remove .lucide{width:10px;height:10px}.empty-preview-manage{padding:12px;text-align:center;border:1px dashed var(--line);border-radius:10px;color:var(--muted);font-size:8.5px;margin-bottom:10px}.preview-upload-row{display:grid;gap:6px}
+html[data-theme="light"] .preview-slide,html[data-theme="light"] .preview-manage-item{background:#fff}.preview-download{cursor:pointer}
+@media(max-width:760px){
+  .post-card.has-preview{display:block;border-radius:17px}.post-card.has-preview .post-cover{aspect-ratio:4/5;min-height:0;border-radius:16px 16px 0 0}.post-card.has-preview .media-type{display:inline-flex}.post-card.has-preview .post-body{padding:12px}
+  .post-card.has-preview .card-actions{display:flex}.post-card.has-preview .card-action.primary{min-height:34px}
+  .content-visual-stage{margin-left:-1px;margin-right:-1px}.preview-slide-image{min-height:280px}.preview-slide-foot{padding:10px}.preview-download{height:34px}
+  .visual-stage-head{align-items:flex-start}.visual-stage-head>span{white-space:nowrap}.preview-manage-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
 /* ===== Clímax Portal V1.0 — QA hardening ===== */
 html,body{max-width:100%;overflow-x:hidden}
 button,input,select,textarea,a{font:inherit}
@@ -1396,7 +1417,7 @@ function editorialView(){
 
 function contentView(){
   const heading=role==='client'?'Seus conteúdos':'Conteúdos';
-  const sub=role==='client'?'Acompanhe tudo o que está sendo produzido para sua marca.':'Toda a produção da Clímax, organizada por cliente e status.';
+  const sub=role==='client'?'Visualize as artes, deslize pelos carrosséis e aprove cada conteúdo com facilidade.':'Toda a produção da Clímax, com prévias visuais, arquivos, Drive e status de aprovação.';
   const action=role==='admin'?primaryBtn('Novo conteúdo'):'';
   const fp=filteredPosts();
   const ed=currentEditorial();const gate=!ed?`<div class="editorial-note" style="margin:0 0 16px"><div class="editorial-note-icon">!</div><div><strong>Nenhum cliente selecionado</strong><p>Vincule ou selecione um cliente antes de produzir conteúdos.</p></div></div>`:role==='client'||ed.status==='approved'?`<div class="editorial-approved-banner"><div><strong>${ed.status==='approved'?'✓ Produção vinculada ao editorial aprovado':'Conteúdos produzidos a partir do planejamento aprovado'}</strong><span>${ed.month} · versão ${ed.version}</span></div><button class="btn btn-secondary" data-route="editorial">Ver editorial</button></div>`:`<div class="editorial-note" style="margin:0 0 16px"><div class="editorial-note-icon">!</div><div><strong>Editorial ainda não aprovado</strong><p>A produção deve começar depois que o cliente aprovar o planejamento mensal.</p></div></div>`;
