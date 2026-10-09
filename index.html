@@ -902,13 +902,13 @@ function safeUrl(v=''){try{const u=new URL(String(v),location.origin);return ['h
 function escapeHtml(value=''){return String(value).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]))}
 function sanitizeHTML(markup=''){
   const tpl=document.createElement('template');tpl.innerHTML=String(markup);
-  const allowed=new Set(['DIV','SPAN','STRONG','SMALL','P','H1','H2','H3','H4','BUTTON','INPUT','TEXTAREA','LABEL','SELECT','OPTION','A','SVG','PATH','CIRCLE','RECT','NAV','ASIDE','HEADER','MAIN','SECTION','ARTICLE','I','BR']);
-  const allowedAttr=/^(class|id|role|title|placeholder|type|value|min|max|step|autocomplete|href|target|rel|style|viewBox|d|cx|cy|r|x|y|width|height|rx|points|selected|disabled|checked|readonly|maxlength|required|name|for|aria-[\w-]+|data-[\w-]+)$/i;
+  const allowed=new Set(['DIV','SPAN','STRONG','SMALL','P','H1','H2','H3','H4','BUTTON','INPUT','TEXTAREA','LABEL','SELECT','OPTION','A','IMG','SVG','PATH','CIRCLE','RECT','NAV','ASIDE','HEADER','MAIN','SECTION','ARTICLE','I','BR']);
+  const allowedAttr=/^(class|id|role|title|placeholder|type|value|min|max|step|autocomplete|href|src|alt|loading|download|multiple|accept|target|rel|style|viewBox|d|cx|cy|r|x|y|width|height|rx|points|selected|disabled|checked|readonly|maxlength|required|name|for|aria-[\w-]+|data-[\w-]+)$/i;
   [...tpl.content.querySelectorAll('*')].forEach(el=>{
     if(!allowed.has(el.tagName)){const t=document.createTextNode(el.textContent||'');el.replaceWith(t);return}
     [...el.attributes].forEach(a=>{
       if(a.name.toLowerCase().startsWith('on')||!allowedAttr.test(a.name)){el.removeAttribute(a.name);return}
-      if(a.name.toLowerCase()==='href'){const href=safeUrl(a.value);if(!href)el.removeAttribute('href');else el.setAttribute('href',href)}
+      if(a.name.toLowerCase()==='href'||a.name.toLowerCase()==='src'){const href=safeUrl(a.value);if(!href)el.removeAttribute(a.name);else el.setAttribute(a.name,href)}
     });
   });
   return tpl.innerHTML;
@@ -999,6 +999,14 @@ async function hydrateFromBackend(user){
   }
   const latestMedia={};contentMediaRows.forEach(m=>{if(!latestMedia[m.content_id]&&m.media_key)latestMedia[m.content_id]=m});
   posts=contentRows.map((c,i)=>{const media=latestMedia[c.id]||{},rv=latestReview[c.id]||{};return {id:c.id,client:c.client_id,title:c.title,type:c.type,date:scheduledLabel(c.scheduled_at),status:c.status,cover:'cv'+((i%4)+1),caption:c.caption||'',driveUrl:c.drive_url||'',version:c.current_version||1,scheduledAt:c.scheduled_at,editorialItemId:c.editorial_item_id||null,mediaKey:media.media_key||'',mediaType:media.media_type||'',mediaSize:media.size_bytes||null,reviewNote:rv.note||'',reviewAction:rv.action||'',reviewAt:rv.created_at||null}});
+  if(contentIds.length){
+    const ar=await db.from('content_preview_assets').select('*').in('content_id',contentIds).order('position',{ascending:true});if(ar.error)throw ar.error;
+    const assetRows=ar.data||[],keys=assetRows.map(a=>a.storage_key).filter(Boolean);let signedMap={};
+    if(keys.length){const sr=await db.storage.from('client-media').createSignedUrls(keys,3600);if(sr.error)throw sr.error;(sr.data||[]).forEach((x,i)=>{signedMap[keys[i]]=x.signedUrl||''})}
+    const grouped={};assetRows.forEach(a=>{(grouped[a.content_id]||(grouped[a.content_id]=[])).push({id:a.id,key:a.storage_key,fileName:a.file_name||'',mimeType:a.mime_type||'',size:a.size_bytes||null,position:a.position||0,isCover:Boolean(a.is_cover),url:signedMap[a.storage_key]||''})});
+    posts.forEach(p=>p.previewAssets=(grouped[p.id]||[]).sort((a,b)=>a.position-b.position));
+  }else posts.forEach(p=>p.previewAssets=[]);
+
   const edIds=(edRows||[]).map(e=>e.id);
   let versionRows=[];let itemRows=[];
   if(edIds.length){
@@ -1133,6 +1141,39 @@ async function uploadMediaObject(clientId,contentId,version,file){
   if(up.error)throw up.error;
   return {key,mediaType:file.type||'',size:file.size||null};
 }
+async function uploadPreviewAssets(clientId,contentId,files=[]){
+  const list=[...files].filter(Boolean);if(!list.length)return[];
+  if(list.length>20)throw new Error('Envie no máximo 20 imagens por conteúdo.');
+  const uploaded=[];
+  try{
+    for(let i=0;i<list.length;i++){
+      const file=list[i];if(!String(file.type||'').startsWith('image/'))throw new Error('As imagens de apresentação precisam ser JPG, PNG, WebP ou GIF.');
+      if(file.size>15*1024*1024)throw new Error('Cada imagem de apresentação precisa ter no máximo 15 MB.');
+      const key=`${clientId}/${contentId}/preview/${Date.now()}-${i}-${cleanFileName(file.name)}`;
+      const up=await db.storage.from('client-media').upload(key,file,{cacheControl:'3600',upsert:false,contentType:file.type||undefined});if(up.error)throw up.error;
+      const row=await db.from('content_preview_assets').insert({content_id:contentId,client_id:clientId,storage_key:key,file_name:file.name||null,mime_type:file.type||null,size_bytes:file.size||null,position:i,is_cover:i===0,created_by:authUser.id}).select().single();if(row.error)throw row.error;
+      const sr=await db.storage.from('client-media').createSignedUrl(key,3600);if(sr.error)throw sr.error;
+      uploaded.push({id:row.data.id,key,fileName:file.name||'',mimeType:file.type||'',size:file.size||null,position:i,isCover:i===0,url:sr.data?.signedUrl||''});
+    }
+    return uploaded;
+  }catch(err){if(uploaded.length){try{await removeMediaKeys(uploaded.map(x=>x.key));await db.from('content_preview_assets').delete().in('id',uploaded.map(x=>x.id))}catch(_){}}throw err}
+}
+async function appendPreviewAssets(p,files=[]){
+  const added=await uploadPreviewAssets(p.client,p.id,files);if(!added.length)return[];
+  const offset=(p.previewAssets||[]).length;
+  for(let i=0;i<added.length;i++){const pos=offset+i;const u=await db.from('content_preview_assets').update({position:pos,is_cover:offset===0&&i===0}).eq('id',added[i].id);if(u.error)throw u.error;added[i].position=pos;added[i].isCover=offset===0&&i===0}
+  p.previewAssets=[...(p.previewAssets||[]),...added];return added;
+}
+async function deletePreviewAsset(p,assetId){
+  const asset=(p.previewAssets||[]).find(a=>String(a.id)===String(assetId));if(!asset)return;
+  await removeMediaKeys([asset.key]);const d=await db.from('content_preview_assets').delete().eq('id',asset.id);if(d.error)throw d.error;
+  p.previewAssets=(p.previewAssets||[]).filter(a=>String(a.id)!==String(asset.id));
+  if(p.previewAssets.length&&!p.previewAssets.some(a=>a.isCover)){p.previewAssets[0].isCover=true;await db.from('content_preview_assets').update({is_cover:true}).eq('id',p.previewAssets[0].id)}
+}
+async function downloadPreviewAsset(asset){
+  if(!asset?.key)return;const r=await db.storage.from('client-media').download(asset.key,{download:asset.fileName||'imagem'});if(r.error)throw r.error;
+  const url=URL.createObjectURL(r.data),a=document.createElement('a');a.href=url;a.download=asset.fileName||'imagem';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+}
 async function getSignedMediaUrl(key){
   if(!key)return '';
   const r=await db.storage.from('client-media').createSignedUrl(key,3600);
@@ -1149,8 +1190,8 @@ async function updateContentBackend(p,data){
 }
 async function deleteContentBackend(p){
   if(!backendEnabled||!backendReady||!p)return;
-  const vr=await db.from('content_versions').select('media_key').eq('content_id',p.id);if(vr.error)throw vr.error;
-  await removeMediaKeys((vr.data||[]).map(x=>x.media_key));
+  const [vr,ar]=await Promise.all([db.from('content_versions').select('media_key').eq('content_id',p.id),db.from('content_preview_assets').select('storage_key').eq('content_id',p.id)]);if(vr.error)throw vr.error;if(ar.error)throw ar.error;
+  await removeMediaKeys([...(vr.data||[]).map(x=>x.media_key),...(ar.data||[]).map(x=>x.storage_key)]);
   const d=await db.from('contents').delete().eq('id',p.id);if(d.error)throw d.error;
 }
 async function deleteEditorialItemBackend(ed,item){
