@@ -625,6 +625,20 @@ html[data-theme="light"] .sidebar-toggle{background:#fff;border-color:var(--line
   .content-drive-link.prominent{min-height:58px;padding:14px;border-radius:14px}
 }
 
+/* ---------- drawer: scroll completo + histórico visível ---------- */
+.drawer{overflow:hidden}
+.drawer-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:16px;scrollbar-gutter:stable}
+.drawer-actions{position:relative;left:auto;right:auto;bottom:auto;flex:0 0 auto;z-index:2}
+.detail-history-btn{width:100%;margin-top:12px;min-height:54px;display:grid;grid-template-columns:30px minmax(0,1fr) 14px;align-items:center;gap:9px;padding:10px 11px;border:1px solid rgba(173,244,3,.14);border-radius:12px;background:rgba(173,244,3,.035);color:var(--text);text-align:left}
+.detail-history-btn:hover{background:rgba(173,244,3,.07);border-color:rgba(173,244,3,.25)}
+.detail-history-btn>.lucide:first-child{width:16px;height:16px;color:var(--lime)}.detail-history-btn>.lucide:last-child{width:12px;height:12px;color:var(--muted)}
+.detail-history-btn span{min-width:0}.detail-history-btn strong{display:block;font-size:9.5px}.detail-history-btn small{display:block;margin-top:3px;font-size:8px;color:var(--muted);line-height:1.35}
+@media(max-width:840px){
+  .drawer-scroll{padding:13px 14px 16px}
+  .drawer-actions{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+  .detail-history-btn{min-height:58px;border-radius:13px}
+}
+
 /* ===== Clímax Portal V1.0 — QA hardening ===== */
 html,body{max-width:100%;overflow-x:hidden}
 button,input,select,textarea,a{font:inherit}
@@ -1680,7 +1694,7 @@ function openPost(id){
   const clientComment=role==='client'&&p.status==='waiting'?`<div class="comment-box"><label style="font-size:10px;font-weight:750;color:#c7ccc1">Comentário para a Clímax</label><textarea id="clientComment" placeholder="Explique o que gostaria de mudar ou por que está reprovando..."></textarea></div>`:'';
   const visual=previewGalleryHTML(p);
   const fallback=!visual?`<div class="detail-preview ${p.type==='Story'?'story':''} ${escapeHtml(p.cover)}"><div class="cover-icon">${mediaIcon(p.type)}</div><div class="empty-preview-copy"><strong>Prévia visual não enviada</strong><span>Use o Drive ou o arquivo anexado abaixo para revisar.</span></div></div>`:'';
-  setSafeHTML('#detailBody',`${visual||fallback}<div class="detail-title"><div><div class="detail-kicker">${escapeHtml(p.type)} · ${role==='admin'?escapeHtml(c.name):'Versão '+p.version}</div><h2>${escapeHtml(p.title)}</h2></div></div><div style="margin-top:12px">${statusPillHTML(p,posts.indexOf(p),role==='admin')}</div>${changeAlert}<div class="caption-review"><small>LEGENDA / TEXTO</small><p class="detail-copy">${escapeHtml(p.caption||'Sem legenda cadastrada.')}</p></div>${media}${drive}${clientComment}<div class="detail-block"><h4>Versão atual</h4><div class="timeline"><div class="timeline-item"><span class="timeline-mark"></span><div><strong>Versão ${p.version}</strong><span>${escapeHtml(statusLabel[p.status]||p.status)} · ${escapeHtml(p.date)}</span></div></div></div><button class="card-action" style="margin-top:10px" data-history="${escapeHtml(p.id)}">${ICONS.clock} Ver histórico completo</button></div>`);
+  setSafeHTML('#detailBody',`${visual||fallback}<div class="detail-title"><div><div class="detail-kicker">${escapeHtml(p.type)} · ${role==='admin'?escapeHtml(c.name):'Versão '+p.version}</div><h2>${escapeHtml(p.title)}</h2></div></div><div style="margin-top:12px">${statusPillHTML(p,posts.indexOf(p),role==='admin')}</div>${changeAlert}<div class="caption-review"><small>LEGENDA / TEXTO</small><p class="detail-copy">${escapeHtml(p.caption||'Sem legenda cadastrada.')}</p></div>${media}${drive}${clientComment}<div class="detail-block"><h4>Versão atual</h4><div class="timeline"><div class="timeline-item"><span class="timeline-mark"></span><div><strong>Versão ${p.version}</strong><span>${escapeHtml(statusLabel[p.status]||p.status)} · ${escapeHtml(p.date)}</span></div></div></div><button class="detail-history-btn" data-history="${escapeHtml(p.id)}">${ICONS.clock}<span><strong>Ver histórico completo</strong><small>Acompanhe versões, aprovações e pedidos de alteração</small></span>${ICONS.right}</button></div>`);
   setSafeHTML('#detailActions',role==='client'
     ?(p.status==='waiting'?`<button class="btn btn-secondary" data-request-change>${ICONS.message} Pedir mudanças</button><button class="btn btn-danger" data-reject>${ICONS.reject} Reprovar</button><button class="btn" data-approve>${ICONS.check} Aprovar</button>`:`<button class="btn btn-secondary" disabled>${escapeHtml(statusLabel[p.status]||p.status)}</button>`)
     :`<button class="btn btn-secondary" data-whatsapp-content="${escapeHtml(p.id)}">${ICONS.message} WhatsApp</button><button class="btn btn-secondary" data-edit-content="${escapeHtml(p.id)}">${ICONS.edit} Editar</button><button class="btn btn-danger" data-delete-content="${escapeHtml(p.id)}">${ICONS.trash} Excluir</button><button class="btn btn-secondary" data-copy-link>${ICONS.link} Copiar link</button><button class="btn" data-new-version>Enviar nova versão</button>`);
