@@ -639,6 +639,27 @@ html[data-theme="light"] .sidebar-toggle{background:#fff;border-color:var(--line
   .detail-history-btn{min-height:58px;border-radius:13px}
 }
 
+/* ---------- dropdowns e grupos recolhíveis ---------- */
+.post-card{overflow:visible;position:relative}
+.post-card .post-cover{border-radius:var(--radius) var(--radius) 0 0}
+.post-card:has(.status-menu.open){z-index:80}
+.status-wrap{z-index:2}
+.status-menu{z-index:120;min-width:100%;overflow:visible}
+.status-menu.open{display:flex}
+.sidebar-group{width:100%;display:flex;align-items:center;gap:6px;background:transparent;color:inherit;text-align:left;cursor:pointer;border-radius:8px;padding:5px 4px}
+.sidebar-group:hover{background:rgba(173,244,3,.035);color:var(--text)}
+.sidebar-group .sidebar-count{margin-left:2px}
+.sidebar-group-icon{transition:transform .18s ease}
+.sidebar-group.collapsed .sidebar-group-icon{transform:rotate(-90deg)}
+#sideClientList{display:block;max-height:1000px;opacity:1;overflow:hidden;transition:max-height .24s ease,opacity .16s ease,margin .24s ease}
+#sideClientList.collapsed{max-height:0;opacity:0;margin:0;pointer-events:none}
+@media(max-width:760px){
+  .post-card{overflow:visible}
+  .post-card .post-cover{border-radius:15px 0 0 15px}
+  .post-card.has-preview .post-cover{border-radius:16px 16px 0 0}
+  .status-menu{left:0;right:0;min-width:220px}
+}
+
 /* ===== Clímax Portal V1.0 — QA hardening ===== */
 html,body{max-width:100%;overflow-x:hidden}
 button,input,select,textarea,a{font:inherit}
@@ -1019,9 +1040,19 @@ let portalPaymentSettings={id:1,pix_key:'',pix_key_type:'',recipient_name:'',ban
 let recoveryState={accessName:'',questionKey:''};
 const PORTAL_PREFS_KEY='climax-portal-preferences-v1';
 const SIDEBAR_PREF_KEY='climax-portal-sidebar-collapsed';
+const SIDEBAR_CLIENTS_PREF_KEY='climax-portal-sidebar-clients-collapsed';
 function isSidebarCollapsed(){try{return localStorage.getItem(SIDEBAR_PREF_KEY)==='1'}catch(e){return false}}
 function applySidebarState(collapsed=isSidebarCollapsed(),persist=false){const shell=document.querySelector('.app-shell'),btn=document.getElementById('sidebarToggle');if(shell)shell.classList.toggle('sidebar-collapsed',Boolean(collapsed));if(btn){btn.innerHTML=collapsed?ICONS.panelOpen:ICONS.panelClose;btn.setAttribute('aria-label',collapsed?'Expandir barra lateral':'Recolher barra lateral');btn.title=collapsed?'Expandir barra lateral':'Recolher barra lateral';hydrateLucideIcons(btn)}if(persist)try{localStorage.setItem(SIDEBAR_PREF_KEY,collapsed?'1':'0')}catch(e){}}
 function toggleSidebar(){applySidebarState(!document.querySelector('.app-shell')?.classList.contains('sidebar-collapsed'),true)}
+function areSidebarClientsCollapsed(){try{return localStorage.getItem(SIDEBAR_CLIENTS_PREF_KEY)==='1'}catch(e){return false}}
+function applySidebarClientsState(collapsed=areSidebarClientsCollapsed(),persist=false){
+  const list=document.getElementById('sideClientList'),group=document.querySelector('[data-sidebar-clients-toggle]');
+  if(list)list.classList.toggle('collapsed',Boolean(collapsed));
+  if(group){group.classList.toggle('collapsed',Boolean(collapsed));group.setAttribute('aria-expanded',collapsed?'false':'true')}
+  if(persist)try{localStorage.setItem(SIDEBAR_CLIENTS_PREF_KEY,collapsed?'1':'0')}catch(e){}
+}
+function toggleSidebarClients(){applySidebarClientsState(!document.getElementById('sideClientList')?.classList.contains('collapsed'),true)}
+
 function getPortalPrefs(){try{return {storageAlert:8,retention:30,portalName:'Clímax Portal',supportMessage:'Precisa falar com a Clímax? Envie uma mensagem para a equipe responsável pela sua conta.',...JSON.parse(localStorage.getItem(PORTAL_PREFS_KEY)||'{}')}}catch(e){return {storageAlert:8,retention:30,portalName:'Clímax Portal',supportMessage:'Precisa falar com a Clímax? Envie uma mensagem para a equipe responsável pela sua conta.'}}}
 function savePortalPrefs(p){try{localStorage.setItem(PORTAL_PREFS_KEY,JSON.stringify(p))}catch(e){}}
 function isUuid(v=''){return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v))}
@@ -1612,9 +1643,10 @@ function renderSidebarClients(){
     const attn=cp.some(p=>p&&['waiting','changes','rejected'].includes(p.status))||['waiting','changes'].includes(ed?.status);
     return `<button class="sidebar-client ${currentClient===c?.id?'active':''}" data-sidebar-client="${escapeHtml(c?.id||'')}"><span class="sidebar-client-avatar">${escapeHtml(c?.init||makeInitials(c?.name||'Cliente'))}</span><span class="sidebar-client-copy"><strong>${escapeHtml(c?.name||'Cliente')}</strong><span>${escapeHtml(c?.displaySubtitle||c?.contact||'')}</span></span><span class="sidebar-client-state ${attn?'attn':''}"></span></button>`;
   }).join('');
-  setSafeHTML(box,`<div class="sidebar-client-head"><span>Clientes</span><button data-action="new-client" title="Vincular cliente" aria-label="Vincular cliente">${ICONS.plus}</button></div><div class="sidebar-client-search"><span class="sidebar-search-icon">${ICONS.search}</span><input id="sideClientSearch" placeholder="Buscar cliente..."></div><div class="sidebar-group"><span class="sidebar-group-icon">${ICONS.down}</span> Clientes <span class="sidebar-count">${safeClients.length}</span></div><div id="sideClientList">${list}</div>`);
+  setSafeHTML(box,`<div class="sidebar-client-head"><span>Clientes</span><button data-action="new-client" title="Vincular cliente" aria-label="Vincular cliente">${ICONS.plus}</button></div><div class="sidebar-client-search"><span class="sidebar-search-icon">${ICONS.search}</span><input id="sideClientSearch" placeholder="Buscar cliente..."></div><button class="sidebar-group" type="button" data-sidebar-clients-toggle aria-expanded="true"><span class="sidebar-group-icon">${ICONS.down}</span><span>Clientes</span><span class="sidebar-count">${safeClients.length}</span></button><div id="sideClientList">${list}</div>`);
   box.querySelectorAll('[data-sidebar-client]').forEach(b=>b.onclick=()=>{currentClient=b.dataset.sidebarClient;adminViewClient=b.dataset.sidebarClient;route='clientspace';activeFilter='all';render();window.scrollTo({top:0,behavior:'smooth'})});
   const add=box.querySelector('[data-action="new-client"]');if(add)add.onclick=openNewClient;
+  const groupToggle=box.querySelector('[data-sidebar-clients-toggle]');if(groupToggle)groupToggle.onclick=toggleSidebarClients;applySidebarClientsState(areSidebarClientsCollapsed(),false);
   const search=box.querySelector('#sideClientSearch');if(search)search.oninput=()=>{const q=search.value.toLocaleLowerCase('pt-BR');box.querySelectorAll('[data-sidebar-client]').forEach(b=>b.style.display=b.textContent.toLocaleLowerCase('pt-BR').includes(q)?'grid':'none')};
 }
 function renderNavigation(){
