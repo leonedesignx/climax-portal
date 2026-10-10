@@ -43,6 +43,12 @@
     .card:hover{transform:translateY(-4px);border-color:rgba(173,244,3,.3);background:linear-gradient(180deg,#141812,#0f120e)}
     .card:hover:before{transform:scale(1.14);background:rgba(173,244,3,.06)}
     .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+    .product-logo{width:220px;max-width:72%;height:92px;object-fit:contain;object-position:left center;display:block;filter:drop-shadow(0 10px 24px rgba(0,0,0,.22))}
+    .card.panel-card{border-color:rgba(242,6,6,.18)}
+    .card.panel-card:hover{border-color:rgba(242,6,6,.42)}
+    .card.panel-card:before{background:rgba(242,6,6,.04)}
+    .card.panel-card:hover:before{background:rgba(242,6,6,.07)}
+    .card.panel-card .tag{color:#ff5555}
     .icon{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;border:1px solid rgba(173,244,3,.12);background:rgba(173,244,3,.065);color:var(--lime)}
     .icon svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8}
     .arrow{width:38px;height:38px;border-radius:12px;border:1px solid var(--line);display:grid;place-items:center;color:#8d9688;transition:.2s ease}
@@ -88,11 +94,9 @@
       </section>
 
       <section class="launchers" aria-label="Acessos Clímax">
-        <a class="card" href="https://painel-apice.vercel.app" id="panelCard">
+        <a class="card panel-card" href="https://painel-apice.vercel.app" id="panelCard">
           <div class="card-top">
-            <div class="icon">
-              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-            </div>
+            <img class="product-logo" src="https://painel-apice.vercel.app/panel-logo-new.svg" alt="Painel Clímax">
             <div class="arrow">↗</div>
           </div>
           <div class="card-copy">
@@ -104,9 +108,7 @@
 
         <a class="card" href="https://climaxportal.vercel.app" id="portalCard">
           <div class="card-top">
-            <div class="icon">
-              <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg>
-            </div>
+            <img class="product-logo" src="https://climaxportal.vercel.app/portal-logo-new.svg" alt="Clímax Portal">
             <div class="arrow">↗</div>
           </div>
           <div class="card-copy">
