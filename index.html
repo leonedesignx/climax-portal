@@ -742,6 +742,168 @@ html[data-theme="light"] .sidebar-toggle{background:#fff;border-color:var(--line
 }
 @media(max-height:720px) and (min-width:841px){.ig-media{height:clamp(210px,36vh,320px)}}
 
+/* ---------- detalhe em duas colunas: mídia flutuante + informações ---------- */
+@media(min-width:841px){
+  #detailOverlay .drawer{
+    width:min(1220px,calc(100vw - 56px));
+    height:min(92vh,940px);
+  }
+  #detailOverlay .drawer-scroll{
+    flex:1;
+    min-height:0;
+    overflow:hidden;
+    padding:0;
+  }
+  .detail-split{
+    height:100%;
+    min-height:0;
+    display:grid;
+    grid-template-columns:minmax(0,1.08fr) minmax(360px,.92fr);
+    gap:0;
+  }
+  .detail-preview-pane{
+    min-width:0;
+    min-height:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px 30px 28px;
+    border-right:1px solid var(--line);
+    background:
+      radial-gradient(circle at 45% 48%,rgba(173,244,3,.045),transparent 44%),
+      #090b08;
+  }
+  .detail-info-pane{
+    min-width:0;
+    min-height:0;
+    overflow:auto;
+    padding:26px 26px 124px;
+    scrollbar-width:thin;
+    scrollbar-color:#394133 transparent;
+  }
+  .detail-info-pane::-webkit-scrollbar{width:8px}
+  .detail-info-pane::-webkit-scrollbar-thumb{background:#394133;border-radius:999px}
+  .detail-info-pane::-webkit-scrollbar-track{background:transparent}
+  #detailOverlay .drawer-actions{
+    left:auto;
+    right:0;
+    bottom:0;
+    width:calc(46% - 1px);
+    padding:12px 20px 16px;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    border-left:1px solid var(--line);
+    background:rgba(13,15,11,.975);
+  }
+  #detailOverlay .drawer-actions .btn:last-child:nth-child(odd){grid-column:1/-1}
+  .detail-preview-pane .content-visual-stage{
+    width:min(100%,560px);
+    max-width:560px;
+    margin:0;
+  }
+  .detail-preview-pane .visual-stage-head{
+    margin-bottom:14px;
+  }
+  .detail-preview-pane .ig-carousel{
+    width:100%;
+  }
+  .detail-preview-pane .ig-carousel-viewport{
+    overflow:hidden;
+    border:0;
+    border-radius:18px;
+    background:transparent;
+  }
+  .detail-preview-pane .ig-slide{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    justify-content:center;
+    background:transparent;
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-media{
+    height:auto;
+    min-height:0;
+    aspect-ratio:auto;
+    padding:0;
+    overflow:visible;
+    background:transparent;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-media img{
+    width:auto;
+    height:auto;
+    max-width:100%;
+    max-height:calc(92vh - 245px);
+    object-fit:contain;
+    object-position:center;
+    border-radius:2px;
+    box-shadow:0 22px 65px rgba(0,0,0,.32);
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-slide-caption{
+    border-top:0;
+    background:transparent;
+    padding:9px 2px 0;
+    text-align:center;
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-arrow{
+    top:50%;
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-prev{left:8px}
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-next{right:8px}
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-fullscreen{
+    left:10px;
+    top:10px;
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-download{
+    right:10px;
+    bottom:10px;
+  }
+  .detail-preview-pane .detail-preview{
+    width:min(100%,560px);
+    max-height:calc(92vh - 190px);
+    margin:0;
+  }
+}
+
+@media(min-width:841px) and (max-width:1050px){
+  #detailOverlay .drawer{width:calc(100vw - 32px)}
+  .detail-split{grid-template-columns:minmax(0,1fr) minmax(330px,.9fr)}
+  .detail-preview-pane{padding:20px}
+  .detail-info-pane{padding:22px 20px 118px}
+  #detailOverlay .drawer-actions{width:46%;padding-inline:14px}
+}
+
+@media(max-width:840px){
+  #detailOverlay .drawer-scroll{overflow:auto;padding:13px 14px 120px}
+  .detail-split{display:block;height:auto}
+  .detail-preview-pane{padding:0;border:0;background:transparent}
+  .detail-info-pane{overflow:visible;padding:0}
+  .detail-preview-pane .content-visual-stage{width:100%;max-width:100%;margin:0 auto 18px}
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-media{
+    height:auto;
+    min-height:0;
+    aspect-ratio:auto;
+    padding:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-media img{
+    width:auto;
+    height:auto;
+    max-width:100%;
+    max-height:58dvh;
+    object-fit:contain;
+  }
+  #detailOverlay .drawer-actions{
+    left:0;
+    right:0;
+    width:auto;
+    grid-template-columns:1fr 1fr;
+  }
+}
+
 /* ===== Clímax Portal V1.0 — QA hardening ===== */
 html,body{max-width:100%;overflow-x:hidden}
 button,input,select,textarea,a{font:inherit}
@@ -1880,7 +2042,8 @@ function openPost(id){
   const clientComment=role==='client'&&p.status==='waiting'?`<div class="comment-box"><label style="font-size:10px;font-weight:750;color:#c7ccc1">Comentário para a Clímax</label><textarea id="clientComment" placeholder="Explique o que gostaria de mudar ou por que está reprovando..."></textarea></div>`:'';
   const visual=previewGalleryHTML(p);
   const fallback=!visual?`<div class="detail-preview ${p.type==='Story'?'story':''} ${escapeHtml(p.cover)}"><div class="cover-icon">${mediaIcon(p.type,p.deliveryKind)}</div><div class="empty-preview-copy"><strong>Prévia visual não enviada</strong><span>Use o Drive ou o arquivo anexado abaixo para revisar.</span></div></div>`:'';
-  setSafeHTML('#detailBody',`${visual||fallback}<div class="detail-title"><div><div class="detail-kicker">${escapeHtml(deliveryKindLabel(p.deliveryKind))} · ${escapeHtml(p.type)} · ${role==='admin'?escapeHtml(c.name):'Versão '+p.version}</div><h2>${escapeHtml(p.title)}</h2></div></div><div style="margin-top:12px">${statusPillHTML(p,posts.indexOf(p),role==='admin')}</div>${changeAlert}<div class="caption-review"><small>LEGENDA / TEXTO</small><p class="detail-copy">${escapeHtml(p.caption||'Sem legenda cadastrada.')}</p></div>${media}${drive}${clientComment}<div class="detail-block"><h4>Versão atual</h4><div class="timeline"><div class="timeline-item"><span class="timeline-mark"></span><div><strong>Versão ${p.version}</strong><span>${escapeHtml(statusLabel[p.status]||p.status)} · ${escapeHtml(p.date)}</span></div></div></div><button class="detail-history-btn" data-history="${escapeHtml(p.id)}">${ICONS.clock}<span><strong>Ver histórico completo</strong><small>Acompanhe versões, aprovações e pedidos de alteração</small></span>${ICONS.right}</button></div>`);
+  const info=`<div class="detail-title"><div><div class="detail-kicker">${escapeHtml(deliveryKindLabel(p.deliveryKind))} · ${escapeHtml(p.type)} · ${role==='admin'?escapeHtml(c.name):'Versão '+p.version}</div><h2>${escapeHtml(p.title)}</h2></div></div><div style="margin-top:12px">${statusPillHTML(p,posts.indexOf(p),role==='admin')}</div>${changeAlert}<div class="caption-review"><small>LEGENDA / TEXTO</small><p class="detail-copy">${escapeHtml(p.caption||'Sem legenda cadastrada.')}</p></div>${media}${drive}${clientComment}<div class="detail-block"><h4>Versão atual</h4><div class="timeline"><div class="timeline-item"><span class="timeline-mark"></span><div><strong>Versão ${p.version}</strong><span>${escapeHtml(statusLabel[p.status]||p.status)} · ${escapeHtml(p.date)}</span></div></div></div><button class="detail-history-btn" data-history="${escapeHtml(p.id)}">${ICONS.clock}<span><strong>Ver histórico completo</strong><small>Acompanhe versões, aprovações e pedidos de alteração</small></span>${ICONS.right}</button></div>`;
+  setSafeHTML('#detailBody',`<div class="detail-split"><section class="detail-preview-pane">${visual||fallback}</section><section class="detail-info-pane">${info}</section></div>`);
   setSafeHTML('#detailActions',role==='client'
     ?(p.status==='waiting'?`<button class="btn btn-secondary" data-request-change>${ICONS.message} Pedir mudanças</button><button class="btn btn-danger" data-reject>${ICONS.reject} Reprovar</button><button class="btn" data-approve>${ICONS.check} Aprovar</button>`:`<button class="btn btn-secondary" disabled>${escapeHtml(statusLabel[p.status]||p.status)}</button>`)
     :`<button class="btn btn-secondary" data-whatsapp-content="${escapeHtml(p.id)}">${ICONS.message} WhatsApp</button><button class="btn btn-secondary" data-edit-content="${escapeHtml(p.id)}">${ICONS.edit} Editar</button><button class="btn btn-danger" data-delete-content="${escapeHtml(p.id)}">${ICONS.trash} Excluir</button><button class="btn btn-secondary" data-copy-link>${ICONS.link} Copiar link</button><button class="btn" data-new-version>Enviar nova versão</button>`);
