@@ -85,6 +85,10 @@ svg{display:block}
 .notification-dot{position:absolute;width:7px;height:7px;border-radius:50%;background:var(--lime);right:7px;top:6px;box-shadow:0 0 0 3px #10120f}
 .role-pill{height:36px;border:1px solid var(--line);background:#11130f;border-radius:999px;padding:0 12px;display:flex;align-items:center;gap:8px;font-size:11px;color:#c7ccc1;font-weight:750}
 .role-pill .role-dot{width:7px;height:7px;border-radius:50%;background:var(--lime)}
+.admin-panel-link{text-decoration:none;color:var(--lime);background:rgba(173,244,3,.065);border-color:rgba(173,244,3,.2);transition:.18s ease}
+.admin-panel-link:hover{background:rgba(173,244,3,.11);border-color:rgba(173,244,3,.34)}
+.admin-panel-link>span:first-child{font-size:13px;line-height:1}
+@media(max-width:980px){.admin-panel-link>span:last-child{display:none}.admin-panel-link{width:38px;padding:0;justify-content:center}}
 .mobile-profile{display:none}
 
 .page{max-width:1440px;margin:0 auto;padding:28px clamp(20px,3vw,38px) 56px}
@@ -1281,6 +1285,7 @@ html[data-theme="light"] .detail-copy,html[data-theme="light"] .comment-box labe
         <input id="globalSearch" placeholder="Buscar clientes, conteúdos..." aria-label="Buscar">
       </div>
       <div class="top-spacer"></div>
+      <a class="role-pill admin-panel-link hidden" id="adminPanelLink" href="https://painel-apice.vercel.app" target="_blank" rel="noopener noreferrer"><span>↗</span><span>Painel Clímax</span></a>
       <button class="role-pill" id="rolePill"><span class="role-dot"></span><span id="rolePillText">Painel administrativo</span></button>
       <button class="top-icon theme-toggle" id="themeToggle" aria-label="Alternar tema" title="Alternar modo claro/escuro"></button>
       <button class="top-icon" id="notificationButton" aria-label="Notificações" title="Notificações"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg><i class="notification-dot"></i></button>
@@ -1561,6 +1566,8 @@ function syncIdentityUI(){
   paintAvatar(document.getElementById('mobileProfile'),avatarUrl,initials);
   const roleEl=document.getElementById('profileRole');
   if(roleEl)roleEl.textContent=actualRole==='admin'?'Admin · Clímax Studio':(client?.displaySubtitle?client.displaySubtitle+' · Portal do cliente':'Portal do cliente');
+  const panelLink=document.getElementById('adminPanelLink');
+  if(panelLink)panelLink.classList.toggle('hidden',actualRole!=='admin');
 }
 async function hydrateFromBackend(user){
   authUser=user;
@@ -2620,7 +2627,7 @@ function openAccount(){
   if(remove)remove.onclick=()=>runBusy(remove,'Removendo…',async()=>{const oldPath=authProfile?.avatar_path||'';const rp=await db.rpc('set_my_avatar_path',{p_avatar_path:null});if(rp.error)throw rp.error;if(oldPath){const rm=await db.storage.from('profile-avatars').remove([oldPath]);if(rm.error)console.warn(rm.error)}authProfile.avatar_path=null;closeModal();syncIdentityUI();toast('Foto removida.')} ).catch(err=>toast(formatError(err,'Não foi possível remover a foto.'),'error'));
 }
 function openProfile(anchor){
-  const pop=document.getElementById('profilePopover'),r=anchor.getBoundingClientRect();pop.style.top=Math.min(window.innerHeight-260,r.bottom+8)+'px';pop.style.left=Math.max(10,Math.min(window.innerWidth-230,r.right-220))+'px';const preview=actualRole==='admin'?`<button data-switch-role>${role==='admin'?'Visualizar como cliente':'Voltar ao painel da Clímax'}</button><div class="popover-sep"></div>`:'',logoutButton=backendEnabled?`<div class="popover-sep"></div><button data-logout>Sair da conta</button>`:'';setSafeHTML(pop,`${preview}<button data-profile-theme>${currentTheme==='dark'?'☀ Modo claro':'☾ Modo escuro'}</button><button data-profile-account>Minha conta</button>${actualRole==='admin'?'<button data-profile-preferences>Preferências</button>':''}${logoutButton}`);pop.classList.add('open');const sw=pop.querySelector('[data-switch-role]');if(sw)sw.onclick=switchRole;pop.querySelector('[data-profile-theme]').onclick=()=>{toggleTheme();closeProfile();render()};pop.querySelector('[data-profile-account]').onclick=()=>{closeProfile();openAccount()};const pref=pop.querySelector('[data-profile-preferences]');if(pref)pref.onclick=()=>{closeProfile();route='settings';render()};const lo=pop.querySelector('[data-logout]');if(lo)lo.onclick=logout;
+  const pop=document.getElementById('profilePopover'),r=anchor.getBoundingClientRect();pop.style.top=Math.min(window.innerHeight-260,r.bottom+8)+'px';pop.style.left=Math.max(10,Math.min(window.innerWidth-230,r.right-220))+'px';const preview=actualRole==='admin'?`<button data-open-panel>↗ Abrir Painel Clímax</button><button data-switch-role>${role==='admin'?'Visualizar como cliente':'Voltar ao painel da Clímax'}</button><div class="popover-sep"></div>`:'',logoutButton=backendEnabled?`<div class="popover-sep"></div><button data-logout>Sair da conta</button>`:'';setSafeHTML(pop,`${preview}<button data-profile-theme>${currentTheme==='dark'?'☀ Modo claro':'☾ Modo escuro'}</button><button data-profile-account>Minha conta</button>${actualRole==='admin'?'<button data-profile-preferences>Preferências</button>':''}${logoutButton}`);pop.classList.add('open');const panel=pop.querySelector('[data-open-panel]');if(panel)panel.onclick=()=>window.open('https://painel-apice.vercel.app','_blank','noopener');const sw=pop.querySelector('[data-switch-role]');if(sw)sw.onclick=switchRole;pop.querySelector('[data-profile-theme]').onclick=()=>{toggleTheme();closeProfile();render()};pop.querySelector('[data-profile-account]').onclick=()=>{closeProfile();openAccount()};const pref=pop.querySelector('[data-profile-preferences]');if(pref)pref.onclick=()=>{closeProfile();route='settings';render()};const lo=pop.querySelector('[data-logout]');if(lo)lo.onclick=logout;
 }
 function closeProfile(){document.getElementById('profilePopover').classList.remove('open')}
 
