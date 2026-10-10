@@ -1355,9 +1355,10 @@ async function appendPreviewAssets(p,files=[]){
 }
 async function deletePreviewAsset(p,assetId){
   const asset=(p.previewAssets||[]).find(a=>String(a.id)===String(assetId));if(!asset)return;
-  await removeMediaKeys([asset.key]);const d=await db.from('content_preview_assets').delete().eq('id',asset.id);if(d.error)throw d.error;
+  const d=await db.from('content_preview_assets').delete().eq('id',asset.id);if(d.error)throw d.error;
   p.previewAssets=(p.previewAssets||[]).filter(a=>String(a.id)!==String(asset.id));
-  if(p.previewAssets.length&&!p.previewAssets.some(a=>a.isCover)){p.previewAssets[0].isCover=true;await db.from('content_preview_assets').update({is_cover:true}).eq('id',p.previewAssets[0].id)}
+  try{await removeMediaKeys([asset.key])}catch(err){console.warn('Imagem removida do conteúdo, mas o arquivo não pôde ser limpo do Storage.',err)}
+  if(p.previewAssets.length&&!p.previewAssets.some(a=>a.isCover)){p.previewAssets[0].isCover=true;const u=await db.from('content_preview_assets').update({is_cover:true}).eq('id',p.previewAssets[0].id);if(u.error)throw u.error}
 }
 async function downloadPreviewAsset(asset){
   if(!asset?.key)return;const r=await db.storage.from('client-media').download(asset.key,{download:asset.fileName||'imagem'});if(r.error)throw r.error;
