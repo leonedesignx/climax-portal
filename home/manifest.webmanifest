@@ -1,0 +1,17 @@
+{
+  "name":"Clímax Home",
+  "short_name":"Clímax",
+  "description":"Acesso rápido ao Painel Clímax e ao Clímax Portal.",
+  "start_url":"/",
+  "scope":"/",
+  "display":"standalone",
+  "background_color":"#090a08",
+  "theme_color":"#090a08",
+  "icons":[
+    {"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ],
+  "shortcuts":[
+    {"name":"Painel Clímax","short_name":"Painel","url":"https://painel-apice.vercel.app"},
+    {"name":"Clímax Portal","short_name":"Portal","url":"https://climaxportal.vercel.app"}
+  ]
+}
