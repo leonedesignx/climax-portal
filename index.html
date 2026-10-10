@@ -713,6 +713,33 @@ html[data-theme="light"] .sidebar-toggle{background:#fff;border-color:var(--line
 .local-drag-handle .lucide{width:14px;height:14px}.local-order-number{min-width:24px;height:24px;border-radius:999px;background:rgba(8,10,7,.8);border:1px solid rgba(255,255,255,.1);display:grid!important;place-items:center;padding:0 6px!important;color:#fff!important;font-size:8px!important;font-weight:850}
 .local-order-actions{display:grid;grid-template-columns:30px 30px 30px;gap:5px;padding:0 7px 7px}.local-order-actions button{position:static;width:30px;height:28px;border-radius:7px;background:#121510;border:1px solid var(--line);color:#9da598;display:grid;place-items:center}.local-order-actions button:last-child{color:#ff9999;border-color:rgba(255,100,100,.14);background:rgba(255,100,100,.06)}.local-order-actions button:disabled{opacity:.28}.local-order-actions .lucide{width:11px!important;height:11px!important}
 
+/* ---------- prévia com enquadramento fixo + tela cheia ---------- */
+.content-visual-stage{max-width:680px}
+.ig-media{height:min(54vh,520px);min-height:300px;aspect-ratio:auto}
+.ig-media img{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain}
+.ig-fullscreen{position:absolute;left:12px;top:12px;z-index:7;width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(17,20,15,.84);backdrop-filter:blur(10px);color:#fff;display:grid;place-items:center}
+.ig-fullscreen:hover{background:rgba(30,34,26,.96)}.ig-fullscreen .lucide{width:16px;height:16px}
+.preview-fullscreen-open{overflow:hidden!important}
+.content-visual-stage.is-fullscreen{position:fixed;inset:0;z-index:10000;max-width:none!important;margin:0!important;padding:18px 22px 20px;background:rgba(4,5,4,.98);display:grid;grid-template-rows:auto minmax(0,1fr)}
+.content-visual-stage.is-fullscreen .visual-stage-head{max-width:1500px;width:100%;margin:0 auto 12px;color:#fff}
+.content-visual-stage.is-fullscreen .ig-carousel{min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;max-width:1500px;width:100%;margin:0 auto}
+.content-visual-stage.is-fullscreen .ig-carousel-viewport{height:100%;min-height:0;border-radius:16px}
+.content-visual-stage.is-fullscreen .ig-carousel-track,.content-visual-stage.is-fullscreen .ig-slide{height:100%}
+.content-visual-stage.is-fullscreen .ig-media{height:100%;min-height:0;max-height:none}
+.content-visual-stage.is-fullscreen .ig-media img{object-fit:contain}
+.content-visual-stage.is-fullscreen .ig-fullscreen{left:auto;right:14px;top:14px;width:42px;height:42px}
+.content-visual-stage.is-fullscreen .ig-download{right:14px;bottom:14px}
+.content-visual-stage.is-fullscreen .ig-arrow{width:46px;height:46px}
+.content-visual-stage.is-fullscreen .ig-prev{left:18px}.content-visual-stage.is-fullscreen .ig-next{right:18px}
+@media(max-width:840px){
+  .ig-media{height:min(52dvh,500px);min-height:260px}
+  .ig-fullscreen{left:9px;top:9px;width:34px;height:34px}
+  .content-visual-stage.is-fullscreen{padding:calc(10px + env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom))}
+  .content-visual-stage.is-fullscreen .visual-stage-head{padding:0 4px}
+  .content-visual-stage.is-fullscreen .ig-carousel-viewport{border-radius:12px}
+}
+@media(max-height:720px) and (min-width:841px){.ig-media{height:min(48vh,400px);min-height:260px}}
+
 /* ===== Clímax Portal V1.0 — QA hardening ===== */
 html,body{max-width:100%;overflow-x:hidden}
 button,input,select,textarea,a{font:inherit}
@@ -1019,7 +1046,9 @@ const ICONS={
   help:'<i data-lucide="circle-help"></i>',
   panelClose:'<i data-lucide="panel-left-close"></i>',
   panelOpen:'<i data-lucide="panel-left-open"></i>',
-  grip:'<i data-lucide="grip-vertical"></i>'
+  grip:'<i data-lucide="grip-vertical"></i>',
+  maximize:'<i data-lucide="maximize-2"></i>',
+  minimize:'<i data-lucide="minimize-2"></i>'
 }
 
 const statusLabel={waiting:'Aguardando aprovação',approved:'Aprovado',material:'Aguardando material',changes:'Em alteração',rejected:'Reprovado',draft:'Rascunho'};
@@ -1578,7 +1607,7 @@ function contentPreviewCover(p){
 function previewGalleryHTML(p){
   const assets=p.previewAssets||[];if(!assets.length)return '';
   const many=assets.length>1;
-  return `<section class="content-visual-stage" data-preview-carousel="${escapeHtml(p.id)}"><div class="visual-stage-head"><div><small>VISUALIZAÇÃO PARA APROVAÇÃO</small><strong>${many?'Carrossel · deslize ou use as setas':'Prévia do conteúdo'}</strong></div><span data-preview-counter>1/${assets.length}</span></div><div class="ig-carousel"><div class="ig-carousel-viewport"><div class="ig-carousel-track" data-preview-track>${assets.map((a,i)=>`<article class="ig-slide" data-preview-slide="${i}"><div class="ig-media"><img src="${escapeHtml(a.url)}" alt="Imagem ${i+1} de ${escapeHtml(p.title)}" loading="lazy"><span class="preview-position">${i+1}/${assets.length}</span><button class="ig-download" data-download-preview="${escapeHtml(p.id)}|${escapeHtml(a.id)}" title="Baixar imagem" aria-label="Baixar imagem">${ICONS.download}</button></div><div class="ig-slide-caption">${escapeHtml(a.fileName||('Imagem '+(i+1)))}</div></article>`).join('')}</div>${many?`<button class="ig-arrow ig-prev" data-preview-prev aria-label="Imagem anterior">${ICONS.left}</button><button class="ig-arrow ig-next" data-preview-next aria-label="Próxima imagem">${ICONS.right}</button>`:''}</div>${many?`<div class="ig-dots" data-preview-dots>${assets.map((_,i)=>`<button class="${i===0?'active':''}" data-preview-dot="${i}" aria-label="Ir para imagem ${i+1}"></button>`).join('')}</div>`:''}</div></section>`;
+  return `<section class="content-visual-stage" data-preview-carousel="${escapeHtml(p.id)}"><div class="visual-stage-head"><div><small>VISUALIZAÇÃO PARA APROVAÇÃO</small><strong>${many?'Carrossel · deslize ou use as setas':'Prévia do conteúdo'}</strong></div><span data-preview-counter>1/${assets.length}</span></div><div class="ig-carousel"><div class="ig-carousel-viewport"><button class="ig-fullscreen" data-preview-fullscreen title="Ver em tela cheia" aria-label="Ver em tela cheia">${ICONS.maximize}</button><div class="ig-carousel-track" data-preview-track>${assets.map((a,i)=>`<article class="ig-slide" data-preview-slide="${i}"><div class="ig-media"><img src="${escapeHtml(a.url)}" alt="Imagem ${i+1} de ${escapeHtml(p.title)}" loading="lazy"><span class="preview-position">${i+1}/${assets.length}</span><button class="ig-download" data-download-preview="${escapeHtml(p.id)}|${escapeHtml(a.id)}" title="Baixar imagem" aria-label="Baixar imagem">${ICONS.download}</button></div><div class="ig-slide-caption">${escapeHtml(a.fileName||('Imagem '+(i+1)))}</div></article>`).join('')}</div>${many?`<button class="ig-arrow ig-prev" data-preview-prev aria-label="Imagem anterior">${ICONS.left}</button><button class="ig-arrow ig-next" data-preview-next aria-label="Próxima imagem">${ICONS.right}</button>`:''}</div>${many?`<div class="ig-dots" data-preview-dots>${assets.map((_,i)=>`<button class="${i===0?'active':''}" data-preview-dot="${i}" aria-label="Ir para imagem ${i+1}"></button>`).join('')}</div>`:''}</div></section>`;
 }
 function setPreviewCarouselIndex(root,index){
   if(!root)return;const track=root.querySelector('[data-preview-track]'),slides=[...root.querySelectorAll('[data-preview-slide]')];if(!track||!slides.length)return;
@@ -1587,6 +1616,10 @@ function setPreviewCarouselIndex(root,index){
   root.querySelectorAll('[data-preview-dot]').forEach((d,i)=>d.classList.toggle('active',i===next));
   const prev=root.querySelector('[data-preview-prev]'),nxt=root.querySelector('[data-preview-next]');if(prev)prev.disabled=next===0;if(nxt)nxt.disabled=next===max;
 }
+function setPreviewFullscreen(carousel,on){
+  if(!carousel)return;carousel.classList.toggle('is-fullscreen',Boolean(on));const btn=carousel.querySelector('[data-preview-fullscreen]');if(btn){btn.innerHTML=on?ICONS.minimize:ICONS.maximize;btn.title=on?'Sair da tela cheia':'Ver em tela cheia';btn.setAttribute('aria-label',btn.title);hydrateLucideIcons(btn)}
+  document.body.classList.toggle('preview-fullscreen-open',Boolean(on));
+}
 function bindPreviewCarousel(root=document){
   root.querySelectorAll('[data-preview-carousel]').forEach(carousel=>{
     setPreviewCarouselIndex(carousel,Number(carousel.dataset.previewIndex||0));
@@ -1594,6 +1627,7 @@ function bindPreviewCarousel(root=document){
     carousel.querySelector('[data-preview-prev]')?.addEventListener('click',e=>{e.stopPropagation();move(-1)});
     carousel.querySelector('[data-preview-next]')?.addEventListener('click',e=>{e.stopPropagation();move(1)});
     carousel.querySelectorAll('[data-preview-dot]').forEach(d=>d.addEventListener('click',e=>{e.stopPropagation();setPreviewCarouselIndex(carousel,Number(d.dataset.previewDot))}));
+    carousel.querySelector('[data-preview-fullscreen]')?.addEventListener('click',e=>{e.stopPropagation();setPreviewFullscreen(carousel,!carousel.classList.contains('is-fullscreen'))});
     const viewport=carousel.querySelector('.ig-carousel-viewport');if(!viewport)return;let startX=0,startY=0,tracking=false;
     viewport.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;tracking=true;startX=e.clientX;startY=e.clientY;viewport.setPointerCapture?.(e.pointerId)});
     viewport.addEventListener('pointerup',e=>{if(!tracking)return;tracking=false;const dx=e.clientX-startX,dy=e.clientY-startY;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy))move(dx<0?1:-1)});
@@ -1862,7 +1896,7 @@ function bindDetail(){
   document.querySelectorAll('[data-status-toggle]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();document.getElementById(`status-${b.dataset.statusToggle}`)?.classList.toggle('open')});
   document.querySelectorAll('[data-status-set]').forEach(b=>b.onclick=async(e)=>{e.stopPropagation();const [idx,s]=b.dataset.statusSet.split('|'),i=Number(idx),old=posts[i]?.status;if(!posts[i])return;posts[i].status=s;openPost(detailPostId);renderNavigation();try{await persistContentStatus(i,s);toast('Status atualizado.')}catch(err){posts[i].status=old;openPost(detailPostId);renderNavigation();toast(formatError(err,'Não foi possível atualizar.'),'error')}});
 }
-function closeDetail(){const o=document.getElementById('detailOverlay');o.classList.remove('open');o.setAttribute('aria-hidden','true');document.body.style.overflow='';render()}
+function closeDetail(){document.querySelectorAll('[data-preview-carousel].is-fullscreen').forEach(c=>setPreviewFullscreen(c,false));const o=document.getElementById('detailOverlay');o.classList.remove('open');o.setAttribute('aria-hidden','true');document.body.style.overflow='';render()}
 function openModal(title,body,actions){document.getElementById('modalTitle').textContent=title;setSafeHTML('#modalBody',body);setSafeHTML('#modalActions',actions);const wrap=document.getElementById('modalWrap');wrap.classList.add('open');wrap.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';document.querySelectorAll('[data-close-modal]').forEach(b=>b.onclick=closeModal);setTimeout(()=>wrap.querySelector('input,textarea,select,button')?.focus(),20)}
 function closeModal(){const w=document.getElementById('modalWrap');w.classList.remove('open');w.setAttribute('aria-hidden','true');if(!document.getElementById('detailOverlay').classList.contains('open'))document.body.style.overflow=''}
 async function performContentReview(p,action,note=''){
