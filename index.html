@@ -402,6 +402,34 @@ html[data-theme="light"] .st-draft{color:#61695e!important;background:rgba(154,1
 .ops-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}.ops-card{padding:16px;min-height:118px}.ops-card small{display:flex;align-items:center;gap:7px;color:#737c6f;font-size:9px;text-transform:uppercase;letter-spacing:.07em;font-weight:850}.ops-card .ops-value{font:800 24px Manrope;margin-top:15px}.ops-card .ops-label{font-size:9.5px;color:var(--muted);margin-top:4px}.ops-card.good .ops-value{color:var(--lime)}.ops-card.warn .ops-value{color:var(--warn)}.ops-card.info .ops-value{color:var(--info)}
 .dashboard-title{font:800 clamp(30px,3vw,44px)/.95 Manrope;letter-spacing:-.045em;text-transform:uppercase}.dashboard-eyebrow{display:inline-flex;align-items:center;gap:7px;color:var(--lime);font-size:9px;text-transform:uppercase;letter-spacing:.11em;font-weight:850;margin-bottom:9px}.dashboard-sub{color:var(--muted);font-size:12px;margin-top:8px}.dashboard-top{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:22px}
 
+/* ---------- dashboard operacional refinado ---------- */
+.dashboard-top-refined{align-items:flex-end;margin-bottom:20px}
+.dashboard-top-actions{display:flex;align-items:center;gap:8px}
+.dashboard-stats{margin-bottom:16px}
+.dashboard-stats .stat{min-height:108px;padding:14px}
+.dashboard-stats .stat-icon{margin-bottom:12px}
+.dashboard-core{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:14px;margin-top:14px}
+.dashboard-chart-card,.dashboard-priority-card,.dashboard-workload,.dashboard-approval-card{padding:18px}
+.dashboard-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:16px}
+.dashboard-card-head small{display:block;font-size:8px;letter-spacing:.1em;font-weight:850;color:#6f786a}
+.dashboard-card-head h3{font-size:14px;margin-top:4px;color:#e8ece5}
+.dashboard-rate{font-size:9px;font-weight:850;color:var(--lime);padding:6px 9px;border-radius:999px;background:rgba(173,244,3,.075);border:1px solid rgba(173,244,3,.13)}
+.dashboard-chart-layout{display:grid;grid-template-columns:170px minmax(0,1fr);gap:24px;align-items:center;min-height:185px}
+.dashboard-donut{width:160px;aspect-ratio:1;border-radius:50%;background:conic-gradient(var(--lime) 0 var(--approved),var(--warn) var(--approved) var(--waiting),var(--danger) var(--waiting) var(--changes),#30372c var(--changes) 360deg);display:grid;place-items:center;position:relative;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)}
+.dashboard-donut:after{content:"";position:absolute;inset:22px;border-radius:50%;background:#11140f;border:1px solid var(--line)}
+.dashboard-donut-center{position:relative;z-index:1;text-align:center}.dashboard-donut-center strong{display:block;font:800 30px Manrope}.dashboard-donut-center span{display:block;font-size:9px;color:var(--muted);margin-top:2px}
+.dashboard-legend{display:grid;gap:7px}.dashboard-legend>div{display:grid;grid-template-columns:8px minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #20241d}.dashboard-legend>div:last-child{border-bottom:0}.dashboard-legend i{width:7px;height:7px;border-radius:50%}.dashboard-legend span{font-size:10px;color:#9aa293}.dashboard-legend strong{font-size:11px}.lg-approved{background:var(--lime)}.lg-waiting{background:var(--warn)}.lg-changes{background:var(--danger)}.lg-draft{background:#4c5548}
+.dashboard-priority-card{position:relative;overflow:hidden}.dashboard-priority-card:after{content:"";position:absolute;width:150px;height:150px;border-radius:50%;right:-70px;top:-70px;background:rgba(173,244,3,.035);pointer-events:none}.priority-total{min-width:34px;height:34px;border-radius:10px;background:#171b14;border:1px solid var(--line);display:grid;place-items:center;font:800 16px Manrope;color:var(--lime)}
+.priority-stack{display:grid;gap:8px}.priority-stack button{width:100%;display:grid;grid-template-columns:36px minmax(0,1fr) 14px;align-items:center;gap:10px;text-align:left;padding:10px;border-radius:12px;border:1px solid var(--line);background:#0e110d;color:var(--text);transition:.16s}.priority-stack button:hover{border-color:#3b4435;background:#121610}.priority-stack button>svg{width:13px;height:13px;color:#697164}.priority-stack strong{display:block;font-size:10.5px}.priority-stack small{display:block;font-size:8.5px;color:var(--muted);margin-top:3px}.priority-icon{width:36px;height:36px;border-radius:10px;display:grid;place-items:center}.priority-icon svg{width:15px;height:15px}.priority-icon.waiting{background:rgba(255,203,102,.09);color:var(--warn)}.priority-icon.danger{background:rgba(255,139,139,.09);color:var(--danger)}.priority-icon.editorial{background:rgba(122,184,255,.09);color:var(--info)}
+.dashboard-secondary{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(330px,.75fr);gap:14px;margin-top:14px}
+.workload-list{display:grid;gap:4px}.workload-row{width:100%;display:grid;grid-template-columns:minmax(180px,.9fr) minmax(100px,1fr) 28px;gap:12px;align-items:center;padding:9px 7px;border-radius:10px;background:transparent;color:var(--text);text-align:left}.workload-row:hover{background:rgba(255,255,255,.025)}.workload-person{display:grid;grid-template-columns:32px minmax(0,1fr);gap:9px;align-items:center}.workload-person>span{width:32px;height:32px;border-radius:9px;background:#20261b;color:var(--lime);display:grid;place-items:center;font-size:8px;font-weight:900}.workload-person strong{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.workload-person small{display:block;font-size:8px;color:var(--muted);margin-top:3px}.workload-meter{height:7px;border-radius:999px;background:#20251d;overflow:hidden}.workload-meter i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#6c9700,var(--lime))}.workload-row>b{font-size:10px;text-align:right;color:#d6dbd1}
+.dashboard-approval-list{display:grid}.dashboard-approval-row{width:100%;display:grid;grid-template-columns:34px minmax(0,1fr) auto 12px;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid #20241d;background:transparent;color:var(--text);text-align:left}.dashboard-approval-row:last-child{border-bottom:0}.dashboard-approval-row>span:nth-child(2){min-width:0}.dashboard-approval-row strong{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dashboard-approval-row small{display:block;font-size:8px;color:var(--muted);margin-top:3px}.dashboard-approval-row em{font-style:normal;font-size:8px;color:#737b6e}.dashboard-approval-row>svg{width:12px;height:12px;color:#687064}
+.dashboard-editorial{margin:14px 0 0}.dashboard-demands{margin-top:14px;padding:16px 18px 10px}.dashboard-demands .dashboard-card-head{margin-bottom:4px}.dashboard-demands .content-row{padding:9px 0}.empty-state.compact{padding:24px 12px}
+html[data-theme="light"] .dashboard-donut:after{background:#fff}html[data-theme="light"] .priority-stack button{background:#fbfcf9}html[data-theme="light"] .workload-row:hover{background:#f4f7f1}
+@media(max-width:1120px){.dashboard-core,.dashboard-secondary{grid-template-columns:1fr}.dashboard-chart-layout{grid-template-columns:150px minmax(0,1fr)}}
+@media(max-width:840px){.dashboard-top-actions{width:100%;justify-content:space-between;flex-wrap:wrap}.dashboard-top-actions .btn{min-height:38px}.dashboard-chart-card,.dashboard-priority-card,.dashboard-workload,.dashboard-approval-card{padding:15px}.dashboard-chart-layout{grid-template-columns:130px minmax(0,1fr);gap:16px}.dashboard-donut{width:125px}.dashboard-donut:after{inset:18px}.dashboard-secondary{margin-top:12px}.workload-row{grid-template-columns:minmax(0,1fr) 80px 24px}}
+@media(max-width:520px){.dashboard-chart-layout{grid-template-columns:1fr}.dashboard-donut{margin:0 auto}.workload-row{grid-template-columns:minmax(0,1fr) 24px}.workload-meter{grid-column:1/-1}.dashboard-top-actions{display:grid;grid-template-columns:1fr}.dashboard-top-actions .month-switcher{width:max-content}.dashboard-top-actions .btn{width:100%}}
+
 /* ---------- demandas ---------- */
 .demand-toolbar{display:flex;gap:8px;overflow:auto;margin-bottom:16px;scrollbar-width:none}.demand-list{display:grid;gap:9px}.demand-card{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center;padding:13px 14px;cursor:pointer;transition:.16s ease}.demand-card:hover{border-color:#36402e;transform:translateY(-1px)}.demand-icon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:rgba(173,244,3,.08);color:var(--lime)}.demand-icon.warn{background:rgba(255,203,102,.09);color:var(--warn)}.demand-icon.danger{background:rgba(255,139,139,.09);color:var(--danger)}.demand-icon.info{background:rgba(122,184,255,.09);color:var(--info)}.demand-copy{min-width:0}.demand-copy strong{display:block;font-size:11.5px}.demand-copy p{font-size:9.5px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.demand-meta{text-align:right}.demand-meta strong{font-size:9px;color:#c9d0c2;display:block}.demand-meta span{font-size:8px;color:#65705f;display:block;margin-top:4px}.priority-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--warn);margin-right:5px}
 
@@ -2034,9 +2062,83 @@ function financeView(){
 }
 
 function adminHome(){
-  const waiting=posts.filter(p=>p.status==='waiting').length,changes=posts.filter(p=>p.status==='changes'||p.status==='rejected').length,planned=editorials.reduce((n,e)=>n+e.items.length,0),pendingEditorials=editorials.filter(e=>e.status==='waiting'||e.status==='changes').length;
+  const totalPosts=posts.length;
+  const waiting=posts.filter(p=>p.status==='waiting').length;
+  const approved=posts.filter(p=>p.status==='approved').length;
+  const changes=posts.filter(p=>p.status==='changes'||p.status==='rejected').length;
+  const drafts=posts.filter(p=>p.status==='draft'||p.status==='material').length;
+  const planned=editorials.reduce((n,e)=>n+e.items.length,0);
+  const pendingEditorials=editorials.filter(e=>e.status==='waiting'||e.status==='changes').length;
   const c=clients.length?clientById(currentClient):null,ed=c?currentEditorial():null;
-  return `<div class="dashboard-top"><div><div class="dashboard-eyebrow">${ICONS.home} Dashboard operacional</div><div class="dashboard-title">Entregas</div><p class="dashboard-sub">Acompanhe produção, aprovações e gargalos da Clímax em um só lugar.</p></div><div class="month-switcher"><span>${escapeHtml(currentMonthLabel())}</span></div></div><div class="stats">${statCard('users','Clientes ativos',clients.length)}${statCard('plan','Publicações planejadas',planned,'editoriais do ciclo atual','good')}${statCard('clock','Aguardando aprovação',waiting,'precisam de retorno')}${statCard('content','Ajustes / reprovações',changes,'acompanhar revisões','bad')}</div><div class="section-head"><h3>Saúde da operação</h3><button class="link-btn" data-route="demands">Abrir demandas ${ICONS.right}</button></div><div class="ops-grid"><section class="surface ops-card info"><small>${ICONS.clock} Aprovações pendentes</small><div class="ops-value">${waiting}</div><div class="ops-label">conteúdos aguardando retorno</div></section><section class="surface ops-card ${pendingEditorials?'warn':'good'}"><small>${ICONS.plan} Editoriais pendentes</small><div class="ops-value">${pendingEditorials}</div><div class="ops-label">aguardando aprovação ou ajustes</div></section><section class="surface ops-card ${changes?'warn':'good'}"><small>${ICONS.check} Fluxos travados</small><div class="ops-value">${changes}</div><div class="ops-label">conteúdos em alteração</div></section></div>${ed?`<section class="surface editorial-home-card"><div><div class="eyebrow">Editorial do mês · ${escapeHtml(c.name)}</div><h3>${escapeHtml(ed.month)} · ${escapeHtml(editorialStatusLabel[ed.status]||ed.status)}</h3><p>${ed.items.length} publicações planejadas · versão ${ed.version}. Planejamento vem antes da produção.</p></div><button class="btn btn-secondary" data-route="editorial">Abrir editorial ${ICONS.right}</button></section>`:'<section class="surface empty-state"><strong>Nenhum cliente vinculado</strong><p>Crie ou vincule um cliente para começar a operação.</p></section>'}<div class="home-main"><section class="surface list-card"><div class="section-head" style="margin:14px 0 5px"><h3>Demandas recentes</h3><button class="link-btn" data-route="demands">Ver todas ${ICONS.right}</button></div>${demandRows(5)||'<div class="empty-state"><strong>Sem demandas</strong><p>Quando houver aprovações ou alterações, elas aparecem aqui.</p></div>'}</section><div class="home-side"><section class="surface storage-mini"><div class="section-head" style="margin:0"><h3>Armazenamento</h3><button class="link-btn" data-route="archive">Gerenciar</button></div><div class="archive-state">● Supabase Storage ativo</div><div class="storage-label"><span>Mídia privada por cliente</span><span>100 MB/arquivo</span></div></section><section class="surface approval-list"><div class="section-head" style="margin:0 0 5px"><h3>Próximas aprovações</h3><button class="link-btn" data-route="approval">Ver todas</button></div>${posts.filter(p=>p.status==='waiting').slice(0,3).map(p=>`<div class="approval-item" data-open-post="${escapeHtml(p.id)}"><div class="approval-avatar">${escapeHtml(clientById(p.client).init)}</div><div><strong>${escapeHtml(p.title)}</strong><span>${escapeHtml(clientById(p.client).name)}</span></div><div class="approval-time">${escapeHtml(p.date.split(' · ')[1]||'')}</div></div>`).join('')||'<div class="empty-state"><strong>Nenhuma aprovação pendente</strong></div>'}</section></div></div>`;
+  const approvalRate=totalPosts?Math.round((approved/totalPosts)*100):0;
+  const actionCount=waiting+changes+pendingEditorials;
+  const safeTotal=Math.max(totalPosts,1);
+  const approvedDeg=(approved/safeTotal)*360;
+  const waitingDeg=approvedDeg+(waiting/safeTotal)*360;
+  const changesDeg=waitingDeg+(changes/safeTotal)*360;
+  const clientLoad=clients.map(client=>{
+    const cp=posts.filter(p=>p.client===client.id),cw=cp.filter(p=>p.status==='waiting').length,cc=cp.filter(p=>p.status==='changes'||p.status==='rejected').length;
+    return {client,total:cp.length,waiting:cw,changes:cc};
+  }).sort((a,b)=>(b.waiting+b.changes)-(a.waiting+a.changes)||b.total-a.total);
+  const maxClient=Math.max(1,...clientLoad.map(x=>x.total));
+  const nextApprovals=posts.filter(p=>p.status==='waiting').slice(0,4);
+  return `<div class="dashboard-top dashboard-top-refined"><div><div class="dashboard-eyebrow">${ICONS.home} Dashboard operacional</div><div class="dashboard-title">Entregas</div><p class="dashboard-sub">O que está rodando, o que depende de cliente e o que precisa da sua atenção agora.</p></div><div class="dashboard-top-actions"><div class="month-switcher"><span>${escapeHtml(currentMonthLabel())}</span></div><button class="btn btn-secondary" data-route="demands">Ver demandas ${ICONS.right}</button></div></div>
+
+  <div class="stats dashboard-stats">
+    ${statCard('users','Clientes ativos',clients.length,'carteira atual','good')}
+    ${statCard('plan','Planejadas',planned,'publicações no ciclo','good')}
+    ${statCard('clock','Aguardando cliente',waiting,'precisam de retorno')}
+    ${statCard('content','Em ajuste',changes,changes?'revisar com prioridade':'fluxo livre',changes?'bad':'good')}
+  </div>
+
+  <div class="dashboard-core">
+    <section class="surface dashboard-chart-card">
+      <div class="dashboard-card-head"><div><small>STATUS DOS CONTEÚDOS</small><h3>Visão geral da produção</h3></div><span class="dashboard-rate">${approvalRate}% aprovados</span></div>
+      <div class="dashboard-chart-layout">
+        <div class="dashboard-donut" style="--approved:${approvedDeg}deg;--waiting:${waitingDeg}deg;--changes:${changesDeg}deg">
+          <div class="dashboard-donut-center"><strong>${totalPosts}</strong><span>conteúdos</span></div>
+        </div>
+        <div class="dashboard-legend">
+          <div><i class="lg-approved"></i><span>Aprovados</span><strong>${approved}</strong></div>
+          <div><i class="lg-waiting"></i><span>Aguardando</span><strong>${waiting}</strong></div>
+          <div><i class="lg-changes"></i><span>Ajustes</span><strong>${changes}</strong></div>
+          <div><i class="lg-draft"></i><span>Rascunho / material</span><strong>${drafts}</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="surface dashboard-priority-card ${actionCount?'has-attention':''}">
+      <div class="dashboard-card-head"><div><small>PRIORIDADE</small><h3>Precisa de atenção</h3></div><span class="priority-total">${actionCount}</span></div>
+      <div class="priority-stack">
+        <button data-route="approval"><span class="priority-icon waiting">${ICONS.clock}</span><span><strong>${waiting} aprovações</strong><small>conteúdos aguardando retorno</small></span>${ICONS.right}</button>
+        <button data-route="demands"><span class="priority-icon danger">${ICONS.content}</span><span><strong>${changes} ajustes</strong><small>alterações ou reprovações</small></span>${ICONS.right}</button>
+        <button data-route="editorial"><span class="priority-icon editorial">${ICONS.plan}</span><span><strong>${pendingEditorials} editoriais</strong><small>aguardando decisão do cliente</small></span>${ICONS.right}</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="dashboard-secondary">
+    <section class="surface dashboard-workload">
+      <div class="dashboard-card-head"><div><small>CARTEIRA</small><h3>Carga por cliente</h3></div><button class="link-btn" data-route="clients">Ver clientes</button></div>
+      <div class="workload-list">
+        ${clientLoad.map(x=>`<button class="workload-row" data-client="${escapeHtml(x.client.id)}"><div class="workload-person"><span>${escapeHtml(x.client.init)}</span><div><strong>${escapeHtml(x.client.name)}</strong><small>${x.waiting+x.changes?x.waiting+x.changes+' pendência'+(x.waiting+x.changes>1?'s':''):'Sem pendências'}</small></div></div><div class="workload-meter"><i style="width:${Math.max(x.total?8:0,Math.round((x.total/maxClient)*100))}%"></i></div><b>${x.total}</b></button>`).join('')||'<div class="empty-state"><strong>Nenhum cliente cadastrado</strong></div>'}
+      </div>
+    </section>
+
+    <section class="surface dashboard-approval-card">
+      <div class="dashboard-card-head"><div><small>FILA</small><h3>Próximas aprovações</h3></div><button class="link-btn" data-route="approval">Ver todas</button></div>
+      <div class="dashboard-approval-list">
+        ${nextApprovals.map(p=>`<button class="dashboard-approval-row" data-open-post="${escapeHtml(p.id)}"><span class="approval-avatar">${escapeHtml(clientById(p.client).init)}</span><span><strong>${escapeHtml(p.title)}</strong><small>${escapeHtml(clientById(p.client).name)}</small></span><em>${escapeHtml(p.date.split(' · ')[1]||'Hoje')}</em>${ICONS.right}</button>`).join('')||'<div class="empty-state compact"><strong>Nenhuma aprovação pendente</strong><p>O fluxo está em dia.</p></div>'}
+      </div>
+    </section>
+  </div>
+
+  ${ed?`<section class="surface editorial-home-card dashboard-editorial"><div><div class="eyebrow">Editorial do mês · ${escapeHtml(c.name)}</div><h3>${escapeHtml(ed.month)} · ${escapeHtml(editorialStatusLabel[ed.status]||ed.status)}</h3><p>${ed.items.length} publicações planejadas · versão ${ed.version}. Planejamento vem antes da produção.</p></div><button class="btn btn-secondary" data-route="editorial">Abrir editorial ${ICONS.right}</button></section>`:''}
+
+  <section class="surface list-card dashboard-demands">
+    <div class="dashboard-card-head"><div><small>ATIVIDADE</small><h3>Demandas recentes</h3></div><button class="link-btn" data-route="demands">Ver todas ${ICONS.right}</button></div>
+    ${demandRows(5)||'<div class="empty-state"><strong>Sem demandas</strong><p>Quando houver aprovações ou alterações, elas aparecem aqui.</p></div>'}
+  </section>`;
 }
 function getDemands(){
   const items=[];
