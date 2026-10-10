@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090a08">
+  <meta name="description" content="Clímax Home — acesso rápido ao Painel Clímax e ao Clímax Portal.">
+  <title>Clímax Home</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --lime:#ADF403;--lime2:#C7FF3B;--bg:#090A08;--panel:#10120F;--panel2:#151814;
+      --line:#272C24;--text:#F5F7F1;--muted:#90988C;--muted2:#687063;--shadow:0 30px 90px rgba(0,0,0,.34)
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}
+    body{min-height:100svh;overflow-x:hidden}
+    a,button{font:inherit}
+    button{cursor:pointer}
+    .app{min-height:100svh;display:grid;place-items:center;position:relative;isolation:isolate;overflow:hidden;padding:28px}
+    .glow{position:fixed;inset:auto;pointer-events:none;filter:blur(1px);z-index:-2}
+    .glow.one{width:520px;height:520px;border-radius:50%;left:-210px;top:-210px;background:radial-gradient(circle,rgba(173,244,3,.10),rgba(173,244,3,0) 66%)}
+    .glow.two{width:520px;height:520px;border-radius:50%;right:-230px;bottom:-240px;background:radial-gradient(circle,rgba(173,244,3,.065),rgba(173,244,3,0) 68%)}
+    .gridlines{position:fixed;inset:0;z-index:-3;opacity:.22;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:48px 48px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.8),transparent 88%)}
+    .shell{width:min(1020px,100%);display:grid;gap:22px}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:18px}
+    .brand{display:flex;align-items:center;gap:15px}
+    .brand img{width:184px;height:auto;display:block}
+    .home-badge{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border:1px solid rgba(173,244,3,.16);background:rgba(173,244,3,.055);border-radius:999px;color:var(--lime);font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+    .home-badge i{width:6px;height:6px;border-radius:50%;background:var(--lime);box-shadow:0 0 12px rgba(173,244,3,.3)}
+    .hero{padding:34px 0 4px}
+    .eyebrow{font-size:10px;color:var(--lime);font-weight:800;letter-spacing:.13em;text-transform:uppercase;margin-bottom:12px}
+    h1{font:800 clamp(38px,6vw,72px)/.95 Manrope,Inter,sans-serif;letter-spacing:-.055em;margin:0;max-width:760px}
+    h1 span{color:var(--lime)}
+    .sub{max-width:690px;color:var(--muted);font-size:14px;line-height:1.65;margin:18px 0 0}
+    .launchers{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+    .card{position:relative;min-height:270px;display:flex;flex-direction:column;text-decoration:none;color:inherit;padding:24px;border-radius:22px;border:1px solid var(--line);background:linear-gradient(180deg,rgba(18,21,16,.98),rgba(13,15,12,.98));overflow:hidden;transition:transform .2s ease,border-color .2s ease,background .2s ease}
+    .card:before{content:"";position:absolute;width:210px;height:210px;border-radius:50%;right:-95px;bottom:-95px;background:rgba(173,244,3,.035);transition:.25s ease}
+    .card:hover{transform:translateY(-4px);border-color:rgba(173,244,3,.3);background:linear-gradient(180deg,#141812,#0f120e)}
+    .card:hover:before{transform:scale(1.14);background:rgba(173,244,3,.06)}
+    .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+    .icon{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;border:1px solid rgba(173,244,3,.12);background:rgba(173,244,3,.065);color:var(--lime)}
+    .icon svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8}
+    .arrow{width:38px;height:38px;border-radius:12px;border:1px solid var(--line);display:grid;place-items:center;color:#8d9688;transition:.2s ease}
+    .card:hover .arrow{color:var(--lime);border-color:rgba(173,244,3,.25);transform:translate(2px,-2px)}
+    .card-copy{margin-top:auto;position:relative;z-index:1}
+    .tag{font-size:9px;color:var(--lime);font-weight:800;text-transform:uppercase;letter-spacing:.1em}
+    h2{font:800 26px Manrope,Inter,sans-serif;letter-spacing:-.035em;margin:8px 0 8px}
+    .card p{margin:0;color:var(--muted);font-size:12px;line-height:1.55;max-width:390px}
+    .bottom{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:4px}
+    .hint{display:flex;align-items:center;gap:9px;color:var(--muted2);font-size:10px}
+    .hint kbd{border:1px solid var(--line);background:#11140f;border-radius:7px;padding:4px 7px;color:#9ca594}
+    .install{display:none;min-height:40px;padding:0 14px;border-radius:11px;border:1px solid var(--line);background:#151814;color:#e9ece6;font-size:11px;font-weight:800}
+    .install.show{display:inline-flex;align-items:center;gap:8px}
+    .install:hover{border-color:#3a4433;background:#1a1f18}
+    .footer{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid rgba(255,255,255,.035);padding-top:15px;color:#5f675b;font-size:9px}
+    .footer strong{color:#818a7c}
+    @media(max-width:760px){
+      .app{padding:20px 16px}
+      .top{align-items:flex-start;flex-direction:column}
+      .brand img{width:155px}
+      .hero{padding-top:18px}
+      .launchers{grid-template-columns:1fr}
+      .card{min-height:220px}
+      .bottom{align-items:flex-start;flex-direction:column}
+      .footer{align-items:flex-start;flex-direction:column}
+    }
+    @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="gridlines"></div><div class="glow one"></div><div class="glow two"></div>
+    <section class="shell">
+      <header class="top">
+        <div class="brand"><img src="/logo.svg" alt="Clímax Studio"></div>
+        <span class="home-badge"><i></i> Clímax Home</span>
+      </header>
+
+      <section class="hero">
+        <div class="eyebrow">Seu ponto de partida</div>
+        <h1>Tudo da Clímax,<br><span>em um só lugar.</span></h1>
+        <p class="sub">Acesso rápido aos dois ambientes da operação: gestão interna no Painel e relacionamento, conteúdo e aprovações no Portal.</p>
+      </section>
+
+      <section class="launchers" aria-label="Acessos Clímax">
+        <a class="card" href="https://painel-apice.vercel.app" id="panelCard">
+          <div class="card-top">
+            <div class="icon">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            </div>
+            <div class="arrow">↗</div>
+          </div>
+          <div class="card-copy">
+            <div class="tag">Gestão interna</div>
+            <h2>Painel Clímax</h2>
+            <p>CRM, clientes, tarefas, projetos, financeiro, agenda e toda a operação interna da agência.</p>
+          </div>
+        </a>
+
+        <a class="card" href="https://climaxportal.vercel.app" id="portalCard">
+          <div class="card-top">
+            <div class="icon">
+              <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg>
+            </div>
+            <div class="arrow">↗</div>
+          </div>
+          <div class="card-copy">
+            <div class="tag">Clientes & aprovações</div>
+            <h2>Clímax Portal</h2>
+            <p>Conteúdos, editoriais, aprovações e a ponte entre a Clímax e cada cliente.</p>
+          </div>
+        </a>
+      </section>
+
+      <div class="bottom">
+        <div class="hint"><kbd>1</kbd> Painel <kbd>2</kbd> Portal</div>
+        <button class="install" id="installBtn">＋ Instalar Clímax Home</button>
+      </div>
+
+      <footer class="footer">
+        <span><strong>Clímax Studio</strong> · Home operacional</span>
+        <span>Feito para abrir, escolher e trabalhar.</span>
+      </footer>
+    </section>
+  </main>
+
+  <script>
+    let installPrompt=null;
+    const installBtn=document.getElementById('installBtn');
+    window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;installBtn.classList.add('show')});
+    installBtn.addEventListener('click',async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;installBtn.classList.remove('show')});
+    window.addEventListener('appinstalled',()=>installBtn.classList.remove('show'));
+    document.addEventListener('keydown',e=>{
+      if(e.key==='1') location.href=document.getElementById('panelCard').href;
+      if(e.key==='2') location.href=document.getElementById('portalCard').href;
+    });
+    if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
+  </script>
+</body>
+</html>
