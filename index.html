@@ -713,10 +713,11 @@ html[data-theme="light"] .sidebar-toggle{background:#fff;border-color:var(--line
 .local-drag-handle .lucide{width:14px;height:14px}.local-order-number{min-width:24px;height:24px;border-radius:999px;background:rgba(8,10,7,.8);border:1px solid rgba(255,255,255,.1);display:grid!important;place-items:center;padding:0 6px!important;color:#fff!important;font-size:8px!important;font-weight:850}
 .local-order-actions{display:grid;grid-template-columns:30px 30px 30px;gap:5px;padding:0 7px 7px}.local-order-actions button{position:static;width:30px;height:28px;border-radius:7px;background:#121510;border:1px solid var(--line);color:#9da598;display:grid;place-items:center}.local-order-actions button:last-child{color:#ff9999;border-color:rgba(255,100,100,.14);background:rgba(255,100,100,.06)}.local-order-actions button:disabled{opacity:.28}.local-order-actions .lucide{width:11px!important;height:11px!important}
 
-/* ---------- prévia com enquadramento fixo + tela cheia ---------- */
-.content-visual-stage{max-width:680px}
-.ig-media{height:min(54vh,520px);min-height:300px;aspect-ratio:auto}
-.ig-media img{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain}
+/* ---------- prévia compacta, proporcional e tela cheia ---------- */
+/* No detalhe do conteúdo a arte nunca é recortada: ela apenas é reduzida para caber. */
+.content-visual-stage{max-width:620px}
+.ig-media{height:clamp(220px,40vh,380px);min-height:0;aspect-ratio:auto;padding:10px}
+.ig-media img{display:block;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;object-position:center}
 .ig-fullscreen{position:absolute;left:12px;top:12px;z-index:7;width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(17,20,15,.84);backdrop-filter:blur(10px);color:#fff;display:grid;place-items:center}
 .ig-fullscreen:hover{background:rgba(30,34,26,.96)}.ig-fullscreen .lucide{width:16px;height:16px}
 .preview-fullscreen-open{overflow:hidden!important}
@@ -725,20 +726,21 @@ html[data-theme="light"] .sidebar-toggle{background:#fff;border-color:var(--line
 .content-visual-stage.is-fullscreen .ig-carousel{min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;max-width:1500px;width:100%;margin:0 auto}
 .content-visual-stage.is-fullscreen .ig-carousel-viewport{height:100%;min-height:0;border-radius:16px}
 .content-visual-stage.is-fullscreen .ig-carousel-track,.content-visual-stage.is-fullscreen .ig-slide{height:100%}
-.content-visual-stage.is-fullscreen .ig-media{height:100%;min-height:0;max-height:none}
-.content-visual-stage.is-fullscreen .ig-media img{object-fit:contain}
+.content-visual-stage.is-fullscreen .ig-media{height:100%;min-height:0;max-height:none;padding:0}
+.content-visual-stage.is-fullscreen .ig-media img{width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain}
 .content-visual-stage.is-fullscreen .ig-fullscreen{left:auto;right:14px;top:14px;width:42px;height:42px}
 .content-visual-stage.is-fullscreen .ig-download{right:14px;bottom:14px}
 .content-visual-stage.is-fullscreen .ig-arrow{width:46px;height:46px}
 .content-visual-stage.is-fullscreen .ig-prev{left:18px}.content-visual-stage.is-fullscreen .ig-next{right:18px}
 @media(max-width:840px){
-  .ig-media{height:min(52dvh,500px);min-height:260px}
+  .content-visual-stage{max-width:100%}
+  .ig-media{height:clamp(200px,38dvh,340px);min-height:0;padding:8px}
   .ig-fullscreen{left:9px;top:9px;width:34px;height:34px}
   .content-visual-stage.is-fullscreen{padding:calc(10px + env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom))}
   .content-visual-stage.is-fullscreen .visual-stage-head{padding:0 4px}
   .content-visual-stage.is-fullscreen .ig-carousel-viewport{border-radius:12px}
 }
-@media(max-height:720px) and (min-width:841px){.ig-media{height:min(48vh,400px);min-height:260px}}
+@media(max-height:720px) and (min-width:841px){.ig-media{height:clamp(210px,36vh,320px)}}
 
 /* ===== Clímax Portal V1.0 — QA hardening ===== */
 html,body{max-width:100%;overflow-x:hidden}
