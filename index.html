@@ -703,6 +703,16 @@ html[data-theme="light"] .sidebar-toggle{background:#fff;border-color:var(--line
 .preview-manage-grid.saving-order{pointer-events:none;opacity:.65}
 @media(max-width:760px){.preview-order-actions{grid-template-columns:34px 34px minmax(0,1fr)}.preview-order-actions>button{height:32px}.preview-drag-handle{width:30px;height:30px}}
 
+/* ---------- ordenar imagens novas antes de salvar ---------- */
+.local-preview-grid.reorderable-local .local-preview-item{cursor:grab;transition:transform .16s ease,border-color .16s ease,opacity .16s ease}
+.local-preview-grid.reorderable-local .local-preview-item:active{cursor:grabbing}
+.local-preview-item.dragging{opacity:.4;transform:scale(.97)}
+.local-preview-item.drag-over{border-color:var(--lime);box-shadow:0 0 0 1px rgba(173,244,3,.2)}
+.local-order-top{position:absolute;left:6px;right:6px;top:6px;z-index:3;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+.local-drag-handle{width:28px;height:28px;border-radius:8px;background:rgba(8,10,7,.8);border:1px solid rgba(255,255,255,.12);display:grid!important;place-items:center;padding:0!important;color:#fff!important}
+.local-drag-handle .lucide{width:14px;height:14px}.local-order-number{min-width:24px;height:24px;border-radius:999px;background:rgba(8,10,7,.8);border:1px solid rgba(255,255,255,.1);display:grid!important;place-items:center;padding:0 6px!important;color:#fff!important;font-size:8px!important;font-weight:850}
+.local-order-actions{display:grid;grid-template-columns:30px 30px 30px;gap:5px;padding:0 7px 7px}.local-order-actions button{position:static;width:30px;height:28px;border-radius:7px;background:#121510;border:1px solid var(--line);color:#9da598;display:grid;place-items:center}.local-order-actions button:last-child{color:#ff9999;border-color:rgba(255,100,100,.14);background:rgba(255,100,100,.06)}.local-order-actions button:disabled{opacity:.28}.local-order-actions .lucide{width:11px!important;height:11px!important}
+
 /* ===== Clímax Portal V1.0 — QA hardening ===== */
 html,body{max-width:100%;overflow-x:hidden}
 button,input,select,textarea,a{font:inherit}
@@ -1886,7 +1896,18 @@ function localDateParts(value){
 }
 function setupPreviewFilePicker(inputId,mountId){
   const input=document.getElementById(inputId),mount=document.getElementById(mountId);if(!input||!mount)return;
-  const render=()=>{const files=[...(input.files||[])];mount.innerHTML=files.length?`<div class="local-preview-grid">${files.map((file,i)=>{const url=URL.createObjectURL(file);setTimeout(()=>URL.revokeObjectURL(url),60000);return `<div class="local-preview-item"><img src="${url}" alt="${escapeHtml(file.name)}"><button type="button" data-remove-local-preview="${i}" title="Remover imagem" aria-label="Remover imagem">${ICONS.trash}</button><span>${escapeHtml(file.name)}</span></div>`}).join('')}</div>`:'';hydrateLucideIcons(mount);mount.querySelectorAll('[data-remove-local-preview]').forEach(btn=>btn.onclick=()=>{const remove=Number(btn.dataset.removeLocalPreview),dt=new DataTransfer();files.forEach((file,i)=>{if(i!==remove)dt.items.add(file)});input.files=dt.files;render()})};
+  const setFiles=files=>{const dt=new DataTransfer();files.forEach(file=>dt.items.add(file));input.files=dt.files};
+  const render=()=>{const files=[...(input.files||[])];mount.innerHTML=files.length?`<div class="local-preview-grid reorderable-local">${files.map((file,i)=>{const url=URL.createObjectURL(file);setTimeout(()=>URL.revokeObjectURL(url),60000);return `<div class="local-preview-item" draggable="true" data-local-index="${i}"><div class="local-order-top"><span class="local-drag-handle">${ICONS.grip}</span><span class="local-order-number">${i+1}</span></div><img src="${url}" alt="${escapeHtml(file.name)}"><span>${i===0?'Capa · ':''}${escapeHtml(file.name)}</span><div class="local-order-actions"><button type="button" data-local-move="${i}|-1" ${i===0?'disabled':''} title="Mover para esquerda">${ICONS.left}</button><button type="button" data-local-move="${i}|1" ${i===files.length-1?'disabled':''} title="Mover para direita">${ICONS.right}</button><button type="button" data-remove-local-preview="${i}" title="Remover imagem" aria-label="Remover imagem">${ICONS.trash}</button></div></div>`}).join('')}</div>`:'';hydrateLucideIcons(mount);
+    mount.querySelectorAll('[data-remove-local-preview]').forEach(btn=>btn.onclick=()=>{const remove=Number(btn.dataset.removeLocalPreview),next=files.filter((_,i)=>i!==remove);setFiles(next);render()});
+    mount.querySelectorAll('[data-local-move]').forEach(btn=>btn.onclick=()=>{const [raw,dirRaw]=btn.dataset.localMove.split('|'),from=Number(raw),dir=Number(dirRaw),to=Math.max(0,Math.min(files.length-1,from+dir));if(from===to)return;const next=[...files],[item]=next.splice(from,1);next.splice(to,0,item);setFiles(next);render()});
+    const grid=mount.querySelector('.reorderable-local');let dragged=-1;
+    grid?.querySelectorAll('[data-local-index]').forEach(item=>{
+      item.addEventListener('dragstart',e=>{dragged=Number(item.dataset.localIndex);item.classList.add('dragging');if(e.dataTransfer)e.dataTransfer.effectAllowed='move'});
+      item.addEventListener('dragend',()=>{item.classList.remove('dragging');grid.querySelectorAll('.drag-over').forEach(x=>x.classList.remove('drag-over'));dragged=-1});
+      item.addEventListener('dragover',e=>{e.preventDefault();if(dragged>=0&&dragged!==Number(item.dataset.localIndex)){grid.querySelectorAll('.drag-over').forEach(x=>x.classList.remove('drag-over'));item.classList.add('drag-over')}});
+      item.addEventListener('drop',e=>{e.preventDefault();const to=Number(item.dataset.localIndex);if(dragged<0||dragged===to)return;const next=[...files],[moved]=next.splice(dragged,1);next.splice(to,0,moved);setFiles(next);render()});
+    });
+  };
   input.addEventListener('change',render);render();
 }
 function openEditContent(id){
