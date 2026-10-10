@@ -1152,6 +1152,53 @@ html[data-theme="light"] .detail-copy,html[data-theme="light"] .comment-box labe
 @keyframes bootbar{0%{transform:translateX(-120%)}100%{transform:translateX(340%)}}
 @media(max-width:760px){.boot-loader-mark{width:58px;height:58px;border-radius:19px}.boot-loader-brand{font-size:16px}}
 
+
+/* ===== Logo maior + correção da sidebar ===== */
+.brand-wrap{
+  min-height:96px!important;
+  padding:6px 6px 4px!important;
+  margin-bottom:18px!important;
+  overflow:visible!important;
+}
+.brand-logo{
+  width:232px!important;
+  height:84px!important;
+  max-height:none!important;
+  aspect-ratio:auto!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+}
+.sidebar{
+  overflow-x:hidden!important;
+}
+.sidebar-toggle{
+  right:8px!important;
+  top:88px!important;
+  width:30px!important;
+  height:30px!important;
+  border-radius:10px!important;
+  box-shadow:none!important;
+  background:#11140f!important;
+  z-index:45!important;
+}
+.app-shell.sidebar-collapsed .sidebar-toggle{right:8px!important}
+.app-shell.sidebar-collapsed .brand-wrap{min-height:76px!important;justify-content:center!important}
+.app-shell.sidebar-collapsed .brand-logo{
+  width:52px!important;
+  height:52px!important;
+  max-height:none!important;
+  aspect-ratio:auto!important;
+  object-fit:contain!important;
+  object-position:center!important;
+}
+@media (max-width:1180px) and (min-width:841px){
+  .brand-wrap{min-height:78px!important}
+  .brand-logo{width:54px!important;height:54px!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;object-position:center!important}
+}
+@media(max-width:840px){
+  .mobile-logo{width:176px!important;height:46px!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;object-position:left center!important}
+}
+
 </style>
 </head>
 <body>
