@@ -939,6 +939,92 @@ html[data-theme="light"] .sidebar-toggle{background:#fff;border-color:var(--line
   #detailOverlay .drawer-scroll{padding-bottom:16px!important}
 }
 
+/* ---------- carrossel contínuo real: slides encostados, sem respiro entre artes ---------- */
+@media(min-width:841px){
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen){
+    width:min(100%,var(--preview-width,560px));
+    max-width:min(100%,var(--preview-width,560px));
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-carousel,
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-carousel-viewport,
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-carousel-track,
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-slide,
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-media{
+    width:100%;
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-carousel-track{
+    align-items:flex-start;
+    gap:0!important;
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-slide{
+    flex:0 0 100%;
+    min-width:100%;
+    max-width:100%;
+    margin:0!important;
+    padding:0!important;
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-media{
+    display:block;
+    height:auto;
+    padding:0!important;
+    margin:0!important;
+    line-height:0;
+    overflow:hidden;
+    background:#000;
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-media img{
+    display:block;
+    width:100%!important;
+    height:auto!important;
+    max-width:none!important;
+    max-height:none!important;
+    margin:0!important;
+    object-fit:initial!important;
+    box-shadow:none!important;
+    border-radius:0!important;
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-carousel-viewport{
+    background:#000;
+    line-height:0;
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-slide-caption{
+    line-height:1.35;
+  }
+}
+@media(max-width:840px){
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen){
+    width:min(100%,var(--preview-width-mobile,100%));
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-carousel-track{
+    align-items:flex-start;
+    gap:0!important;
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-slide{
+    flex:0 0 100%;
+    min-width:100%;
+    max-width:100%;
+    margin:0!important;
+    padding:0!important;
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-media{
+    width:100%;
+    height:auto!important;
+    padding:0!important;
+    margin:0!important;
+    line-height:0;
+    overflow:hidden;
+    background:#000;
+  }
+  .detail-preview-pane .content-visual-stage:not(.is-fullscreen) .ig-media img{
+    display:block;
+    width:100%!important;
+    height:auto!important;
+    max-width:none!important;
+    max-height:none!important;
+    margin:0!important;
+    object-fit:initial!important;
+  }
+}
 /* ===== Clímax Portal V1.0 — QA hardening ===== */
 html,body{max-width:100%;overflow-x:hidden}
 button,input,select,textarea,a{font:inherit}
@@ -1821,8 +1907,28 @@ function setPreviewFullscreen(carousel,on){
 }
 function closeAnyPreviewFullscreen(){const active=document.querySelector('[data-preview-carousel].is-fullscreen');if(active)setPreviewFullscreen(active,false)}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.querySelector('[data-preview-carousel].is-fullscreen')){e.preventDefault();closeAnyPreviewFullscreen()}});
+function fitPreviewCarouselToOriginalRatio(carousel){
+  if(!carousel||carousel.classList.contains('is-fullscreen'))return;
+  const img=carousel.querySelector('[data-preview-slide="0"] .ig-media img');
+  if(!img)return;
+  const apply=()=>{
+    const w=img.naturalWidth||0,h=img.naturalHeight||0;
+    if(!w||!h)return;
+    const ratio=w/h;
+    const pane=carousel.closest('.detail-preview-pane');
+    const paneWidth=Math.max(240,(pane?.clientWidth||620)-60);
+    const maxHeight=Math.max(300,Math.min(window.innerHeight*.68,690));
+    const desired=Math.min(560,paneWidth,maxHeight*ratio);
+    carousel.style.setProperty('--preview-width',Math.max(220,desired)+'px');
+    const mobileWidth=Math.min((pane?.clientWidth||window.innerWidth)-28,maxHeight*ratio);
+    carousel.style.setProperty('--preview-width-mobile',Math.max(180,mobileWidth)+'px');
+  };
+  if(img.complete)apply();else img.addEventListener('load',apply,{once:true});
+}
+
 function bindPreviewCarousel(root=document){
   root.querySelectorAll('[data-preview-carousel]').forEach(carousel=>{
+    fitPreviewCarouselToOriginalRatio(carousel);
     setPreviewCarouselIndex(carousel,Number(carousel.dataset.previewIndex||0));
     const track=carousel.querySelector('[data-preview-track]');
     const viewport=carousel.querySelector('.ig-carousel-viewport');
@@ -1832,7 +1938,7 @@ function bindPreviewCarousel(root=document){
     carousel.querySelector('[data-preview-prev]')?.addEventListener('click',e=>{e.stopPropagation();move(-1)});
     carousel.querySelector('[data-preview-next]')?.addEventListener('click',e=>{e.stopPropagation();move(1)});
     carousel.querySelectorAll('[data-preview-dot]').forEach(d=>d.addEventListener('click',e=>{e.stopPropagation();setPreviewCarouselIndex(carousel,Number(d.dataset.previewDot))}));
-    carousel.querySelector('[data-preview-fullscreen]')?.addEventListener('click',e=>{e.stopPropagation();setPreviewFullscreen(carousel,!carousel.classList.contains('is-fullscreen'))});
+    carousel.querySelector('[data-preview-fullscreen]')?.addEventListener('click',e=>{e.stopPropagation();const next=!carousel.classList.contains('is-fullscreen');setPreviewFullscreen(carousel,next);if(!next)requestAnimationFrame(()=>fitPreviewCarouselToOriginalRatio(carousel))});
 
     if(!viewport||!track||!slides.length)return;
 
