@@ -691,6 +691,18 @@ html[data-theme="light"] .sidebar-toggle{background:#fff;border-color:var(--line
   .local-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
+/* ---------- ordenação de imagens ---------- */
+.preview-manage-grid.reorderable .preview-manage-item{position:relative;cursor:grab;transition:transform .16s ease,border-color .16s ease,opacity .16s ease}
+.preview-manage-grid.reorderable .preview-manage-item:active{cursor:grabbing}
+.preview-manage-item.dragging{opacity:.38;transform:scale(.97)}
+.preview-manage-item.drag-over{border-color:var(--lime);box-shadow:0 0 0 1px rgba(173,244,3,.2)}
+.preview-order-top{position:absolute;z-index:3;left:6px;right:6px;top:6px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+.preview-drag-handle{pointer-events:auto;width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(8,10,7,.78);backdrop-filter:blur(8px);color:#d5dbcf;display:grid;place-items:center}
+.preview-drag-handle .lucide{width:14px;height:14px}.preview-order-number{min-width:24px;height:24px;padding:0 6px;border-radius:999px;background:rgba(8,10,7,.78);border:1px solid rgba(255,255,255,.1);display:grid!important;place-items:center;color:#fff!important;font-size:8px!important;font-weight:850}
+.preview-order-actions{display:grid;grid-template-columns:30px 30px minmax(0,1fr);gap:5px;margin-top:6px}.preview-order-actions>button{height:28px;border-radius:7px;border:1px solid var(--line);background:#121510;color:#9da598;display:flex;align-items:center;justify-content:center;gap:4px;font-size:7.5px}.preview-order-actions>button .lucide{width:11px;height:11px}.preview-order-actions>button:disabled{opacity:.28;cursor:not-allowed}.preview-order-actions .preview-remove{margin:0;width:auto;color:#ff9999;border-color:rgba(255,100,100,.14);background:rgba(255,100,100,.06)}
+.preview-manage-grid.saving-order{pointer-events:none;opacity:.65}
+@media(max-width:760px){.preview-order-actions{grid-template-columns:34px 34px minmax(0,1fr)}.preview-order-actions>button{height:32px}.preview-drag-handle{width:30px;height:30px}}
+
 /* ===== Clímax Portal V1.0 — QA hardening ===== */
 html,body{max-width:100%;overflow-x:hidden}
 button,input,select,textarea,a{font:inherit}
@@ -996,7 +1008,8 @@ const ICONS={
   right:'<i data-lucide="chevron-right"></i>',
   help:'<i data-lucide="circle-help"></i>',
   panelClose:'<i data-lucide="panel-left-close"></i>',
-  panelOpen:'<i data-lucide="panel-left-open"></i>'
+  panelOpen:'<i data-lucide="panel-left-open"></i>',
+  grip:'<i data-lucide="grip-vertical"></i>'
 }
 
 const statusLabel={waiting:'Aguardando aprovação',approved:'Aprovado',material:'Aguardando material',changes:'Em alteração',rejected:'Reprovado',draft:'Rascunho'};
@@ -1359,6 +1372,35 @@ async function deletePreviewAsset(p,assetId){
   p.previewAssets=(p.previewAssets||[]).filter(a=>String(a.id)!==String(asset.id));
   try{await removeMediaKeys([asset.key])}catch(err){console.warn('Imagem removida do conteúdo, mas o arquivo não pôde ser limpo do Storage.',err)}
   if(p.previewAssets.length&&!p.previewAssets.some(a=>a.isCover)){p.previewAssets[0].isCover=true;const u=await db.from('content_preview_assets').update({is_cover:true}).eq('id',p.previewAssets[0].id);if(u.error)throw u.error}
+}
+async function persistPreviewOrder(p,orderedIds=[]){
+  const current=[...(p.previewAssets||[])],byId=new Map(current.map(a=>[String(a.id),a]));
+  const ordered=orderedIds.map(id=>byId.get(String(id))).filter(Boolean);
+  current.forEach(a=>{if(!ordered.includes(a))ordered.push(a)});
+  if(!ordered.length){p.previewAssets=[];return}
+  const results=await Promise.all(ordered.map((a,i)=>db.from('content_preview_assets').update({position:i,is_cover:i===0}).eq('id',a.id)));
+  const failed=results.find(r=>r.error);if(failed?.error)throw failed.error;
+  ordered.forEach((a,i)=>{a.position=i;a.isCover=i===0});p.previewAssets=ordered;
+}
+async function movePreviewAsset(p,assetId,delta){
+  const list=[...(p.previewAssets||[])],from=list.findIndex(a=>String(a.id)===String(assetId));if(from<0)return;
+  const to=Math.max(0,Math.min(list.length-1,from+delta));if(to===from)return;
+  const [item]=list.splice(from,1);list.splice(to,0,item);await persistPreviewOrder(p,list.map(a=>a.id));
+}
+function bindSavedPreviewReorder(p){
+  const grid=document.getElementById('savedPreviewGrid');if(!grid)return;
+  let draggedId='';
+  grid.querySelectorAll('[data-preview-manage-id]').forEach(item=>{
+    item.addEventListener('dragstart',e=>{draggedId=item.dataset.previewManageId;item.classList.add('dragging');if(e.dataTransfer){e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',draggedId)}});
+    item.addEventListener('dragend',()=>{item.classList.remove('dragging');grid.querySelectorAll('.drag-over').forEach(x=>x.classList.remove('drag-over'))});
+    item.addEventListener('dragover',e=>{e.preventDefault();if(draggedId&&draggedId!==item.dataset.previewManageId){grid.querySelectorAll('.drag-over').forEach(x=>x.classList.remove('drag-over'));item.classList.add('drag-over')}});
+    item.addEventListener('drop',async e=>{e.preventDefault();item.classList.remove('drag-over');const targetId=item.dataset.previewManageId;if(!draggedId||draggedId===targetId)return;
+      const list=[...(p.previewAssets||[])],from=list.findIndex(a=>String(a.id)===String(draggedId)),to=list.findIndex(a=>String(a.id)===String(targetId));if(from<0||to<0)return;
+      const [moved]=list.splice(from,1);list.splice(to,0,moved);
+      try{grid.classList.add('saving-order');await persistPreviewOrder(p,list.map(a=>a.id));toast('Ordem das imagens atualizada.');closeModal();openEditContent(p.id);render()}catch(err){toast(formatError(err,'Não foi possível salvar a nova ordem.'),'error')}finally{grid.classList.remove('saving-order');draggedId=''}
+    });
+  });
+  grid.querySelectorAll('[data-move-preview]').forEach(btn=>btn.onclick=async e=>{e.preventDefault();e.stopPropagation();const [id,dir]=btn.dataset.movePreview.split('|');try{await runBusy(btn,'',()=>movePreviewAsset(p,id,Number(dir)));closeModal();openEditContent(p.id);render()}catch(err){toast(formatError(err,'Não foi possível mover a imagem.'),'error')}});
 }
 async function downloadPreviewAsset(asset){
   if(!asset?.key)return;const r=await db.storage.from('client-media').download(asset.key,{download:asset.fileName||'imagem'});if(r.error)throw r.error;
@@ -1850,9 +1892,9 @@ function setupPreviewFilePicker(inputId,mountId){
 function openEditContent(id){
   const p=posts.find(x=>String(x.id)===String(id));if(!p||role!=='admin')return;
   const parts=localDateParts(p.scheduledAt),assets=p.previewAssets||[],lockClient=Boolean(p.mediaKey||assets.length);
-  const assetList=assets.length?`<div class="preview-manage-grid">${assets.map((a,i)=>`<div class="preview-manage-item"><img src="${escapeHtml(a.url)}" alt="Imagem ${i+1}"><div><span>${i===0?'Capa · ':''}${escapeHtml(a.fileName||('Imagem '+(i+1)))}</span><button type="button" class="preview-remove" data-delete-preview-edit="${escapeHtml(a.id)}">${ICONS.trash} Remover</button></div></div>`).join('')}</div>`:'<div class="empty-preview-manage">Nenhuma imagem de apresentação adicionada ainda.</div>';
-  openModal('Editar conteúdo',`<div class="form-grid"><div class="field"><label>Cliente</label><select id="editClient" ${lockClient?'disabled':''}>${clients.map(c=>`<option value="${escapeHtml(c.id)}" ${c.id===p.client?'selected':''}>${escapeHtml(c.name)}</option>`).join('')}</select>${lockClient?'<span class="hint">O cliente fica bloqueado depois que existem arquivos vinculados, para preservar a privacidade da mídia.</span>':''}</div><div class="field"><label>Formato de publicação</label><select id="editType">${['Post','Carrossel','Reels','Story','Outro'].map(t=>`<option ${t===p.type?'selected':''}>${t}</option>`).join('')}</select></div><div class="field"><label>Tipo de entrega</label><select id="editDeliveryKind">${Object.entries(DELIVERY_KIND_LABELS).map(([k,l])=>`<option value="${k}" ${k===p.deliveryKind?'selected':''}>${l}</option>`).join('')}</select><span class="hint">Vídeo, imagem, carrossel, site, documento ou outro.</span></div><div class="field full"><label>Título</label><input id="editTitle" maxlength="120" value="${escapeHtml(p.title)}"></div><div class="field"><label>Data</label><input id="editDate" type="date" value="${escapeHtml(parts.date)}"></div><div class="field"><label>Horário</label><input id="editTime" type="time" value="${escapeHtml(parts.time)}"></div><div class="field full"><label>Legenda / observações</label><textarea id="editCaption" maxlength="5000">${escapeHtml(p.caption||'')}</textarea></div><div class="field full"><label>Link do Drive / arquivo externo</label><div class="input-with-icon">${ICONS.link}<input id="editDrive" type="url" inputmode="url" value="${escapeHtml(p.driveUrl||'')}" placeholder="https://drive.google.com/..."></div></div><div class="field full content-preview-manager"><div class="preview-manager-head"><div><strong>Imagens de apresentação</strong><span>Essas imagens aparecem bonitas no Portal e podem representar uma capa, um post ou as páginas de um carrossel.</span></div><span class="preview-manager-count">${assets.length}/20</span></div>${assetList}<div class="preview-upload-row"><input id="editPreviews" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif"><div id="editPreviewSelection"></div><span class="hint">Selecione uma ou várias imagens. Você pode remover individualmente antes de salvar.</span></div></div>${p.mediaKey?'<div class="field full"><span class="hint">O arquivo principal anexado será mantido. Para substituí-lo, use “Enviar nova versão”.</span></div>':''}</div>`,`<button class="btn btn-secondary" data-close-modal>Cancelar</button><button class="btn" id="saveContentEdit">Salvar alterações</button>`);
-  setupPreviewFilePicker('editPreviews','editPreviewSelection');document.querySelectorAll('[data-delete-preview-edit]').forEach(b=>b.onclick=()=>runBusy(b,'Removendo…',async()=>{await deletePreviewAsset(p,b.dataset.deletePreviewEdit);toast('Imagem removida.');closeModal();openEditContent(p.id);render()}).catch(err=>toast(formatError(err,'Não foi possível remover a imagem.'),'error')));
+  const assetList=assets.length?`<div class="preview-manage-grid reorderable" id="savedPreviewGrid">${assets.map((a,i)=>`<div class="preview-manage-item" draggable="true" data-preview-manage-id="${escapeHtml(a.id)}"><div class="preview-order-top"><button type="button" class="preview-drag-handle" title="Arraste para reordenar" aria-label="Arraste para reordenar">${ICONS.grip}</button><span class="preview-order-number">${i+1}</span></div><img src="${escapeHtml(a.url)}" alt="Imagem ${i+1}"><div><span>${i===0?'Capa · ':''}${escapeHtml(a.fileName||('Imagem '+(i+1)))}</span><div class="preview-order-actions"><button type="button" data-move-preview="${escapeHtml(a.id)}|-1" ${i===0?'disabled':''} title="Mover para esquerda">${ICONS.left}</button><button type="button" data-move-preview="${escapeHtml(a.id)}|1" ${i===assets.length-1?'disabled':''} title="Mover para direita">${ICONS.right}</button><button type="button" class="preview-remove" data-delete-preview-edit="${escapeHtml(a.id)}">${ICONS.trash}<span>Remover</span></button></div></div></div>`).join('')}</div>`:'<div class="empty-preview-manage">Nenhuma imagem de apresentação adicionada ainda.</div>';
+  openModal('Editar conteúdo',`<div class="form-grid"><div class="field"><label>Cliente</label><select id="editClient" ${lockClient?'disabled':''}>${clients.map(c=>`<option value="${escapeHtml(c.id)}" ${c.id===p.client?'selected':''}>${escapeHtml(c.name)}</option>`).join('')}</select>${lockClient?'<span class="hint">O cliente fica bloqueado depois que existem arquivos vinculados, para preservar a privacidade da mídia.</span>':''}</div><div class="field"><label>Formato de publicação</label><select id="editType">${['Post','Carrossel','Reels','Story','Outro'].map(t=>`<option ${t===p.type?'selected':''}>${t}</option>`).join('')}</select></div><div class="field"><label>Tipo de entrega</label><select id="editDeliveryKind">${Object.entries(DELIVERY_KIND_LABELS).map(([k,l])=>`<option value="${k}" ${k===p.deliveryKind?'selected':''}>${l}</option>`).join('')}</select><span class="hint">Vídeo, imagem, carrossel, site, documento ou outro.</span></div><div class="field full"><label>Título</label><input id="editTitle" maxlength="120" value="${escapeHtml(p.title)}"></div><div class="field"><label>Data</label><input id="editDate" type="date" value="${escapeHtml(parts.date)}"></div><div class="field"><label>Horário</label><input id="editTime" type="time" value="${escapeHtml(parts.time)}"></div><div class="field full"><label>Legenda / observações</label><textarea id="editCaption" maxlength="5000">${escapeHtml(p.caption||'')}</textarea></div><div class="field full"><label>Link do Drive / arquivo externo</label><div class="input-with-icon">${ICONS.link}<input id="editDrive" type="url" inputmode="url" value="${escapeHtml(p.driveUrl||'')}" placeholder="https://drive.google.com/..."></div></div><div class="field full content-preview-manager"><div class="preview-manager-head"><div><strong>Imagens de apresentação</strong><span>Arraste as imagens para definir a ordem do carrossel. A primeira imagem será usada como capa.</span></div><span class="preview-manager-count">${assets.length}/20</span></div>${assetList}<div class="preview-upload-row"><input id="editPreviews" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif"><div id="editPreviewSelection"></div><span class="hint">Selecione uma ou várias imagens. Você pode remover individualmente antes de salvar.</span></div></div>${p.mediaKey?'<div class="field full"><span class="hint">O arquivo principal anexado será mantido. Para substituí-lo, use “Enviar nova versão”.</span></div>':''}</div>`,`<button class="btn btn-secondary" data-close-modal>Cancelar</button><button class="btn" id="saveContentEdit">Salvar alterações</button>`);
+  setupPreviewFilePicker('editPreviews','editPreviewSelection');bindSavedPreviewReorder(p);document.querySelectorAll('[data-delete-preview-edit]').forEach(b=>b.onclick=()=>runBusy(b,'Removendo…',async()=>{await deletePreviewAsset(p,b.dataset.deletePreviewEdit);toast('Imagem removida.');closeModal();openEditContent(p.id);render()}).catch(err=>toast(formatError(err,'Não foi possível remover a imagem.'),'error')));
   const btn=document.getElementById('saveContentEdit');btn.onclick=()=>runBusy(btn,'Salvando…',async()=>{
     const title=document.getElementById('editTitle').value.trim(),client=document.getElementById('editClient').value,type=document.getElementById('editType').value,deliveryKind=document.getElementById('editDeliveryKind').value,date=document.getElementById('editDate').value,time=document.getElementById('editTime').value||'18:00',caption=document.getElementById('editCaption').value.trim(),driveUrl=document.getElementById('editDrive').value.trim(),previewFiles=[...(document.getElementById('editPreviews').files||[])];
     if(!title)throw new Error('Informe o título.');if(!date)throw new Error('Informe a data.');if(driveUrl&&!safeUrl(driveUrl))throw new Error('Informe um link do Drive válido, começando com http:// ou https://.');if((p.previewAssets||[]).length+previewFiles.length>20)throw new Error('O conteúdo pode ter no máximo 20 imagens de apresentação.');
