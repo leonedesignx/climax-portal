@@ -1620,6 +1620,8 @@ function setPreviewFullscreen(carousel,on){
   if(!carousel)return;carousel.classList.toggle('is-fullscreen',Boolean(on));const btn=carousel.querySelector('[data-preview-fullscreen]');if(btn){btn.innerHTML=on?ICONS.minimize:ICONS.maximize;btn.title=on?'Sair da tela cheia':'Ver em tela cheia';btn.setAttribute('aria-label',btn.title);hydrateLucideIcons(btn)}
   document.body.classList.toggle('preview-fullscreen-open',Boolean(on));
 }
+function closeAnyPreviewFullscreen(){const active=document.querySelector('[data-preview-carousel].is-fullscreen');if(active)setPreviewFullscreen(active,false)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.querySelector('[data-preview-carousel].is-fullscreen')){e.preventDefault();closeAnyPreviewFullscreen()}});
 function bindPreviewCarousel(root=document){
   root.querySelectorAll('[data-preview-carousel]').forEach(carousel=>{
     setPreviewCarouselIndex(carousel,Number(carousel.dataset.previewIndex||0));
