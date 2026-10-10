@@ -1496,7 +1496,7 @@ function safeUrl(v=''){try{const u=new URL(String(v),location.origin);return ['h
 function escapeHtml(value=''){return String(value).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]))}
 function sanitizeHTML(markup=''){
   const tpl=document.createElement('template');tpl.innerHTML=String(markup);
-  const allowed=new Set(['DIV','SPAN','STRONG','SMALL','P','H1','H2','H3','H4','BUTTON','INPUT','TEXTAREA','LABEL','SELECT','OPTION','A','IMG','SVG','PATH','CIRCLE','RECT','NAV','ASIDE','HEADER','MAIN','SECTION','ARTICLE','I','BR']);
+  const allowed=new Set(['DIV','SPAN','STRONG','SMALL','P','H1','H2','H3','H4','BUTTON','INPUT','TEXTAREA','LABEL','SELECT','OPTION','A','IMG','CANVAS','SVG','PATH','CIRCLE','RECT','NAV','ASIDE','HEADER','MAIN','SECTION','ARTICLE','I','BR']);
   const allowedAttr=/^(class|id|role|title|placeholder|type|value|min|max|step|autocomplete|href|src|alt|loading|download|multiple|accept|target|rel|style|viewBox|d|cx|cy|r|x|y|width|height|rx|points|selected|disabled|checked|readonly|maxlength|required|name|for|aria-[\w-]+|data-[\w-]+)$/i;
   [...tpl.content.querySelectorAll('*')].forEach(el=>{
     if(!allowed.has(el.tagName)){const t=document.createTextNode(el.textContent||'');el.replaceWith(t);return}
