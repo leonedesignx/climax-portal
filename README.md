@@ -39,3 +39,6 @@ O script é idempotente e consolida o fluxo final:
 - Recuperação automática por e-mail/pergunta secreta não está ativa. O reset é administrado pela Clímax com uma nova senha temporária.
 
 Veja `HOMOLOGACAO.md` antes do deploy aos clientes.
+
+
+<!-- deploy-trigger: 2026-10-10 -->
