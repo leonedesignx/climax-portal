@@ -1317,6 +1317,11 @@ html[data-theme="light"] .sidebar-toggle:hover{
 .tutorial-cover-icon svg{width:32px;height:32px}
 .tutorial-cover-label{position:absolute;left:16px;top:16px;z-index:2}
 .tutorial-card-body{padding:20px;display:flex;flex-direction:column;align-items:flex-start;flex:1}
+.tutorial-state{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:6px 9px;font-size:calc(10px * var(--font-scale,1));font-weight:800;color:var(--muted);background:rgba(0,0,0,.28)}
+.tutorial-state::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.tutorial-state.is-ready{color:var(--lime);border-color:rgba(173,244,3,.28);background:rgba(173,244,3,.07)}
+.tutorial-upload-row input[type=file]{max-width:100%;color:var(--muted);font-size:calc(11px * var(--font-scale,1))}
+.tutorial-player-overlay[hidden]{display:none}
 .tutorial-card-body h2{font-size:calc(18px * var(--font-scale,1));margin:0 0 8px}
 .tutorial-card-body p{font-size:calc(12px * var(--font-scale,1));line-height:1.65;color:var(--muted);margin:0;flex:1}
 .tutorial-card-actions{width:100%;display:flex;align-items:center;gap:10px;margin-top:18px}
@@ -2574,13 +2579,13 @@ async function refreshTutorialAvailability(){
 }
 function tutorialCardHTML(t){
   const ready=Boolean(t.available),isSoon=t.id==='portal-overview'&&!ready;
-  const badge=isSoon?'<span class="tutorial-coming-soon">Em breve</span>':'<span class="status-pill '+(ready?'state-ready':'')+'">'+(ready?'Disponível':'Vídeo aguardando envio')+'</span>';
+  const badge=isSoon?'<span class="tutorial-coming-soon">Em breve</span>':'<span class="tutorial-state '+(ready?'is-ready':'')+'">'+(ready?'Disponível':'Vídeo aguardando envio')+'</span>';
   const action=ready?'<button class="btn" type="button" data-tutorial-play="'+escapeHtml(t.id)+'">'+ICONS.play+'Assistir tutorial</button>':'<button class="btn btn-secondary" type="button" disabled>'+ICONS.play+(isSoon?'Em breve':'Vídeo aguardando envio')+'</button>';
   return '<article class="surface tutorial-card"><div class="tutorial-cover"><span class="tutorial-cover-label">'+badge+'</span><span class="tutorial-cover-icon">'+ICONS.video+'</span></div><div class="tutorial-card-body"><h2>'+escapeHtml(t.title)+'</h2><p>'+escapeHtml(t.description)+'</p><div class="tutorial-card-actions">'+action+'</div></div></article>';
 }
 function tutorialsView(){
   const adminUpload=actualRole==='admin'?'<section class="surface tutorial-upload-panel"><strong>Gerenciar vídeos</strong><p class="hint">Envie um MP4 para disponibilizá-lo aos clientes. O acesso ao envio é restrito a administradores autenticados.</p><div class="tutorial-upload-row"><select id="tutorialUploadTarget" aria-label="Tutorial para enviar"><option value="first-access">Como acessar o Clímax Portal</option><option value="portal-overview">Conhecendo o Clímax Portal</option></select><input id="tutorialUploadFile" type="file" accept="video/mp4,.mp4" aria-label="Selecionar vídeo MP4"><button class="btn" id="tutorialUploadButton" type="button">'+ICONS.upload+'Enviar vídeo</button></div><div class="tutorial-upload-progress" id="tutorialUploadProgress" role="progressbar" aria-label="Progresso do envio"><span id="tutorialUploadProgressBar"></span></div><p class="hint" id="tutorialUploadStatus" aria-live="polite"></p></section>':'';
-  return pageHead('Tutoriais','Aprenda a utilizar o Clímax Portal e aproveite todos os recursos disponíveis.')+'<div class="tutorial-intro"></div><section class="tutorial-grid" aria-label="Tutoriais disponíveis">'+TUTORIALS.map(tutorialCardHTML).join('')+'</section>'+adminUpload;
+  return pageHead('Tutoriais','Aprenda a utilizar o Clímax Portal e aproveite todos os recursos disponíveis.')+'<section class="tutorial-grid" aria-label="Tutoriais disponíveis">'+TUTORIALS.map(tutorialCardHTML).join('')+'</section>'+adminUpload;
 }
 function openTutorialPlayer(tutorialId,mode='watch'){
   const t=TUTORIALS.find(x=>x.id===tutorialId);if(!t)return;
