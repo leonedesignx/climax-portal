@@ -1313,26 +1313,19 @@ html[data-theme="light"] .sidebar-toggle:hover{
 .tutorial-cover{height:clamp(170px,22vw,250px);display:grid;place-items:center;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 45%,rgba(173,244,3,.16),transparent 34%),linear-gradient(145deg,#17200c,#0b0d09 70%);border-bottom:1px solid var(--line)}
 .tutorial-cover::before,.tutorial-cover::after{content:"";position:absolute;border:1px solid rgba(173,244,3,.13);border-radius:50%;width:260px;height:260px;left:50%;top:50%;transform:translate(-50%,-50%)}
 .tutorial-cover::after{width:190px;height:190px;border-color:rgba(173,244,3,.2)}
-.tutorial-cover-icon{width:76px;height:76px;display:grid;place-items:center;border:1px solid rgba(173,244,3,.25);border-radius:24px;background:rgba(173,244,3,.09);color:var(--lime);position:relative;z-index:1;box-shadow:0 16px 44px rgba(0,0,0,.25)}
+.tutorial-cover-icon{width:76px;height:76px;display:grid;place-items:center;border:1px solid rgba(173,244,3,.25);border-radius:24px;background:rgba(173,244,3,.09);color:var(--lime);position:relative;z-index:1;box-shadow:0 16px 44px rgba(0,0,0,.25)}.tutorial-cover>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.82}.tutorial-cover.has-thumbnail::before,.tutorial-cover.has-thumbnail::after{display:none}.tutorial-cover.has-thumbnail .tutorial-cover-icon{background:rgba(8,10,7,.5)}
 .tutorial-cover-icon svg{width:32px;height:32px}
 .tutorial-cover-label{position:absolute;left:16px;top:16px;z-index:2}
 .tutorial-card-body{padding:20px;display:flex;flex-direction:column;align-items:flex-start;flex:1}
 .tutorial-state{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:6px 9px;font-size:calc(10px * var(--font-scale,1));font-weight:800;color:var(--muted);background:rgba(0,0,0,.28)}
 .tutorial-state::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
 .tutorial-state.is-ready{color:var(--lime);border-color:rgba(173,244,3,.28);background:rgba(173,244,3,.07)}
-.tutorial-upload-row input[type=file]{max-width:100%;color:var(--muted);font-size:calc(11px * var(--font-scale,1))}
 .tutorial-player-overlay[hidden]{display:none}
 .tutorial-card-body h2{font-size:calc(18px * var(--font-scale,1));margin:0 0 8px}
 .tutorial-card-body p{font-size:calc(12px * var(--font-scale,1));line-height:1.65;color:var(--muted);margin:0;flex:1}
 .tutorial-card-actions{width:100%;display:flex;align-items:center;gap:10px;margin-top:18px}
 .tutorial-card-actions .btn{min-height:42px}
 .tutorial-coming-soon{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:calc(10px * var(--font-scale,1));font-weight:800;color:var(--muted)}
-.tutorial-upload-panel{margin-top:18px;padding:16px 18px}
-.tutorial-upload-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
-.tutorial-upload-row select{max-width:260px}
-.tutorial-upload-progress{display:none;width:100%;height:5px;overflow:hidden;border-radius:99px;background:var(--panel-3);margin-top:12px}
-.tutorial-upload-progress.visible{display:block}
-.tutorial-upload-progress span{display:block;width:0;height:100%;background:var(--lime);transition:width .18s}
 .tutorial-player-overlay{position:fixed;inset:0;z-index:320;background:rgba(0,0,0,.76);backdrop-filter:blur(9px);display:grid;place-items:center;padding:18px;opacity:0;pointer-events:none;transition:opacity .2s}
 .tutorial-player-overlay.open{opacity:1;pointer-events:auto}
 .tutorial-player-dialog{width:min(920px,100%);max-height:min(850px,94svh);overflow:auto;background:var(--panel);border:1px solid var(--line-strong);border-radius:22px;box-shadow:var(--shadow);transform:translateY(8px) scale(.99);transition:transform .2s}
@@ -1342,11 +1335,11 @@ html[data-theme="light"] .sidebar-toggle:hover{
 .tutorial-player-head p{font-size:calc(11px * var(--font-scale,1));color:var(--muted);margin:0;line-height:1.55}
 .tutorial-player-content{padding:0 20px 20px}
 .tutorial-video-frame{width:100%;aspect-ratio:16/9;background:#050605;border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.tutorial-video-frame video{width:100%;height:100%;display:block;object-fit:contain}
+.tutorial-video-frame iframe{width:100%;height:100%;display:block;border:0}
 .tutorial-unavailable{min-height:220px;display:grid;place-items:center;text-align:center;padding:24px;color:var(--muted);line-height:1.6}
 .tutorial-unavailable strong{display:block;color:var(--text);margin-bottom:7px}
 .tutorial-player-footer{display:flex;justify-content:flex-end;gap:8px;padding:0 20px 18px}
-@media(max-width:700px){.tutorial-grid{grid-template-columns:1fr}.tutorial-cover{height:190px}.tutorial-card-body{padding:16px}.tutorial-player-overlay{padding:10px}.tutorial-player-dialog{border-radius:17px}.tutorial-player-head{padding:15px}.tutorial-player-content{padding:0 12px 12px}.tutorial-player-footer{padding:0 12px 12px}.tutorial-video-frame{aspect-ratio:16/10}.tutorial-upload-panel{padding:14px}.tutorial-upload-row select{max-width:100%;width:100%}}
+@media(max-width:700px){.tutorial-grid{grid-template-columns:1fr}.tutorial-cover{height:190px}.tutorial-card-body{padding:16px}.tutorial-player-overlay{padding:10px}.tutorial-player-dialog{border-radius:17px}.tutorial-player-head{padding:15px}.tutorial-player-content{padding:0 12px 12px}.tutorial-player-footer{padding:0 12px 12px}.tutorial-video-frame{aspect-ratio:16/10}}
 @media(max-width:430px){.auth-login-links{align-items:flex-start;flex-direction:column;gap:8px}.tutorial-card-actions{align-items:stretch;flex-direction:column}.tutorial-card-actions .btn{width:100%}}
 </style>
 </head>
@@ -2562,30 +2555,43 @@ function settingsView(){
 }
 
 const TUTORIALS=[
-  {id:'first-access',title:'Como acessar o Clímax Portal',description:'Aprenda a realizar seu primeiro acesso, configurar sua senha e entrar no portal.',asset:'first-access.mp4',available:false},
-  {id:'portal-overview',title:'Conhecendo o Clímax Portal',description:'Conheça as funcionalidades e descubra como acompanhar seus projetos.',asset:'portal-overview.mp4',available:false}
+  {id:'first-access',title:'Como acessar o Clímax Portal',description:'Aprenda a realizar seu primeiro acesso, configurar sua senha e entrar no portal.',youtubeId:'RdFIYJ2C2ig',available:false},
+  {id:'portal-overview',title:'Conhecendo o Clímax Portal',description:'Conheça as funcionalidades e descubra como acompanhar seus projetos.',youtubeId:'',available:false}
 ];
 const WELCOME_ONBOARDING={enabled:false,tutorialId:'portal-overview',title:'Bem-vindo ao Clímax Portal!',description:'Assista a uma apresentação rápida e descubra como aproveitar seu novo espaço.'};
-let activeTutorialId=null,activeTutorialMode='watch',tutorialPreviousOverflow='';
-function tutorialAssetUrl(t){
-  const base=String(CONFIG.SUPABASE_URL||'').replace(/\/$/,'');
-  return base&&t?base+'/storage/v1/object/public/portal-tutorials/'+encodeURIComponent(t.asset):'';
-}
-async function refreshTutorialAvailability(){
-  await Promise.all(TUTORIALS.map(async t=>{
-    try{const response=await fetch(tutorialAssetUrl(t),{method:'HEAD',cache:'no-store'});t.available=response.ok}catch(_){t.available=false}
-  }));
+let activeTutorialId=null,activeTutorialMode='watch',tutorialPreviousOverflow='',tutorialYoutubeApiPromise=null;
+function refreshTutorialAvailability(){
+  TUTORIALS.forEach(t=>{t.available=/^[A-Za-z0-9_-]{11}$/.test(t.youtubeId||'')});
   if(route==='tutorials')render();
+}
+function loadTutorialYouTubeApi(){
+  if(window.YT?.Player)return Promise.resolve(window.YT);
+  if(tutorialYoutubeApiPromise)return tutorialYoutubeApiPromise;
+  tutorialYoutubeApiPromise=new Promise((resolve,reject)=>{
+    const previousReady=window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady=()=>{if(typeof previousReady==='function')previousReady();resolve(window.YT)};
+    const script=document.createElement('script');script.src='https://www.youtube.com/iframe_api';script.async=true;
+    script.onerror=()=>reject(new Error('Não foi possível carregar o player do YouTube.'));
+    document.head.appendChild(script);
+    setTimeout(()=>reject(new Error('O player do YouTube demorou para responder.')),15000);
+  });
+  return tutorialYoutubeApiPromise;
+}
+function trackWelcomeVideoCompletion(frame){
+  loadTutorialYouTubeApi().then(YT=>{
+    if(!frame.isConnected)return;
+    new YT.Player(frame,{events:{onStateChange:event=>{if(event.data===YT.PlayerState.ENDED)saveWelcomeProgress('completed')}}});
+  }).catch(error=>console.error('Não foi possível acompanhar a apresentação de boas-vindas:',error));
 }
 function tutorialCardHTML(t){
   const ready=Boolean(t.available),isSoon=t.id==='portal-overview'&&!ready;
   const badge=isSoon?'<span class="tutorial-coming-soon">Em breve</span>':'<span class="tutorial-state '+(ready?'is-ready':'')+'">'+(ready?'Disponível':'Vídeo aguardando envio')+'</span>';
   const action=ready?'<button class="btn" type="button" data-tutorial-play="'+escapeHtml(t.id)+'">'+ICONS.play+'Assistir tutorial</button>':'<button class="btn btn-secondary" type="button" disabled>'+ICONS.play+(isSoon?'Em breve':'Vídeo aguardando envio')+'</button>';
-  return '<article class="surface tutorial-card"><div class="tutorial-cover"><span class="tutorial-cover-label">'+badge+'</span><span class="tutorial-cover-icon">'+ICONS.video+'</span></div><div class="tutorial-card-body"><h2>'+escapeHtml(t.title)+'</h2><p>'+escapeHtml(t.description)+'</p><div class="tutorial-card-actions">'+action+'</div></div></article>';
+  const thumbnail=ready?'<img src="https://img.youtube.com/vi/'+encodeURIComponent(t.youtubeId)+'/hqdefault.jpg" alt="" loading="lazy">':'';
+  return '<article class="surface tutorial-card"><div class="tutorial-cover'+(thumbnail?' has-thumbnail':'')+'">'+thumbnail+'<span class="tutorial-cover-label">'+badge+'</span><span class="tutorial-cover-icon">'+ICONS.video+'</span></div><div class="tutorial-card-body"><h2>'+escapeHtml(t.title)+'</h2><p>'+escapeHtml(t.description)+'</p><div class="tutorial-card-actions">'+action+'</div></div></article>';
 }
 function tutorialsView(){
-  const adminUpload=actualRole==='admin'?'<section class="surface tutorial-upload-panel"><strong>Gerenciar vídeos</strong><p class="hint">Envie um MP4 para disponibilizá-lo aos clientes. O acesso ao envio é restrito a administradores autenticados.</p><div class="tutorial-upload-row"><select id="tutorialUploadTarget" aria-label="Tutorial para enviar"><option value="first-access">Como acessar o Clímax Portal</option><option value="portal-overview">Conhecendo o Clímax Portal</option></select><input id="tutorialUploadFile" type="file" accept="video/mp4,.mp4" aria-label="Selecionar vídeo MP4"><button class="btn" id="tutorialUploadButton" type="button">'+ICONS.upload+'Enviar vídeo</button></div><div class="tutorial-upload-progress" id="tutorialUploadProgress" role="progressbar" aria-label="Progresso do envio"><span id="tutorialUploadProgressBar"></span></div><p class="hint" id="tutorialUploadStatus" aria-live="polite"></p></section>':'';
-  return pageHead('Tutoriais','Aprenda a utilizar o Clímax Portal e aproveite todos os recursos disponíveis.')+'<section class="tutorial-grid" aria-label="Tutoriais disponíveis">'+TUTORIALS.map(tutorialCardHTML).join('')+'</section>'+adminUpload;
+  return pageHead('Tutoriais','Aprenda a utilizar o Clímax Portal e aproveite todos os recursos disponíveis.')+'<section class="tutorial-grid" aria-label="Tutoriais disponíveis">'+TUTORIALS.map(tutorialCardHTML).join('')+'</section>';
 }
 function openTutorialPlayer(tutorialId,mode='watch'){
   const t=TUTORIALS.find(x=>x.id===tutorialId);if(!t)return;
@@ -2595,12 +2601,19 @@ function openTutorialPlayer(tutorialId,mode='watch'){
   const welcome=mode==='welcome',ready=Boolean(t.available);
   title.textContent=welcome?WELCOME_ONBOARDING.title:t.title;
   description.textContent=welcome?WELCOME_ONBOARDING.description:t.description;
-  content.innerHTML=ready?'<div class="tutorial-video-frame"><video id="tutorialVideo" controls playsinline preload="metadata"'+(welcome?' muted':'')+'><source src="'+escapeHtml(tutorialAssetUrl(t))+'" type="video/mp4">Seu navegador não conseguiu reproduzir este vídeo.</video></div>':'<div class="tutorial-video-frame"><div class="tutorial-unavailable"><div><strong>Vídeo aguardando envio</strong>Assim que o arquivo for integrado, ele poderá ser assistido aqui.</div></div></div>';
+  if(ready){
+    const frame=document.createElement('iframe');
+    frame.id='tutorialVideoFrame';frame.title=t.title;
+    frame.src='https://www.youtube.com/embed/'+encodeURIComponent(t.youtubeId)+'?enablejsapi=1&origin='+encodeURIComponent(window.location.origin)+'&rel=0&playsinline=1';
+    frame.allow='accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+    frame.referrerPolicy='strict-origin-when-cross-origin';frame.allowFullscreen=true;
+    const wrap=document.createElement('div');wrap.className='tutorial-video-frame';wrap.appendChild(frame);content.replaceChildren(wrap);if(welcome)trackWelcomeVideoCompletion(frame);
+  }else{
+    content.innerHTML='<div class="tutorial-video-frame"><div class="tutorial-unavailable"><div><strong>Vídeo aguardando envio</strong>Assim que o arquivo for integrado, ele poderá ser assistido aqui.</div></div></div>';
+  }
   footer.innerHTML=welcome?'<button class="btn btn-secondary" type="button" data-tutorial-dismiss>Pular apresentação</button>':'<button class="btn btn-secondary" type="button" data-tutorial-close>Fechar</button>';
   overlay.hidden=false;overlay.setAttribute('aria-hidden','false');tutorialPreviousOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
   requestAnimationFrame(()=>overlay.classList.add('open'));
-  const video=document.getElementById('tutorialVideo');
-  if(video&&welcome)video.addEventListener('ended',()=>saveWelcomeProgress('completed'),{once:true});
   overlay.querySelectorAll('[data-tutorial-close]').forEach(b=>b.onclick=()=>closeTutorialPlayer());
   overlay.querySelectorAll('[data-tutorial-dismiss]').forEach(b=>b.onclick=()=>saveWelcomeProgress('dismissed'));
 }
@@ -2608,7 +2621,7 @@ function closeTutorialPlayer(saveDismissal=true){
   const overlay=document.getElementById('tutorialPlayer');if(!overlay)return;
   if(saveDismissal&&activeTutorialMode==='welcome')saveWelcomeProgress('dismissed');
   overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');
-  const video=document.getElementById('tutorialVideo');if(video){video.pause();video.removeAttribute('src');video.load()}
+  const frame=document.getElementById('tutorialVideoFrame');if(frame)frame.src='about:blank'
   setTimeout(()=>{overlay.hidden=true;document.getElementById('tutorialPlayerContent').replaceChildren()},210);
   document.body.style.overflow=tutorialPreviousOverflow||'';
   activeTutorialId=null;activeTutorialMode='watch';
@@ -2630,39 +2643,6 @@ async function maybeShowWelcomeOnboarding(){
     if(error)throw error;if(!data)openTutorialPlayer(WELCOME_ONBOARDING.tutorialId,'welcome');
   }catch(err){console.error('Não foi possível consultar o tutorial de boas-vindas:',err)}
 }
-function tusMetadata(value){return btoa(unescape(encodeURIComponent(String(value))))}
-async function uploadTutorialWithTus(file,tutorialId,onProgress){
-  if(!db||actualRole!=='admin'||!authUser)throw new Error('Somente um administrador conectado pode enviar vídeos.');
-  if(!file||file.type!=='video/mp4')throw new Error('Selecione um arquivo MP4.');
-  if(file.size>150*1024*1024)throw new Error('O vídeo precisa ter até 150 MB.');
-  const t=TUTORIALS.find(x=>x.id===tutorialId);if(!t)throw new Error('Tutorial não encontrado.');
-  const {data:{session},error:sessionError}=await db.auth.getSession();if(sessionError||!session)throw new Error('Sua sessão expirou. Entre novamente.');
-  const project=new URL(CONFIG.SUPABASE_URL),ref=project.hostname.split('.')[0],endpoint=project.protocol+'//'+ref+'.storage.supabase.co/storage/v1/upload/resumable';
-  const metadata='bucketName '+tusMetadata('portal-tutorials')+',objectName '+tusMetadata(t.asset)+',contentType '+tusMetadata('video/mp4')+',cacheControl '+tusMetadata('31536000');
-  const created=await fetch(endpoint,{method:'POST',headers:{apikey:SUPABASE_PUBLIC_KEY,authorization:'Bearer '+session.access_token,'Tus-Resumable':'1.0.0','Upload-Length':String(file.size),'Upload-Metadata':metadata,'x-upsert':'true'}});
-  if(created.status!==201)throw new Error('Não foi possível iniciar o envio: '+(await created.text()).slice(0,180));
-  const location=created.headers.get('Location');if(!location)throw new Error('O armazenamento não retornou a sessão de envio.');
-  const uploadUrl=new URL(location,endpoint).toString(),chunkSize=6*1024*1024;let offset=0;
-  while(offset<file.size){
-    const chunk=file.slice(offset,Math.min(offset+chunkSize,file.size));
-    const response=await fetch(uploadUrl,{method:'PATCH',headers:{apikey:SUPABASE_PUBLIC_KEY,authorization:'Bearer '+session.access_token,'Tus-Resumable':'1.0.0','Upload-Offset':String(offset),'Content-Type':'application/offset+octet-stream'},body:chunk});
-    if(response.status!==204)throw new Error('O envio foi interrompido. Tente novamente; o arquivo original permanece intacto.');
-    const next=Number(response.headers.get('Upload-Offset'));if(!Number.isFinite(next)||next<=offset)throw new Error('O armazenamento não confirmou o bloco enviado.');
-    offset=next;onProgress?.(Math.min(100,Math.round(offset/file.size*100)));
-  }
-}
-async function uploadTutorialFromPage(){
-  const input=document.getElementById('tutorialUploadFile'),select=document.getElementById('tutorialUploadTarget'),btn=document.getElementById('tutorialUploadButton'),status=document.getElementById('tutorialUploadStatus'),progress=document.getElementById('tutorialUploadProgress'),bar=document.getElementById('tutorialUploadProgressBar');
-  const file=input?.files?.[0];if(!file){toast('Selecione o arquivo MP4 para enviar.','error');return}
-  if(status)status.textContent='Preparando envio…';if(progress)progress.classList.add('visible');if(bar)bar.style.width='0%';
-  await runBusy(btn,'Enviando…',async()=>{
-    try{
-      await uploadTutorialWithTus(file,select.value,pct=>{if(bar)bar.style.width=pct+'%';if(status)status.textContent='Enviando vídeo · '+pct+'%'});
-      await refreshTutorialAvailability();if(status)status.textContent='Vídeo publicado na área de tutoriais.';if(input)input.value='';toast('Vídeo enviado com sucesso.');render();
-    }catch(err){console.error(err);if(status)status.textContent=err.message||'Não foi possível enviar o vídeo.';toast(err.message||'Não foi possível enviar o vídeo.','error')}
-  });
-}
-
 const views={home:()=>role==='admin'?adminHome():clientHome(),demands:demandsView,clientspace:clientWorkspaceView,clients:clientsView,editorial:editorialView,content:contentView,publications:publicationsView,finance:financeView,calendar:calendarView,tutorials:tutorialsView,archive:archiveView,settings:settingsView};
 
 function renderSidebarClients(){
@@ -2724,7 +2704,6 @@ function bindUI(){
   document.querySelectorAll('[data-toggle-theme]').forEach(b=>b.onclick=()=>{toggleTheme();closeMobileMore();render()});
   document.querySelectorAll('[data-route]').forEach(b=>b.onclick=()=>{route=b.dataset.route;activeFilter='all';closeMobileMore();render();window.scrollTo({top:0,behavior:'smooth'})});
   document.querySelectorAll('[data-tutorial-play]').forEach(b=>b.onclick=()=>openTutorialPlayer(b.dataset.tutorialPlay));
-  const tutorialUploadButton=document.getElementById('tutorialUploadButton');if(tutorialUploadButton)tutorialUploadButton.onclick=uploadTutorialFromPage;
   document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{activeFilter=b.dataset.filter;render()});
   document.querySelectorAll('[data-view-client-scope]').forEach(s=>s.onchange=()=>{adminViewClient=s.value;if(s.value!=='all')currentClient=s.value;activeFilter='all';render();window.scrollTo({top:0,behavior:'smooth'})});
   document.querySelectorAll('[data-context-editorial-open]').forEach(b=>b.onclick=()=>{adminViewClient=b.dataset.contextEditorialOpen;currentClient=b.dataset.contextEditorialOpen;activeFilter='all';render();window.scrollTo({top:0,behavior:'smooth'})});
