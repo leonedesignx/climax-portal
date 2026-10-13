@@ -92,4 +92,32 @@ for each row
 when (new.status = 'approved' and old.status is distinct from 'approved')
 execute function public.materialize_approved_editorial();
 
+-- Materialize editorials that were already approved before this migration ran.
+insert into public.contents (
+  client_id, editorial_item_id, title, type, delivery_kind, caption,
+  planned_publish_date, publication_status, status, current_version, created_by
+)
+select
+  e.client_id,
+  i.id,
+  i.title,
+  i.format,
+  case
+    when lower(i.format) = 'reels' then 'video'
+    when lower(i.format) = 'carrossel' then 'carousel'
+    when lower(i.format) in ('post','story') then 'image'
+    else 'other'
+  end,
+  coalesce(i.caption_draft, i.idea, ''),
+  i.publish_date,
+  'not_ready',
+  'draft',
+  1,
+  v.approved_by
+from public.editorial_versions v
+join public.editorials e on e.id = v.editorial_id
+join public.editorial_items i on i.editorial_version_id = v.id
+where v.status = 'approved'
+on conflict (editorial_item_id) where editorial_item_id is not null do nothing;
+
 -- The trigger is the only intended entrypoint for the definer function.
