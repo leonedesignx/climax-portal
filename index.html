@@ -1226,8 +1226,15 @@ html[data-theme="light"] .detail-copy,html[data-theme="light"] .comment-box labe
 
 
 /* ===== Controle da sidebar estilo ChatGPT ===== */
-.sidebar{
-  position:sticky!important;
+@media(min-width:841px){
+  .sidebar{
+    position:fixed!important;
+    inset:0 auto 0 0!important;
+    height:100vh!important;
+    height:100dvh!important;
+    min-height:100vh!important;
+    min-height:100dvh!important;
+  }
 }
 .sidebar-toggle{
   position:absolute!important;
