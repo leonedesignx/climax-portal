@@ -491,4 +491,51 @@ $$;
 
 create index if not exists idx_profiles_access_key on public.profiles(access_key);
 create index if not exists idx_account_security_activation on public.account_security(activation_expires_at);
+
+-- ---------- Tutoriais do portal ----------
+insert into storage.buckets (id,name,public,file_size_limit,allowed_mime_types)
+values ('portal-tutorials','portal-tutorials',true,150000000,array['video/mp4'])
+on conflict (id) do update set
+  name=excluded.name,
+  public=excluded.public,
+  file_size_limit=excluded.file_size_limit,
+  allowed_mime_types=excluded.allowed_mime_types;
+
+create policy "portal_tutorials_admin_select" on storage.objects
+for select to authenticated
+using (bucket_id='portal-tutorials' and public.is_admin());
+create policy "portal_tutorials_admin_insert" on storage.objects
+for insert to authenticated
+with check (bucket_id='portal-tutorials' and public.is_admin());
+create policy "portal_tutorials_admin_update" on storage.objects
+for update to authenticated
+using (bucket_id='portal-tutorials' and public.is_admin())
+with check (bucket_id='portal-tutorials' and public.is_admin());
+create policy "portal_tutorials_admin_delete" on storage.objects
+for delete to authenticated
+using (bucket_id='portal-tutorials' and public.is_admin());
+
+create table if not exists public.user_tutorial_progress (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  tutorial_id text not null check (tutorial_id = 'portal-overview'),
+  state text not null check (state in ('completed','dismissed')),
+  completed_at timestamptz,
+  dismissed_at timestamptz,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, tutorial_id),
+  check (
+    (state = 'completed' and completed_at is not null and dismissed_at is null)
+    or (state = 'dismissed' and dismissed_at is not null and completed_at is null)
+  )
+);
+alter table public.user_tutorial_progress enable row level security;
+create policy "user_tutorial_progress_read_own" on public.user_tutorial_progress
+for select to authenticated using (user_id = (select auth.uid()));
+create policy "user_tutorial_progress_insert_own" on public.user_tutorial_progress
+for insert to authenticated with check (user_id = (select auth.uid()));
+create policy "user_tutorial_progress_update_own" on public.user_tutorial_progress
+for update to authenticated using (user_id = (select auth.uid()))
+with check (user_id = (select auth.uid()));
+grant select, insert, update on public.user_tutorial_progress to authenticated;
+
 notify pgrst, 'reload schema';
