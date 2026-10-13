@@ -11,6 +11,8 @@ No Supabase SQL Editor, execute uma vez:
 
 `supabase/FINAL-HARDENING.sql`
 
+Antes de liberar esta versão do portal, execute uma vez o script idempotente `supabase/publication-workflow.sql` no SQL Editor do Supabase. Ele cria a fila Publicações, transfere automaticamente os itens ao aprovar o editorial e mantém os dados do cliente limitados pelas políticas RLS existentes.
+
 O script é idempotente e consolida o fluxo final:
 - login por nome de acesso + senha;
 - senha temporária no primeiro login;
