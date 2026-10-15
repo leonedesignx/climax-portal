@@ -1435,6 +1435,19 @@ body{font-size:var(--type-body);line-height:1.5}
   .client-help{grid-template-columns:38px minmax(0,1fr)}
 }
 
+
+/* Keep semantic accents readable on light surfaces. */
+html[data-theme="light"] .preview-client-banner{background:#f0f6e4;border-color:#d4e1bd}
+html[data-theme="light"] .preview-client-banner strong,
+html[data-theme="light"] .preview-client-banner button,
+html[data-theme="light"] .workflow-step.done .workflow-num,
+html[data-theme="light"] .workflow-step.active .workflow-num,
+html[data-theme="light"] .finance-mini-copy small,
+html[data-theme="light"] .client-context-logo{color:var(--lime-ink)}
+html[data-theme="light"] .publication-state.state-ready{color:var(--lime-ink);background:rgba(173,244,3,.17)}
+html[data-theme="light"] .publication-state.state-scheduled{color:var(--info)}
+html[data-theme="light"] .publication-state.state-published{color:#377048}
+
 </style>
 </head>
 <body>
