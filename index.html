@@ -235,7 +235,7 @@ svg{display:block}
   .topbar{height:58px;padding:0 14px}.mobile-logo{display:block;width:142px;max-height:40px;object-fit:contain;object-position:left}.search{display:none}.role-pill{display:none}.top-icon{display:none}.mobile-profile{display:grid;margin-left:auto;width:32px;height:32px;border-radius:50%;place-items:center;background:var(--lime);color:#10130d;font-size:var(--type-small);font-weight:900}
   .page{padding:20px 14px 34px}.page-head{align-items:flex-start;margin-bottom:18px}.page-head h1{font-size:calc(24px * var(--font-scale, 1))}.page-head p{font-size:var(--type-body)}
   .mobile-nav{position:fixed;z-index:60;left:0;right:0;bottom:0;height:calc(66px + env(safe-area-inset-bottom));padding:7px 8px calc(7px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(10,11,9,.95);backdrop-filter:blur(20px);display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
-  .mobile-nav button{background:transparent;color:#7d8578;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:var(--type-caption);font-weight:750;border-radius:10px}.mobile-nav button.active{color:var(--lime);background:rgba(173,244,3,.06)}.mobile-nav svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8}
+  .mobile-nav button{background:transparent;color:#7d8578;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:clamp(10px,var(--type-caption),12px);line-height:1.2;font-weight:750;border-radius:10px}.mobile-nav button.active{color:var(--lime);background:rgba(173,244,3,.06)}.mobile-nav svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8}
   .mobile-more{position:fixed;z-index:100;left:10px;right:10px;bottom:calc(72px + env(safe-area-inset-bottom));background:#141712;border:1px solid var(--line);border-radius:18px;padding:8px;box-shadow:var(--shadow);display:none}.mobile-more.open{display:grid}.mobile-more button{min-height:45px;border-radius:10px;background:transparent;display:flex;align-items:center;gap:10px;padding:0 11px;text-align:left;color:#c8cec3;font-size:var(--type-label)}.mobile-more button.active{background:rgba(173,244,3,.08);color:var(--lime)}.mobile-more .menu-sep{height:1px;background:var(--line);margin:5px}.mobile-more small{font-size:var(--type-caption);color:#6f776b;padding:8px 11px 4px;text-transform:uppercase;letter-spacing:.08em;font-weight:800}
   .hero-row,.home-main,.archive-grid,.settings-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.stat{min-height:104px}.stat .v{font-size:calc(23px * var(--font-scale, 1))}.home-side{grid-template-columns:1fr 1fr}.content-row{grid-template-columns:44px minmax(0,1fr) auto}.content-row .status-compact{display:none}
   .post-grid{grid-template-columns:1fr;gap:10px}.post-card{display:grid;grid-template-columns:96px minmax(0,1fr);border-radius:15px}.post-card:hover{transform:none}.post-cover{aspect-ratio:auto;min-height:132px;border-radius:14px 0 0 14px}.post-cover .card-menu-btn,.post-cover .media-type{display:none}.cover-icon{width:34px;height:34px}.cover-icon svg{width:14px;height:14px}.post-body{padding:10px;gap:8px}.post-client{font-size:var(--type-caption)}.post-title{font-size:var(--type-body)}.post-meta{font-size:var(--type-caption)}.status-pill{height:29px;border-radius:9px}.card-actions{margin-top:1px}.card-action{height:30px}.card-action:not(.primary){display:none}.card-action.primary{margin-left:0;width:100%;justify-content:center}
@@ -1420,6 +1420,7 @@ body{font-size:var(--type-body);line-height:1.5}
   .client-context-actions{display:flex}
   .publication-main{flex-wrap:wrap}
   .publication-open{white-space:normal}
+  #detailOverlay .drawer-actions .btn:last-child:nth-child(odd){grid-column:1/-1}
   .settings-card{padding:18px}
 }
 @media(max-width:520px){
@@ -1433,6 +1434,19 @@ body{font-size:var(--type-body);line-height:1.5}
   .client-summary .stat{min-width:0}
   .client-help{grid-template-columns:38px minmax(0,1fr)}
 }
+
+
+/* Keep semantic accents readable on light surfaces. */
+html[data-theme="light"] .preview-client-banner{background:#f0f6e4;border-color:#d4e1bd}
+html[data-theme="light"] .preview-client-banner strong,
+html[data-theme="light"] .preview-client-banner button,
+html[data-theme="light"] .workflow-step.done .workflow-num,
+html[data-theme="light"] .workflow-step.active .workflow-num,
+html[data-theme="light"] .finance-mini-copy small,
+html[data-theme="light"] .client-context-logo{color:var(--lime-ink)}
+html[data-theme="light"] .publication-state.state-ready{color:var(--lime-ink);background:rgba(173,244,3,.17)}
+html[data-theme="light"] .publication-state.state-scheduled{color:var(--info)}
+html[data-theme="light"] .publication-state.state-published{color:#377048}
 
 </style>
 </head>
@@ -2324,7 +2338,7 @@ function contentPreviewCover(p){
 function previewGalleryHTML(p){
   const assets=p.previewAssets||[];if(!assets.length)return '';
   const many=assets.length>1;
-  return `<section class="content-visual-stage" data-preview-carousel="${escapeHtml(p.id)}"><div class="visual-stage-head"><div><small>VISUALIZAÇÃO PARA APROVAÇÃO</small><strong>${many?'Carrossel · deslize ou use as setas':'Prévia do conteúdo'}</strong></div><span data-preview-counter>1/${assets.length}</span></div><div class="ig-carousel"><div class="ig-carousel-viewport"><button class="ig-fullscreen" data-preview-fullscreen title="Ver em tela cheia" aria-label="Ver em tela cheia">${ICONS.maximize}</button><div class="ig-carousel-track" data-preview-track>${assets.map((a,i)=>`<article class="ig-slide" data-preview-slide="${i}"><div class="ig-media"><img src="${escapeHtml(a.url)}" alt="Imagem ${i+1} de ${escapeHtml(p.title)}" loading="lazy"><span class="preview-position">${i+1}/${assets.length}</span><button class="ig-download" data-download-preview="${escapeHtml(p.id)}|${escapeHtml(a.id)}" title="Baixar imagem" aria-label="Baixar imagem">${ICONS.download}</button></div></article>`).join('')}</div>${many?`<button class="ig-arrow ig-prev" data-preview-prev aria-label="Imagem anterior">${ICONS.left}</button><button class="ig-arrow ig-next" data-preview-next aria-label="Próxima imagem">${ICONS.right}</button>`:''}</div>${many?`<div class="ig-dots" data-preview-dots>${assets.map((_,i)=>`<button class="${i===0?'active':''}" data-preview-dot="${i}" aria-label="Ir para imagem ${i+1}"></button>`).join('')}</div>`:''}</div></section>`;
+  return `<section class="content-visual-stage" data-preview-carousel="${escapeHtml(p.id)}"><div class="visual-stage-head"><div><small>VISUALIZAÇÃO PARA APROVAÇÃO</small><strong>${many?'Carrossel · deslize ou use as setas':'Prévia do conteúdo'}</strong></div>${many?`<span data-preview-counter>1/${assets.length}</span>`:''}</div><div class="ig-carousel"><div class="ig-carousel-viewport"><button class="ig-fullscreen" data-preview-fullscreen title="Ver em tela cheia" aria-label="Ver em tela cheia">${ICONS.maximize}</button><div class="ig-carousel-track" data-preview-track>${assets.map((a,i)=>`<article class="ig-slide" data-preview-slide="${i}"><div class="ig-media"><img src="${escapeHtml(a.url)}" alt="Imagem ${i+1} de ${escapeHtml(p.title)}" loading="lazy">${many?`<span class="preview-position">${i+1}/${assets.length}</span>`:''}<button class="ig-download" data-download-preview="${escapeHtml(p.id)}|${escapeHtml(a.id)}" title="Baixar imagem" aria-label="Baixar imagem">${ICONS.download}</button></div></article>`).join('')}</div>${many?`<button class="ig-arrow ig-prev" data-preview-prev aria-label="Imagem anterior">${ICONS.left}</button><button class="ig-arrow ig-next" data-preview-next aria-label="Próxima imagem">${ICONS.right}</button>`:''}</div>${many?`<div class="ig-dots" data-preview-dots>${assets.map((_,i)=>`<button class="${i===0?'active':''}" data-preview-dot="${i}" aria-label="Ir para imagem ${i+1}"></button>`).join('')}</div>`:''}</div></section>`;
 }
 function setPreviewCarouselIndex(root,index){
   if(!root)return;const track=root.querySelector('[data-preview-track]'),slides=[...root.querySelectorAll('[data-preview-slide]')];if(!track||!slides.length)return;
@@ -2763,7 +2777,7 @@ function renderSidebarClients(){
 function renderNavigation(){
   const nav=role==='admin'?adminNav:clientNav;
   setSafeHTML('#sideNav',nav.map(([k,l,i])=>`<button class="nav-btn ${route===k?'active':''}" data-route="${k}">${ICONS[i]||''}<span>${l}</span>${k==='content'&&visiblePosts().filter(p=>p?.status==='waiting').length?`<span class="nav-badge">${visiblePosts().filter(p=>p?.status==='waiting').length}</span>`:''}</button>`).join(''));
-  const mobileMain=role==='admin'?[['home','Dashboard','home'],['demands','Demandas','clock'],['content','Conteúdos','content'],['publications','Publicações','send']]:[['home','Início','home'],['editorial','Planejamento editorial','plan'],['content','Conteúdos','content'],['publications','Publicações','send']];
+  const mobileMain=role==='admin'?[['home','Dashboard','home'],['demands','Demandas','clock'],['content','Conteúdos','content'],['publications','Publicações','send']]:[['home','Início','home'],['editorial','Editorial','plan'],['content','Conteúdos','content'],['publications','Publicações','send']];
   setSafeHTML('#mobileNav',mobileMain.map(([k,l,i])=>`<button class="${route===k?'active':''}" data-route="${k}">${ICONS[i]||''}<span>${l}</span></button>`).join('')+`<button id="moreBtn" class="${!mobileMain.some(x=>x[0]===route)?'active':''}">${ICONS.more}<span>Mais</span></button>`);
   const extra=role==='admin'?[['clients','Clientes','users'],['editorial','Editorial','plan'],['calendar','Calendário','calendar'],['tutorials','Tutoriais','video'],['archive','Arquivos','files'],['settings','Configurações','settings']]:[['calendar','Calendário','calendar'],['tutorials','Tutoriais','video'],['finance','Financeiro','files']];
   setSafeHTML('#mobileMore',`<small>Navegação</small>${extra.map(([k,l,i])=>`<button class="${route===k?'active':''}" data-route="${k}">${ICONS[i]||''}${l}</button>`).join('')}<button data-mobile-search>${ICONS.search||'⌕'} Buscar</button><button data-mobile-notifications>${ICONS.clock} Notificações</button><div class="menu-sep"></div><small>Aparência</small><button data-toggle-theme><span data-theme-label>${currentTheme==='dark'?'Modo claro':'Modo escuro'}</span></button>${actualRole==='admin'?`<div class="menu-sep"></div><small>Visualização</small><button data-switch-role>${role==='admin'?'Visualizar como cliente':'Voltar ao painel da Clímax'}</button>`:''}`);
