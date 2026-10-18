@@ -1448,6 +1448,38 @@ html[data-theme="light"] .publication-state.state-ready{color:var(--lime-ink);ba
 html[data-theme="light"] .publication-state.state-scheduled{color:var(--info)}
 html[data-theme="light"] .publication-state.state-published{color:#377048}
 
+
+/* Drive library */
+.drive-folders,.drive-submissions{display:grid;gap:18px;margin-bottom:28px}
+.drive-folder-card,.drive-extra{padding:28px}
+.drive-heading{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+.drive-heading h2{font-size:var(--type-section);line-height:1.3;margin:5px 0 0}
+.drive-symbol{width:52px;height:52px;flex:0 0 52px;border-radius:16px;background:rgba(184,245,0,.1);color:var(--lime);display:grid;place-items:center}
+.drive-symbol svg{width:26px;height:26px}
+.drive-folder-card>p,.drive-extra>p{font-size:var(--type-body);line-height:1.7;color:var(--muted);max-width:850px;margin:10px 0}
+.drive-access{margin-top:24px;display:flex;align-items:center;flex-wrap:wrap;gap:14px}
+.drive-access>span{font-size:var(--type-small);color:var(--muted)}
+.drive-pending{padding:18px;border:1px dashed var(--line);border-radius:12px;width:100%}
+.drive-pending p{margin:6px 0 0;color:var(--muted);font-size:var(--type-body)}
+.drive-admin-config{border-top:1px solid var(--line);margin-top:24px;padding-top:22px}
+.drive-admin-config .field{margin-bottom:14px}
+.drive-extra{margin-bottom:30px}
+.drive-extra .field{margin-top:20px}
+.drive-extra textarea{min-height:96px}
+.drive-toolbar{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:20px 24px;margin-bottom:20px}
+.drive-toolbar p{color:var(--muted);font-size:var(--type-body);margin:5px 0 0}
+.drive-toolbar .field{min-width:240px}
+.drive-feedback{font-size:var(--type-body);line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.drive-feedback:empty{display:none}
+.drive-submission{padding:22px}
+.drive-submission-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.drive-submission-head h3{font-size:var(--type-subtitle);margin:0 0 6px}
+.drive-submission-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.drive-note{white-space:pre-wrap;overflow-wrap:anywhere;font-size:var(--type-body);line-height:1.65;margin:16px 0;color:var(--muted)}
+.drive-folder-card,.drive-extra,.drive-submission{min-width:0}
+@media(min-width:1200px){.drive-folders:has(>.drive-folder-card:nth-child(2)){grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.drive-folder-card,.drive-extra,.drive-submission{padding:20px}.drive-toolbar{flex-direction:column;align-items:stretch;padding:20px}.drive-toolbar .field{min-width:0}.drive-heading{align-items:flex-start;gap:12px}.drive-heading h2{font-size:var(--type-title)}.drive-submission-head{flex-direction:column;gap:10px}.drive-access .btn,.drive-submission-actions .btn{width:100%;justify-content:center}}
+
 </style>
 </head>
 <body>
@@ -1713,6 +1745,7 @@ function initTextScale(){
 }
 
 const ICONS={
+  drive:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path style="fill:currentColor" d="M8.3 2h7.4l-6 10.4-3.7 6.4H.8L8.3 2zm8.3 1.5 6.6 11.4h-7.4l-3.3-5.7 4.1-5.7zM8.1 16.3h15.1L19.5 22H4.8l3.3-5.7z"/></svg>',
   home:'<i data-lucide="layout-dashboard"></i>',
   users:'<i data-lucide="users-round"></i>',
   content:'<i data-lucide="files"></i>',
@@ -1833,6 +1866,8 @@ let calendarCursor=new Date(new Date().getFullYear(),new Date().getMonth(),1);
 let pendingEditorialItemComments=[];
 let clientAccessMap={};
 let clientFinancials={};
+let driveSubmissions=[];
+let driveLoadError=false;
 let portalPaymentSettings={id:1,pix_key:'',pix_key_type:'',recipient_name:'',bank_name:'',document_label:'',instructions:''};
 let recoveryState={accessName:'',questionKey:''};
 const PORTAL_PREFS_KEY='climax-portal-preferences-v1';
@@ -1860,7 +1895,7 @@ function sanitizeHTML(markup=''){
   const allowed=new Set(['DIV','SPAN','STRONG','SMALL','P','H1','H2','H3','H4','BUTTON','INPUT','TEXTAREA','LABEL','SELECT','OPTION','A','IMG','CANVAS','SVG','PATH','CIRCLE','RECT','NAV','ASIDE','HEADER','MAIN','SECTION','ARTICLE','I','BR']);
   const allowedAttr=/^(class|id|role|title|placeholder|type|value|min|max|step|autocomplete|href|src|alt|loading|download|multiple|accept|target|rel|style|viewBox|d|cx|cy|r|x|y|width|height|rx|points|selected|disabled|checked|readonly|maxlength|required|name|for|aria-[\w-]+|data-[\w-]+)$/i;
   [...tpl.content.querySelectorAll('*')].forEach(el=>{
-    if(!allowed.has(el.tagName)){const t=document.createTextNode(el.textContent||'');el.replaceWith(t);return}
+    if(!allowed.has(el.tagName.toUpperCase())){const t=document.createTextNode(el.textContent||'');el.replaceWith(t);return}
     [...el.attributes].forEach(a=>{
       if(a.name.toLowerCase().startsWith('on')||!allowedAttr.test(a.name)){el.removeAttribute(a.name);return}
       if(a.name.toLowerCase()==='href'||a.name.toLowerCase()==='src'){const href=safeUrl(a.value);if(!href)el.removeAttribute(a.name);else el.setAttribute(a.name,href)}
@@ -1943,7 +1978,8 @@ async function hydrateFromBackend(user){
   if(accessRes.error)throw accessRes.error;if(clientRes.error)throw clientRes.error;if(financialRes.error)throw financialRes.error;if(paymentRes.error)throw paymentRes.error;if(contentRes.error)throw contentRes.error;if(editorialRes.error)throw editorialRes.error;
   (accessRes.data||[]).forEach(x=>{if(x.client_id)clientAccessMap[x.client_id]={userId:x.id,fullName:x.full_name||'',accessName:x.access_name||'',mustChange:Boolean(x.must_change_password)}});
   const clientRows=clientRes.data||[],financialRows=financialRes.data||[],paymentRow=paymentRes.data||null,contentRows=contentRes.data||[],edRows=editorialRes.data||[];
-  clients=clientRows.map(c=>({id:c.id,name:c.name,init:c.initials||makeInitials(c.name),contact:c.contact_name||'',email:c.contact_email||'',whatsapp:c.whatsapp_phone||'',displaySubtitle:c.display_subtitle||''}));
+  clients=clientRows.map(c=>({id:c.id,name:c.name,init:c.initials||makeInitials(c.name),contact:c.contact_name||'',email:c.contact_email||'',whatsapp:c.whatsapp_phone||'',displaySubtitle:c.display_subtitle||'',driveFolderUrl:c.drive_folder_url||''}));
+  await loadDriveSubmissions();
   clientFinancials={};financialRows.forEach(x=>clientFinancials[x.client_id]=x);
   portalPaymentSettings={id:1,pix_key:'',pix_key_type:'',recipient_name:'',bank_name:'',document_label:'',instructions:'',...(paymentRow||{})};
   const contentIds=contentRows.map(x=>x.id);let contentMediaRows=[],latestReview={};
@@ -2288,15 +2324,16 @@ function openSearchResults(query){
   document.querySelectorAll('[data-search-post]').forEach(b=>b.onclick=()=>{const id=b.dataset.searchPost;closeModal();openPost(id)});
 }
 function openNotifications(){
-  const ds=getDemands().slice(0,12);openModal('Notificações',ds.length?`<div class="demand-list">${ds.map(d=>`<button class="search-result" ${d.post?`data-search-post="${d.post}"`:d.client?`data-search-client="${d.client}"`:''}><span class="sr-icon">${ICONS[d.icon]}</span><span><strong>${escapeHtml(d.title)}</strong><span>${escapeHtml(d.desc)}</span></span></button>`).join('')}</div>`:'<div class="empty-state"><strong>Tudo em dia</strong><p>Não há demandas pendentes agora.</p></div>','<button class="btn btn-secondary" data-close-modal>Fechar</button>');
+  const ds=getDemands().slice(0,12);openModal('Notificações',ds.length?`<div class="demand-list">${ds.map(d=>`<button class="search-result" ${d.drive?`data-open-drive="${escapeHtml(d.drive)}"`:d.post?`data-search-post="${d.post}"`:d.client?`data-search-client="${d.client}"`:''}><span class="sr-icon">${ICONS[d.icon]}</span><span><strong>${escapeHtml(d.title)}</strong><span>${escapeHtml(d.desc)}</span></span></button>`).join('')}</div>`:'<div class="empty-state"><strong>Tudo em dia</strong><p>Não há demandas pendentes agora.</p></div>','<button class="btn btn-secondary" data-close-modal>Fechar</button>');
+  bindDriveLinks();
   document.querySelectorAll('[data-search-client]').forEach(b=>b.onclick=()=>{currentClient=b.dataset.searchClient;route='editorial';closeModal();render()});document.querySelectorAll('[data-search-post]').forEach(b=>b.onclick=()=>{const id=b.dataset.searchPost;closeModal();openPost(id)});
 }
 function openMobileSearch(){
   openModal('Buscar no portal',`<div class="field"><label>Buscar clientes e conteúdos</label><input id="mobileSearchInput" placeholder="Digite pelo menos 2 caracteres"></div>`,`<button class="btn btn-secondary" data-close-modal>Cancelar</button><button class="btn" id="mobileSearchGo">Buscar</button>`);
   const input=document.getElementById('mobileSearchInput'),go=document.getElementById('mobileSearchGo');const submit=()=>{const q=input.value;closeModal();openSearchResults(q)};go.onclick=submit;input.addEventListener('keydown',e=>{if(e.key==='Enter')submit()});
 }
-const adminNav=[['home','Dashboard','home'],['demands','Minhas demandas','clock'],['clients','Clientes','users'],['editorial','Editorial','plan'],['content','Conteúdos','content'],['publications','Publicações','send'],['calendar','Calendário','calendar'],['tutorials','Tutoriais','video'],['archive','Arquivos','files'],['settings','Configurações','settings']];
-const clientNav=[['home','Início','home'],['editorial','Planejamento editorial','plan'],['content','Conteúdos','content'],['publications','Publicações','send'],['calendar','Calendário','calendar'],['tutorials','Tutoriais','video'],['finance','Financeiro','files']];
+const adminNav=[['home','Dashboard','home'],['demands','Minhas demandas','clock'],['clients','Clientes','users'],['editorial','Editorial','plan'],['content','Conteúdos','content'],['publications','Publicações','send'],['calendar','Calendário','calendar'],['drive','Drive','drive'],['tutorials','Tutoriais','video'],['archive','Arquivos','files'],['settings','Configurações','settings']];
+const clientNav=[['home','Início','home'],['editorial','Planejamento editorial','plan'],['content','Conteúdos','content'],['publications','Publicações','send'],['calendar','Calendário','calendar'],['drive','Drive','drive'],['tutorials','Tutoriais','video'],['finance','Financeiro','files']];
 
 function clientById(id){return clients.find(c=>c.id===id)||{id:id||'',name:'Cliente',init:'CL',contact:'',email:'',displaySubtitle:''}}
 function activeAdminScope(){return role==='admin'?adminViewClient:currentClient}
@@ -2560,21 +2597,22 @@ function adminHome(){
 }
 function getDemands(){
   const items=[];
+  if(role==='admin')driveSubmissions.filter(x=>!x.reviewed_at).forEach(x=>items.push({kind:'info',icon:'drive',title:'Novo link do Drive · '+clientById(x.client_id).name,desc:x.note||'Material extra enviado pelo cliente.',time:shortDateTime(x.created_at),drive:x.client_id}));
   posts.forEach(p=>{const c=clientById(p.client);if(p.status==='rejected')items.push({kind:'danger',icon:'content',title:`Conteúdo reprovado · ${c.name}`,desc:p.title,time:'Hoje',post:p.id});else if(p.status==='changes')items.push({kind:'danger',icon:'content',title:`Alteração solicitada · ${c.name}`,desc:p.title,time:'Hoje · 12 min',post:p.id});else if(p.status==='waiting')items.push({kind:'warn',icon:'check',title:`Aguardando aprovação · ${c.name}`,desc:p.title,time:'Hoje',post:p.id});else if(p.status==='material')items.push({kind:'info',icon:'files',title:`Aguardando material · ${c.name}`,desc:p.title,time:'1 dia',post:p.id})});
   editorials.forEach(ed=>{if(ed.status==='waiting'||ed.status==='changes'){const c=clientById(ed.client);items.push({kind:ed.status==='changes'?'danger':'warn',icon:'plan',title:`Editorial ${ed.status==='changes'?'com ajustes':'aguardando aprovação'} · ${c.name}`,desc:`${ed.month} · versão ${ed.version}`,time:ed.status==='changes'?'Hoje':'1 dia',client:ed.client})}});
   return items;
 }
-function demandRows(limit=99){return getDemands().slice(0,limit).map(d=>`<div class="content-row" ${d.post?`data-open-post="${d.post}"`:d.client?`data-demand-client="${d.client}"`:''}><div class="row-thumb" style="color:${d.kind==='danger'?'var(--danger)':d.kind==='info'?'var(--info)':'var(--warn)'}">${ICONS[d.icon]}</div><div class="row-copy"><strong>${d.title}</strong><span>${d.desc}</span></div><div class="row-status"><span class="mini-badge">${d.time}</span></div></div>`).join('')}
+function demandRows(limit=99){return getDemands().slice(0,limit).map(d=>`<div class="content-row" ${d.drive?`data-open-drive="${escapeHtml(d.drive)}"`:d.post?`data-open-post="${d.post}"`:d.client?`data-demand-client="${d.client}"`:''}><div class="row-thumb" style="color:${d.kind==='danger'?'var(--danger)':d.kind==='info'?'var(--info)':'var(--warn)'}">${ICONS[d.icon]}</div><div class="row-copy"><strong>${escapeHtml(d.title)}</strong><span>${escapeHtml(d.desc)}</span></div><div class="row-status"><span class="mini-badge">${d.time}</span></div></div>`).join('')}
 function demandsView(){
-  const all=getDemands();const map={approvals:d=>d.title.startsWith('Aguardando aprovação'),changes:d=>d.kind==='danger'&&!d.title.startsWith('Editorial'),materials:d=>d.title.startsWith('Aguardando material'),editorials:d=>d.title.startsWith('Editorial')};const ds=demandFilter==='all'?all:all.filter(map[demandFilter]||(()=>true));
+  const all=getDemands();const map={approvals:d=>d.title.startsWith('Aguardando aprovação'),changes:d=>d.kind==='danger'&&!d.title.startsWith('Editorial'),materials:d=>Boolean(d.drive)||d.title.startsWith('Aguardando material'),editorials:d=>d.title.startsWith('Editorial')};const ds=demandFilter==='all'?all:all.filter(map[demandFilter]||(()=>true));
   const tabs=[['all','Todas'],['approvals','Aprovações'],['changes','Alterações'],['materials','Materiais'],['editorials','Editoriais']];
-  return `${pageHead('Minhas demandas','Tudo que precisa da sua atenção hoje — aprovações, alterações, materiais e editoriais.')}<div class="demand-toolbar">${tabs.map(([k,l])=>`<button class="chip ${demandFilter===k?'active':''}" data-demand-filter="${k}">${l}</button>`).join('')}</div><div class="demand-list">${ds.map(d=>`<article class="surface demand-card" ${d.post?`data-open-post="${escapeHtml(d.post)}"`:d.client?`data-demand-client="${escapeHtml(d.client)}"`:''}><div class="demand-icon ${escapeHtml(d.kind)}">${ICONS[d.icon]}</div><div class="demand-copy"><strong>${escapeHtml(d.title)}</strong><p>${escapeHtml(d.desc)}</p></div><div class="demand-meta"><strong><span class="priority-dot"></span>${d.kind==='danger'?'Prioridade':'Acompanhar'}</strong><span>${escapeHtml(d.time)}</span></div></article>`).join('')||'<section class="surface empty-state"><strong>Nenhuma demanda neste filtro</strong><p>Você está em dia por aqui.</p></section>'}</div>`;
+  return `${pageHead('Minhas demandas','Tudo que precisa da sua atenção hoje — aprovações, alterações, materiais e editoriais.')}<div class="demand-toolbar">${tabs.map(([k,l])=>`<button class="chip ${demandFilter===k?'active':''}" data-demand-filter="${k}">${l}</button>`).join('')}</div><div class="demand-list">${ds.map(d=>`<article class="surface demand-card" ${d.drive?`data-open-drive="${escapeHtml(d.drive)}"`:d.post?`data-open-post="${escapeHtml(d.post)}"`:d.client?`data-demand-client="${escapeHtml(d.client)}"`:''}><div class="demand-icon ${escapeHtml(d.kind)}">${ICONS[d.icon]}</div><div class="demand-copy"><strong>${escapeHtml(d.title)}</strong><p>${escapeHtml(d.desc)}</p></div><div class="demand-meta"><strong><span class="priority-dot"></span>${d.kind==='danger'?'Prioridade':'Acompanhar'}</strong><span>${escapeHtml(d.time)}</span></div></article>`).join('')||'<section class="surface empty-state"><strong>Nenhuma demanda neste filtro</strong><p>Você está em dia por aqui.</p></section>'}</div>`;
 }
 function clientWorkspaceView(){
   const c=clientById(currentClient),cp=posts.filter(p=>p.client===currentClient),ed=currentEditorial(),demo=c.name==='Cliente Fictício Clímax';
   const waiting=cp.filter(p=>p.status==='waiting').length,changes=cp.filter(p=>p.status==='changes').length;
   const sub=c.displaySubtitle?escapeHtml(c.displaySubtitle)+(c.contact?' · '+escapeHtml(c.contact):''):(demo?'Conta permanente para tutorial e onboarding de novos clientes.':escapeHtml(c.contact)+' · '+escapeHtml(c.email));
-  return `${pageHead(c.name,'Visão operacional da conta selecionada.','<button class="btn btn-secondary" data-whatsapp-client="'+escapeHtml(c.id)+'">'+ICONS.message+' WhatsApp</button><button class="btn btn-secondary" data-finance-client="'+escapeHtml(c.id)+'">Perfil & financeiro</button><button class="btn btn-secondary" data-action="view-client">Visualizar portal do cliente</button>')}<section class="surface client-context"><div class="client-context-logo">${c.init}</div><div class="client-context-copy"><h2>${c.name}${demo?'<span class="demo-badge">Demonstração</span>':''}</h2><p>${sub}</p></div><div class="client-context-actions"><button class="btn btn-secondary" data-route="editorial">Editorial</button><button class="btn btn-secondary" data-route="content">Conteúdos</button><button class="btn btn-secondary" data-route="finance">Financeiro</button><button class="btn" data-action="new-content">${ICONS.plus} Novo conteúdo</button></div></section><div class="stats">${statCard('plan','Editorial',editorialStatusLabel[ed?.status]||'Sem editorial')}${statCard('content','Conteúdos do ciclo',cp.length)}${statCard('clock','Aguardando aprovação',waiting)}${statCard('content','Em alteração',changes)}</div><div class="section-head"><h3>Últimos conteúdos</h3><button class="link-btn" data-route="content">Ver todos ${ICONS.right}</button></div><section class="surface list-card">${cp.slice(0,6).map(compactRow).join('')}</section>`;
+  return `${pageHead(c.name,'Visão operacional da conta selecionada.','<button class="btn btn-secondary" data-whatsapp-client="'+escapeHtml(c.id)+'">'+ICONS.message+' WhatsApp</button><button class="btn btn-secondary" data-finance-client="'+escapeHtml(c.id)+'">Perfil & financeiro</button><button class="btn btn-secondary" data-action="view-client">Visualizar portal do cliente</button>')}<section class="surface client-context"><div class="client-context-logo">${c.init}</div><div class="client-context-copy"><h2>${c.name}${demo?'<span class="demo-badge">Demonstração</span>':''}</h2><p>${sub}</p></div><div class="client-context-actions"><button class="btn btn-secondary" data-route="editorial">Editorial</button><button class="btn btn-secondary" data-route="content">Conteúdos</button><button class="btn btn-secondary" data-route="drive">Drive</button><button class="btn btn-secondary" data-route="finance">Financeiro</button><button class="btn" data-action="new-content">${ICONS.plus} Novo conteúdo</button></div></section><div class="stats">${statCard('plan','Editorial',editorialStatusLabel[ed?.status]||'Sem editorial')}${statCard('content','Conteúdos do ciclo',cp.length)}${statCard('clock','Aguardando aprovação',waiting)}${statCard('content','Em alteração',changes)}</div><div class="section-head"><h3>Últimos conteúdos</h3><button class="link-btn" data-route="content">Ver todos ${ICONS.right}</button></div><section class="surface list-card">${cp.slice(0,6).map(compactRow).join('')}</section>`;
 }
 
 function clientHome(){
@@ -2699,6 +2737,88 @@ function tutorialCardHTML(t){
   const thumbnail=ready?'<img src="https://img.youtube.com/vi/'+encodeURIComponent(t.youtubeId)+'/hqdefault.jpg" alt="" loading="lazy">':'';
   return '<article class="surface tutorial-card"><div class="tutorial-cover'+(thumbnail?' has-thumbnail':'')+'">'+thumbnail+'<span class="tutorial-cover-label">'+badge+'</span><span class="tutorial-cover-icon">'+ICONS.video+'</span></div><div class="tutorial-card-body"><h2>'+escapeHtml(t.title)+'</h2><p>'+escapeHtml(t.description)+'</p><div class="tutorial-card-actions">'+action+'</div></div></article>';
 }
+
+/* Client media library: portal links only, files remain in Google Drive. */
+async function loadDriveSubmissions(){
+  const result=await db.from('client_drive_submissions').select('*').order('created_at',{ascending:false});
+  driveLoadError=Boolean(result.error);
+  if(result.error){driveSubmissions=[];console.error('Falha ao carregar links do Drive:',result.error);return}
+  driveSubmissions=result.data||[];
+}
+function normalizedDriveUrl(value,folderOnly=false){
+  const raw=String(value||'').trim();
+  if(!raw||raw.length>2048)return '';
+  try{const url=new URL(raw);const hosts=folderOnly?['drive.google.com']:['drive.google.com','docs.google.com'];
+    if(url.protocol!=='https:'||!hosts.includes(url.hostname)||url.port||url.username||url.password||url.pathname==='/')return '';
+    return url.href;
+  }catch(e){return ''}
+}
+function driveExternalLink(url,label,style='btn'){
+  const safe=normalizedDriveUrl(url);
+  return safe?'<a class="'+style+'" href="'+escapeHtml(safe)+'" target="_blank" rel="noopener noreferrer">'+label+' '+ICONS.external+'</a>':'';
+}
+function driveFolderCard(c){
+  const folder=normalizedDriveUrl(c.driveFolderUrl,true);
+  return '<section class="surface drive-folder-card"><div class="drive-heading"><span class="drive-symbol">'+ICONS.drive+'</span><div><div class="eyebrow">BIBLIOTECA DE CONTEÚDOS</div><h2>'+escapeHtml(role==='admin'?c.name:'Seu acervo, em um só lugar')+'</h2></div></div><p>Seu Drive reúne as fotos e os vídeos que dão vida à sua marca. Envie registros da sua rotina, equipe, produtos e bastidores para a Clímax criar conteúdos com mais personalidade e conexão.</p><p>Um acervo próprio ajuda a humanizar seu perfil e traz mais autenticidade às produções, com menos dependência de bancos de imagens.</p><div class="drive-access">'+(folder?driveExternalLink(folder,'Acessar meu Drive')+'<span>Abre no Google Drive. Adicione seus arquivos diretamente na pasta.</span>':'<div class="drive-pending"><strong>Seu Drive está sendo preparado</strong><p>Assim que a Clímax vincular sua pasta, o botão de acesso aparecerá aqui.</p></div>')+'</div>'+(role==='admin'?'<div class="drive-admin-config"><div class="field"><label for="driveFolder-'+escapeHtml(c.id)+'">Pasta principal do cliente</label><input type="url" id="driveFolder-'+escapeHtml(c.id)+'" maxlength="2048" placeholder="https://drive.google.com/drive/folders/..." value="'+escapeHtml(c.driveFolderUrl||'')+'"><span class="hint">Somente a Clímax pode alterar este link. Configure o acesso do cliente à pasta no Google Drive.</span></div><button class="btn btn-secondary" data-drive-folder-save="'+escapeHtml(c.id)+'">'+ICONS.save+' Salvar pasta</button><p class="drive-feedback" role="status" id="driveFolderFeedback-'+escapeHtml(c.id)+'"></p></div>':'')+'</section>';
+}
+function driveSubmissionCard(item){
+  const c=clientById(item.client_id),seen=Boolean(item.reviewed_at);
+  return '<article class="surface drive-submission"><div class="drive-submission-head"><div><h3>'+escapeHtml(role==='admin'?c.name:'Material extra enviado')+'</h3><span class="hint">'+escapeHtml(new Date(item.created_at).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}))+'</span></div><span class="mini-badge">'+(seen?'Visto pela Clímax':'Aguardando leitura')+'</span></div>'+(item.note?'<p class="drive-note">'+escapeHtml(item.note)+'</p>':'')+'<div class="drive-submission-actions">'+driveExternalLink(item.drive_url,'Abrir material','btn btn-secondary')+(role==='admin'&&!seen?'<button class="btn btn-secondary" data-drive-reviewed="'+escapeHtml(item.id)+'">'+ICONS.check+' Marcar como visto</button>':'')+'</div></article>';
+}
+function driveView(){
+  const admin=role==='admin',scope=admin?adminViewClient:currentClient;
+  const selected=scope==='all'?clients:clients.filter(c=>c.id===scope);
+  const submissions=driveSubmissions.filter(x=>scope==='all'||x.client_id===scope);
+  const selector=admin?'<section class="surface drive-toolbar"><div><strong>Drive dos clientes</strong><p>Gerencie as pastas e acompanhe os materiais enviados.</p></div><div class="field"><label for="driveScope">Cliente</label><select id="driveScope" data-view-client-scope><option value="all" '+(scope==='all'?'selected':'')+'>Todos os clientes</option>'+clients.map(c=>'<option value="'+escapeHtml(c.id)+'" '+(scope===c.id?'selected':'')+'>'+escapeHtml(c.name)+'</option>').join('')+'</select></div></section>':'';
+  const intro=admin?'Vincule a biblioteca de cada cliente e receba links de materiais extras.':'Sua biblioteca de fotos e vídeos para criar conteúdos com a sua identidade.';
+  const form=admin?'':'<section class="surface drive-extra"><div class="drive-heading"><span class="drive-symbol">'+ICONS.link+'</span><div><div class="eyebrow">ENVIO COMBINADO COM A CLÍMAX</div><h2>Seus materiais estão em outro Drive?</h2></div></div><p>Se você combinou com a Clímax o envio de conteúdos por outra pasta, compartilhe o link abaixo. Ele chegará à equipe por aqui.</p><div class="field"><label for="driveExtraUrl">Link da pasta ou do arquivo</label><input id="driveExtraUrl" type="url" maxlength="2048" placeholder="https://drive.google.com/..."></div><div class="field"><label for="driveExtraNote">O que você está enviando? <span class="hint">(opcional)</span></label><textarea id="driveExtraNote" maxlength="1000" placeholder="Ex.: fotos da equipe para os conteúdos deste mês."></textarea></div><p class="hint">Antes de enviar, confira no Google Drive se a Clímax tem permissão para abrir os materiais.</p><p id="driveSubmitFeedback" class="drive-feedback" role="status"></p><button class="btn" id="driveSubmitLink" '+(actualRole!=='client'?'disabled':'')+'>'+ICONS.send+' Enviar link à Clímax</button>'+(actualRole!=='client'?'<p class="hint">Prévia: o envio fica disponível quando o cliente acessa a própria conta.</p>':'')+'</section>';
+  return pageHead('Drive',intro,'<button class="btn btn-secondary" id="driveRefresh">'+ICONS.refresh+' Atualizar</button>')+selector+'<div class="drive-folders">'+selected.map(driveFolderCard).join('')+'</div>'+(!selected.length?'<section class="surface empty-state"><strong>Nenhum cliente disponível</strong></section>':'')+form+'<div class="section-head"><h2>'+(admin?'Links recebidos dos clientes':'Seus links enviados')+'</h2><span class="hint">'+submissions.length+' '+(submissions.length===1?'envio':'envios')+'</span></div>'+(driveLoadError?'<section class="surface empty-state"><strong>Não foi possível carregar os links</strong><p>Clique em Atualizar para tentar novamente.</p></section>':submissions.length?'<div class="drive-submissions">'+submissions.map(driveSubmissionCard).join('')+'</div>':'<section class="surface empty-state"><strong>'+(admin?'Nenhum link recebido por aqui':'Nenhum link extra enviado ainda')+'</strong><p>'+(admin?'Os materiais compartilhados pelos clientes aparecerão nesta área.':'Quando combinar um envio com a Clímax, você poderá acompanhá-lo aqui.')+'</p></section>');
+}
+function bindDriveLinks(){
+  document.querySelectorAll('[data-open-drive]').forEach(b=>b.onclick=()=>{adminViewClient=b.dataset.openDrive;currentClient=b.dataset.openDrive;route='drive';closeModal();render();window.scrollTo({top:0,behavior:'smooth'})});
+}
+function bindDriveUI(){
+  bindDriveLinks();
+  const refresh=document.getElementById('driveRefresh');
+  if(refresh)refresh.onclick=()=>runBusy(refresh,'Atualizando…',async()=>{await loadDriveSubmissions();render();if(driveLoadError)toast('Não foi possível atualizar os links.','error')});
+  document.querySelectorAll('[data-drive-folder-save]').forEach(btn=>btn.onclick=()=>runBusy(btn,'Salvando…',async()=>{
+    const id=btn.dataset.driveFolderSave,input=document.getElementById('driveFolder-'+id),feedback=document.getElementById('driveFolderFeedback-'+id);
+    feedback.textContent='';
+    try{
+      if(actualRole!=='admin'||role!=='admin')throw new Error('Somente administradores podem configurar a pasta.');
+      const raw=input.value.trim(),url=raw?normalizedDriveUrl(raw,true):null;
+      if(raw&&!url){input.focus();throw new Error('Cole um link válido de pasta do Google Drive, começando com https://drive.google.com/.')}
+      const result=await db.from('clients').update({drive_folder_url:url}).eq('id',id).select('id,drive_folder_url').single();
+      if(result.error)throw result.error;
+      const c=clients.find(x=>x.id===id);if(c)c.driveFolderUrl=result.data.drive_folder_url||'';
+      toast('Pasta do cliente atualizada.');render();
+    }catch(err){feedback.textContent=formatError(err,'Não foi possível salvar a pasta.');toast('Confira o link e tente novamente.','error')}
+  }));
+  const send=document.getElementById('driveSubmitLink');
+  if(send)send.onclick=()=>runBusy(send,'Enviando…',async()=>{
+    const input=document.getElementById('driveExtraUrl'),note=document.getElementById('driveExtraNote'),feedback=document.getElementById('driveSubmitFeedback');
+    feedback.textContent='';
+    try{
+      if(actualRole!=='client'||role!=='client'||!authProfile?.client_id)throw new Error('Entre com sua conta de cliente para enviar.');
+      const url=normalizedDriveUrl(input.value);
+      if(!url){input.focus();throw new Error('Cole um link válido do Google Drive.')}
+      if(note.value.trim().length>1000)throw new Error('Use até 1.000 caracteres na descrição.');
+      const result=await db.from('client_drive_submissions').insert({client_id:authProfile.client_id,drive_url:url,note:note.value.trim()}).select('*').single();
+      if(result.error)throw result.error;
+      driveSubmissions.unshift(result.data);toast('Link enviado à Clímax.');render();
+      const status=document.getElementById('driveSubmitFeedback');if(status)status.textContent='Pronto! Seu link foi enviado à Clímax e está no histórico abaixo.';
+    }catch(err){feedback.textContent=formatError(err,'Não foi possível enviar o link.')}
+  });
+  document.querySelectorAll('[data-drive-reviewed]').forEach(btn=>btn.onclick=()=>runBusy(btn,'Salvando…',async()=>{
+    try{
+      if(role!=='admin'||actualRole!=='admin')throw new Error('Acesso restrito à Clímax.');
+      const result=await db.from('client_drive_submissions').update({reviewed_at:new Date().toISOString()}).eq('id',btn.dataset.driveReviewed).select('*').single();
+      if(result.error)throw result.error;
+      driveSubmissions=driveSubmissions.map(x=>x.id===result.data.id?result.data:x);render();toast('Envio marcado como visto.');
+    }catch(err){toast(formatError(err,'Não foi possível atualizar o envio.'),'error')}
+  }));
+}
+
 function tutorialsView(){
   return pageHead('Tutoriais','Aprenda a utilizar o Clímax Portal e aproveite todos os recursos disponíveis.')+'<section class="tutorial-grid" aria-label="Tutoriais disponíveis">'+TUTORIALS.map(tutorialCardHTML).join('')+'</section>';
 }
@@ -2752,7 +2872,7 @@ async function maybeShowWelcomeOnboarding(){
     if(error)throw error;if(!data)openTutorialPlayer(WELCOME_ONBOARDING.tutorialId,'welcome');
   }catch(err){console.error('Não foi possível consultar o tutorial de boas-vindas:',err)}
 }
-const views={home:()=>role==='admin'?adminHome():clientHome(),demands:demandsView,clientspace:clientWorkspaceView,clients:clientsView,editorial:editorialView,content:contentView,publications:publicationsView,finance:financeView,calendar:calendarView,tutorials:tutorialsView,archive:archiveView,settings:settingsView};
+const views={home:()=>role==='admin'?adminHome():clientHome(),demands:demandsView,clientspace:clientWorkspaceView,clients:clientsView,editorial:editorialView,content:contentView,publications:publicationsView,finance:financeView,calendar:calendarView,drive:driveView,tutorials:tutorialsView,archive:archiveView,settings:settingsView};
 
 function renderSidebarClients(){
   const box=document.getElementById('sidebarClients'),sb=document.getElementById('sidebar');
@@ -2776,10 +2896,10 @@ function renderSidebarClients(){
 }
 function renderNavigation(){
   const nav=role==='admin'?adminNav:clientNav;
-  setSafeHTML('#sideNav',nav.map(([k,l,i])=>`<button class="nav-btn ${route===k?'active':''}" data-route="${k}">${ICONS[i]||''}<span>${l}</span>${k==='content'&&visiblePosts().filter(p=>p?.status==='waiting').length?`<span class="nav-badge">${visiblePosts().filter(p=>p?.status==='waiting').length}</span>`:''}</button>`).join(''));
+  setSafeHTML('#sideNav',nav.map(([k,l,i])=>`<button class="nav-btn ${route===k?'active':''}" data-route="${k}">${ICONS[i]||''}<span>${l}</span>${k==='drive'&&role==='admin'&&driveSubmissions.some(x=>!x.reviewed_at)?`<span class="nav-badge">${driveSubmissions.filter(x=>!x.reviewed_at).length}</span>`:''}${k==='content'&&visiblePosts().filter(p=>p?.status==='waiting').length?`<span class="nav-badge">${visiblePosts().filter(p=>p?.status==='waiting').length}</span>`:''}</button>`).join(''));
   const mobileMain=role==='admin'?[['home','Dashboard','home'],['demands','Demandas','clock'],['content','Conteúdos','content'],['publications','Publicações','send']]:[['home','Início','home'],['editorial','Editorial','plan'],['content','Conteúdos','content'],['publications','Publicações','send']];
   setSafeHTML('#mobileNav',mobileMain.map(([k,l,i])=>`<button class="${route===k?'active':''}" data-route="${k}">${ICONS[i]||''}<span>${l}</span></button>`).join('')+`<button id="moreBtn" class="${!mobileMain.some(x=>x[0]===route)?'active':''}">${ICONS.more}<span>Mais</span></button>`);
-  const extra=role==='admin'?[['clients','Clientes','users'],['editorial','Editorial','plan'],['calendar','Calendário','calendar'],['tutorials','Tutoriais','video'],['archive','Arquivos','files'],['settings','Configurações','settings']]:[['calendar','Calendário','calendar'],['tutorials','Tutoriais','video'],['finance','Financeiro','files']];
+  const extra=role==='admin'?[['clients','Clientes','users'],['editorial','Editorial','plan'],['calendar','Calendário','calendar'],['drive','Drive','drive'],['tutorials','Tutoriais','video'],['archive','Arquivos','files'],['settings','Configurações','settings']]:[['calendar','Calendário','calendar'],['drive','Drive','drive'],['tutorials','Tutoriais','video'],['finance','Financeiro','files']];
   setSafeHTML('#mobileMore',`<small>Navegação</small>${extra.map(([k,l,i])=>`<button class="${route===k?'active':''}" data-route="${k}">${ICONS[i]||''}${l}</button>`).join('')}<button data-mobile-search>${ICONS.search||'⌕'} Buscar</button><button data-mobile-notifications>${ICONS.clock} Notificações</button><div class="menu-sep"></div><small>Aparência</small><button data-toggle-theme><span data-theme-label>${currentTheme==='dark'?'Modo claro':'Modo escuro'}</span></button>${actualRole==='admin'?`<div class="menu-sep"></div><small>Visualização</small><button data-switch-role>${role==='admin'?'Visualizar como cliente':'Voltar ao painel da Clímax'}</button>`:''}`);
   const pc=clientById(currentClient),profileRole=document.getElementById('profileRole'),rolePillText=document.getElementById('rolePillText');
   if(profileRole)profileRole.textContent=role==='admin'?'Admin · Clímax Studio':(pc?.displaySubtitle?pc.displaySubtitle+' · Portal do cliente':'Portal do cliente');
@@ -2809,6 +2929,7 @@ function render(){
   }
 }
 function bindUI(){
+  bindDriveUI();
   document.querySelectorAll('[data-theme-option]').forEach(b=>b.onclick=()=>{applyTheme(b.dataset.themeOption);render()});
   document.querySelectorAll('[data-toggle-theme]').forEach(b=>b.onclick=()=>{toggleTheme();closeMobileMore();render()});
   document.querySelectorAll('[data-route]').forEach(b=>b.onclick=()=>{route=b.dataset.route;activeFilter='all';closeMobileMore();render();window.scrollTo({top:0,behavior:'smooth'})});
