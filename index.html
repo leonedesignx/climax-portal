@@ -2012,6 +2012,17 @@ async function hydrateFromBackend(user){
     const versionIds=versionRows.map(v=>v.id);
     if(versionIds.length){const ir=await db.from('editorial_items').select('*').in('editorial_version_id',versionIds).order('position');if(ir.error)throw ir.error;itemRows=ir.data||[];}
   }
+  // Recover missing editorial dates without replacing manually changed content dates.
+  const editorialDates=new Map(itemRows.filter(i=>i.publish_date).map(i=>[i.id,i.publish_date]));
+  for(const p of posts){
+    if(p.plannedPublishDate||!p.editorialItemId)continue;
+    const date=editorialDates.get(p.editorialItemId);if(!date)continue;
+    p.plannedPublishDate=date;p.date=contentDateLabel(p);
+    if(actualRole==='admin'){
+      const repaired=await db.from('contents').update({planned_publish_date:date}).eq('id',p.id).is('planned_publish_date',null);
+      if(repaired.error)throw repaired.error;
+    }
+  }
   editorials=(edRows||[]).map(e=>{
     const versions=versionRows.filter(v=>v.editorial_id===e.id).sort((a,b)=>b.version-a.version);
     const v=versions[0];if(!v)return null;
