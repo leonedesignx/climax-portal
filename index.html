@@ -1317,10 +1317,10 @@ html[data-theme="light"] .sidebar-toggle:hover{
 .tutorial-intro{max-width:720px;margin-bottom:20px}
 .tutorial-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .tutorial-card{overflow:hidden;padding:0;display:flex;flex-direction:column;min-width:0}
-.tutorial-cover{height:clamp(170px,22vw,250px);display:grid;place-items:center;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 45%,rgba(173,244,3,.16),transparent 34%),linear-gradient(145deg,#17200c,#0b0d09 70%);border-bottom:1px solid var(--line)}
+.tutorial-cover{height:auto;aspect-ratio:16/9;display:grid;place-items:center;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 45%,rgba(173,244,3,.16),transparent 34%),linear-gradient(145deg,#17200c,#0b0d09 70%);border-bottom:1px solid var(--line)}
 .tutorial-cover::before,.tutorial-cover::after{content:"";position:absolute;border:1px solid rgba(173,244,3,.13);border-radius:50%;width:260px;height:260px;left:50%;top:50%;transform:translate(-50%,-50%)}
 .tutorial-cover::after{width:190px;height:190px;border-color:rgba(173,244,3,.2)}
-.tutorial-cover-icon{width:76px;height:76px;display:grid;place-items:center;border:1px solid rgba(173,244,3,.25);border-radius:24px;background:rgba(173,244,3,.09);color:var(--lime);position:relative;z-index:1;box-shadow:0 16px 44px rgba(0,0,0,.25)}.tutorial-cover>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.82}.tutorial-cover.has-thumbnail::before,.tutorial-cover.has-thumbnail::after{display:none}.tutorial-cover.has-thumbnail .tutorial-cover-icon{background:rgba(8,10,7,.5)}
+.tutorial-cover-icon{width:76px;height:76px;display:grid;place-items:center;border:1px solid rgba(173,244,3,.25);border-radius:24px;background:rgba(173,244,3,.09);color:var(--lime);position:relative;z-index:1;box-shadow:0 16px 44px rgba(0,0,0,.25)}.tutorial-cover>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:1}.tutorial-cover.has-thumbnail::before,.tutorial-cover.has-thumbnail::after{display:none}.tutorial-cover.has-thumbnail .tutorial-cover-icon{display:none}
 .tutorial-cover-icon svg{width:32px;height:32px}
 .tutorial-cover-label{position:absolute;left:16px;top:16px;z-index:2}
 .tutorial-card-body{padding:20px;display:flex;flex-direction:column;align-items:flex-start;flex:1}
@@ -1346,7 +1346,7 @@ html[data-theme="light"] .sidebar-toggle:hover{
 .tutorial-unavailable{min-height:220px;display:grid;place-items:center;text-align:center;padding:24px;color:var(--muted);line-height:1.6}
 .tutorial-unavailable strong{display:block;color:var(--text);margin-bottom:7px}
 .tutorial-player-footer{display:flex;justify-content:flex-end;gap:8px;padding:0 20px 18px}
-@media(max-width:700px){.tutorial-grid{grid-template-columns:1fr}.tutorial-cover{height:190px}.tutorial-card-body{padding:16px}.tutorial-player-overlay{padding:10px}.tutorial-player-dialog{border-radius:17px}.tutorial-player-head{padding:15px}.tutorial-player-content{padding:0 12px 12px}.tutorial-player-footer{padding:0 12px 12px}.tutorial-video-frame{aspect-ratio:16/10}}
+@media(max-width:700px){.tutorial-grid{grid-template-columns:1fr}.tutorial-cover{height:auto;aspect-ratio:16/9}.tutorial-card-body{padding:16px}.tutorial-player-overlay{padding:10px}.tutorial-player-dialog{border-radius:17px}.tutorial-player-head{padding:15px}.tutorial-player-content{padding:0 12px 12px}.tutorial-player-footer{padding:0 12px 12px}.tutorial-video-frame{aspect-ratio:16/10}}
 @media(max-width:430px){.auth-login-links{align-items:flex-start;flex-direction:column;gap:8px}.tutorial-card-actions{align-items:stretch;flex-direction:column}.tutorial-card-actions .btn{width:100%}}
 
 /* Shared layout rules: readable text, contained controls and consistent spacing. */
@@ -1515,7 +1515,7 @@ html[data-theme="light"] .publication-state.state-published{color:#377048}
         <div class="auth-eyebrow">Clímax Portal</div>
         <h2>Bem-vindo de volta.</h2>
         <p class="auth-sub">Entre com seu nome de acesso e sua senha. No primeiro acesso, use a senha temporária enviada pela Clímax.</p>
-        <div class="auth-tutorial-card"><img class="auth-tutorial-thumb" src="https://img.youtube.com/vi/RdFIYJ2C2ig/mqdefault.jpg" alt="" loading="lazy"><div class="auth-tutorial-copy"><strong>Primeiro acesso ao Clímax Portal?</strong><span>Veja o passo a passo para ativar sua conta.</span></div><button class="btn" type="button" data-open-tutorial="first-access">Assistir tutorial</button></div>
+        <div class="auth-tutorial-card"><img class="auth-tutorial-thumb" src="./assets/tutorials/primeiro-acesso.png" alt="" loading="lazy"><div class="auth-tutorial-copy"><strong>Primeiro acesso ao Clímax Portal?</strong><span>Veja o passo a passo para ativar sua conta.</span></div><button class="btn" type="button" data-open-tutorial="first-access">Assistir tutorial</button></div>
         
         <div class="auth-fields">
           <div><label>Nome de acesso</label><input id="authEmail" type="text" autocomplete="username" placeholder="Digite seu nome de acesso"></div>
@@ -2832,9 +2832,9 @@ function settingsView(){
 }
 
 const TUTORIALS=[
-  {id:'first-access',title:'Como acessar o Clímax Portal',description:'Entenda como acessar o portal pela primeira vez e configurar sua senha.',youtubeId:'RdFIYJ2C2ig',available:false},
-  {id:'portal-overview',title:'Conhecendo o Clímax Portal',description:'Entenda como o portal funciona e conheça suas funcionalidades.',youtubeId:'5N3sTn8W4-s',available:false},
-  {id:'meta-access',title:'Como dar acesso ao Instagram pelo Meta',description:'Entenda como conceder acesso à sua conta do Instagram à Clímax pelo Meta Business, sem compartilhar sua senha.',youtubeId:'NEtOGxbsOZY',available:false}
+  {id:'first-access',title:'Como acessar o Clímax Portal',description:'Entenda como acessar o portal pela primeira vez e configurar sua senha.',youtubeId:'RdFIYJ2C2ig',thumbnail:'./assets/tutorials/primeiro-acesso.png',available:false},
+  {id:'portal-overview',title:'Conhecendo o Clímax Portal',description:'Entenda como o portal funciona e conheça suas funcionalidades.',youtubeId:'5N3sTn8W4-s',thumbnail:'./assets/tutorials/conhecendo-portal.png',available:false},
+  {id:'meta-access',title:'Como dar acesso ao Instagram pelo Meta',description:'Entenda como conceder acesso à sua conta do Instagram à Clímax pelo Meta Business, sem compartilhar sua senha.',youtubeId:'NEtOGxbsOZY',thumbnail:'./assets/tutorials/acesso-meta.png',available:false}
 ];
 const WELCOME_ONBOARDING={enabled:true,tutorialId:'portal-overview',title:'Bem-vindo ao Clímax Portal!',description:'Assista a uma apresentação rápida e descubra como aproveitar seu novo espaço.'};
 let welcomeProgressSaving=false;
@@ -2866,7 +2866,7 @@ function tutorialCardHTML(t){
   const ready=Boolean(t.available),isSoon=t.id==='portal-overview'&&!ready;
   const badge=isSoon?'<span class="tutorial-coming-soon">Em breve</span>':'<span class="tutorial-state '+(ready?'is-ready':'')+'">'+(ready?'Disponível':'Vídeo aguardando envio')+'</span>';
   const action=ready?'<button class="btn" type="button" data-tutorial-play="'+escapeHtml(t.id)+'">'+ICONS.play+'Assistir tutorial</button>':'<button class="btn btn-secondary" type="button" disabled>'+ICONS.play+(isSoon?'Em breve':'Vídeo aguardando envio')+'</button>';
-  const thumbnail=ready?'<img src="https://img.youtube.com/vi/'+encodeURIComponent(t.youtubeId)+'/hqdefault.jpg" alt="" loading="lazy">':'';
+  const thumbnail=ready&&t.thumbnail?'<img src="'+escapeHtml(t.thumbnail)+'" alt="" width="1280" height="720" loading="lazy" decoding="async">':'';
   return '<article class="surface tutorial-card"><div class="tutorial-cover'+(thumbnail?' has-thumbnail':'')+'">'+thumbnail+'<span class="tutorial-cover-label">'+badge+'</span><span class="tutorial-cover-icon">'+ICONS.video+'</span></div><div class="tutorial-card-body"><h2>'+escapeHtml(t.title)+'</h2><p>'+escapeHtml(t.description)+'</p><div class="tutorial-card-actions">'+action+'</div></div></article>';
 }
 
