@@ -2269,7 +2269,7 @@ async function saveEditorialItemCommentsBackend(ed,comments){
   const {error}=await db.from('comments').insert(rows);if(error)throw error;
 }
 function captureEditorialItemComments(){return [...document.querySelectorAll('[data-editorial-item-comment]')].map(t=>({itemId:t.dataset.editorialItemComment,body:t.value.trim()})).filter(x=>x.body)}
-function openHashTarget(){const m=location.hash.match(/^#conteudo-(.+)$/);if(m&&posts.some(p=>String(p.id)===decodeURIComponent(m[1])))return setTimeout(()=>openPost(decodeURIComponent(m[1])),20);if(['#editorial','#drive'].includes(location.hash)){route=location.hash.slice(1);render()}}
+function openHashTarget(){const m=location.hash.match(/^#conteudo-(.+)$/);if(m&&posts.some(p=>String(p.id)===decodeURIComponent(m[1])))return setTimeout(()=>openPost(decodeURIComponent(m[1])),20);if(['#editorial','#drive','#backup'].includes(location.hash)){route=location.hash==='#backup'?'archive':location.hash.slice(1);render()}}
 function monthLabelFromDate(d){return d.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}).replace(/^./,x=>x.toUpperCase())}
 function dateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function postDateObject(p){if(p.scheduledAt){const d=new Date(p.scheduledAt);return Number.isNaN(d.getTime())?null:d}const m=String(p.date||'').match(/^(\d{2})\/(\d{2})/);if(!m)return null;return new Date(calendarCursor.getFullYear(),Number(m[2])-1,Number(m[1]),12)}
@@ -2692,8 +2692,113 @@ function calendarView(){
   const agenda=`<div class="agenda-mobile">${postsInMonth.map(({p,d})=>`<div><div class="agenda-date">${d.toLocaleDateString('pt-BR',{day:'2-digit',month:'long'})}</div><div class="agenda-item" data-open-post="${escapeHtml(p.id)}"><div class="agenda-time">${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div><div><strong>${escapeHtml(p.title)}</strong><span>${escapeHtml(p.type)}${role==='admin'?' · '+escapeHtml(clientById(p.client).name):''}</span></div><span class="mini-badge st-${escapeHtml(p.status)}">${escapeHtml(publicationStatusLabel[publicationStatusOf(p)]||p.status)}</span></div></div>`).join('')||'<div class="empty-state"><strong>Nenhum conteúdo neste mês</strong></div>'}</div>`;
   return `${pageHead('Calendário de publicações','Conteúdos agendados e publicados · '+label)}<section class="surface calendar-shell"><div class="calendar-toolbar"><strong>${escapeHtml(label)}</strong><div class="month-nav"><button class="month-btn" data-calendar-shift="-1" aria-label="Mês anterior">${ICONS.left}</button><button class="month-btn" data-calendar-shift="1" aria-label="Próximo mês">${ICONS.right}</button></div></div>${desktop}${agenda}</section>`;
 }
+/* Portable ZIP (stored entries), no third-party upload. ZIP32 limited to 4 GiB. */
+async function backupReadAll(db,table,filter=()=>{},columns='*'){
+ let result=[];for(let from=0;;from+=500){let q=db.from(table).select(columns);q=filter(q)||q;const r=await q.order('id').range(from,from+499);if(r.error)throw new Error(table+': '+r.error.message);result.push(...r.data);if(r.data.length<500)return result}
+}
+function backupMonth(value){if(!/^\d{4}-\d{2}$/.test(value)||Number(value.slice(5))<1||Number(value.slice(5))>12)throw new Error('Selecione um mês válido.');return value}
+function backupInMonth(value,month){return String(value||'').slice(0,7)===month}
+function backupSafePath(key){return String(key).split('/').map(part=>encodeURIComponent(part)).join('/')}
+async function backupZip(name,entries,onProgress=()=>{},destination){
+ let handle=null,sink=null,parts=[],offset=0,central=[],count=0;
+ if(destination){handle=destination;sink=await handle.createWritable()}
+ const bytes=new TextEncoder(),crcTable=Array.from({length:256},(_,n)=>{let c=n;for(let k=0;k<8;k++)c=(c&1)?0xedb88320^(c>>>1):c>>>1;return c>>>0});
+ const write=async data=>{if(offset+data.byteLength>0xffffffff)throw new Error('O arquivo excedeu 4 GB. Faça backups separados por cliente.');if(!sink&&offset+data.byteLength>512*1024*1024)throw new Error('Este navegador limita o backup em memória a 512 MB. Use Chrome ou Edge com salvamento direto em disco.');if(sink)await sink.write(data);else parts.push(data);offset+=data.byteLength};
+ const head=(size)=>{const arr=new Uint8Array(size);return [arr,new DataView(arr.buffer)]};
+ try{
+  for await(const item of entries){
+   const raw=await item.load();const data=raw instanceof Uint8Array?raw:new Uint8Array(await raw.arrayBuffer());const filename=bytes.encode(item.path);
+   if(filename.length>65535||data.length>0xffffffff||count===65535)throw new Error('Limite de tamanho do ZIP atingido.');
+   let crc=0xffffffff;for(const b of data)crc=crcTable[(crc^b)&255]^(crc>>>8);crc=(crc^0xffffffff)>>>0;
+   const position=offset,[local,lv]=head(30);lv.setUint32(0,0x04034b50,true);lv.setUint16(4,20,true);lv.setUint16(6,0x800,true);lv.setUint32(14,crc,true);lv.setUint32(18,data.length,true);lv.setUint32(22,data.length,true);lv.setUint16(26,filename.length,true);
+   await write(local);await write(filename);await write(data);
+   const [c,cv]=head(46);cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint16(8,0x800,true);cv.setUint32(16,crc,true);cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);cv.setUint16(28,filename.length,true);cv.setUint32(42,position,true);central.push(c,filename);count++;onProgress({count,bytes:offset,path:item.path});
+  }
+  const cdOffset=offset;for(const c of central)await write(c);const cdSize=offset-cdOffset,[end,ev]=head(22);ev.setUint32(0,0x06054b50,true);ev.setUint16(8,count,true);ev.setUint16(10,count,true);ev.setUint32(12,cdSize,true);ev.setUint32(16,cdOffset,true);await write(end);
+  if(sink)await sink.close();else{const blob=new Blob(parts,{type:'application/zip'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),60000)}
+  return {savedToDisk:Boolean(sink),files:count,bytes:offset};
+ }catch(e){if(sink)try{await sink.abort()}catch(_){}throw e}
+}
+
+async function backupDestination(name){return typeof window.showSaveFilePicker==='function'?window.showSaveFilePicker({suggestedName:name,types:[{description:'Backup ZIP',accept:{'application/zip':['.zip']}}]}):null}
+
+let portalBackupReceipt=null;
+function portalArchiveMonth(){return document.getElementById('portalBackupMonth')?.value||new Date().toISOString().slice(0,7)}
+async function portalMonthSnapshot(month,clientId='all'){
+ backupMonth(month);
+ const tables=['clients','contents','editorials','editorial_versions','editorial_items','content_versions','content_preview_assets','comments','reviews','client_drive_submissions'];
+ const entries=await Promise.all(tables.map(async table=>[table,await backupReadAll(db,table)]));
+ const extra=await Promise.all([db.from('client_financials').select('*'),db.from('portal_payment_settings').select('*'),db.from('profiles').select('id,full_name,role,client_id')]);for(const r of extra)if(r.error)throw r.error;
+ const all=Object.fromEntries(entries),clientOK=row=>clientId==='all'||row.client_id===clientId;
+ const eds=all.editorials.filter(row=>clientOK(row)&&backupInMonth(row.month_start,month)),edIds=new Set(eds.map(x=>x.id));
+ const evs=all.editorial_versions.filter(x=>edIds.has(x.editorial_id)),evIds=new Set(evs.map(x=>x.id));
+ const eis=all.editorial_items.filter(x=>evIds.has(x.editorial_version_id)),eiIds=new Set(eis.map(x=>x.id));
+ const contents=all.contents.filter(x=>clientOK(x)&&(eiIds.has(x.editorial_item_id)||backupInMonth(x.planned_publish_date||x.scheduled_at||x.created_at,month)));
+ const contentIds=new Set(contents.map(x=>x.id));
+ const versions=all.content_versions.filter(x=>contentIds.has(x.content_id)),assets=all.content_preview_assets.filter(x=>contentIds.has(x.content_id));
+ const keySet=new Set([...versions.flatMap(x=>[x.media_key,x.thumbnail_key]),...assets.map(x=>x.storage_key)].filter(Boolean));
+ const outside=new Set([...all.content_versions.filter(x=>!contentIds.has(x.content_id)).flatMap(x=>[x.media_key,x.thumbnail_key]),...all.content_preview_assets.filter(x=>!contentIds.has(x.content_id)).map(x=>x.storage_key)].filter(Boolean));
+ return {format:'climax-portal-month-v1',month,clientId,exportedAt:new Date().toISOString(),records:{client_financials:extra[0].data.filter(x=>clientId==='all'||x.client_id===clientId),portal_payment_settings:extra[1].data,people:extra[2].data.filter(x=>clientId==='all'||x.client_id===clientId),clients:all.clients.filter(x=>clientId==='all'||x.id===clientId),contents,editorials:eds,editorial_versions:evs,editorial_items:eis,content_versions:versions,content_preview_assets:assets,comments:all.comments.filter(x=>contentIds.has(x.content_id)||evIds.has(x.editorial_version_id)||eiIds.has(x.editorial_item_id)),reviews:all.reviews.filter(x=>contentIds.has(x.content_id)||evIds.has(x.editorial_version_id)),client_drive_submissions:all.client_drive_submissions.filter(clientOK)},media:[...keySet].sort().map(key=>({key,path:'midias/'+backupSafePath(key),shared:outside.has(key)})),preserved:'Links de Drive, clientes, credenciais, financeiro, editoriais e publicações não são apagados pela renovação de mídias.'};
+}
+function openMonthlyBackup(){
+ if(actualRole!=='admin'||role!=='admin')return;
+ const month=portalArchiveMonth();
+ openModal('Backup mensal do portal','<div class="field"><label for="backupMonthInput">Mês do backup</label><input id="backupMonthInput" type="month" value="'+escapeHtml(month)+'"></div><div class="field"><label for="backupClientInput">Cliente</label><select id="backupClientInput"><option value="all">Todos os clientes</option>'+clients.map(c=>'<option value="'+escapeHtml(c.id)+'">'+escapeHtml(c.name)+'</option>').join('')+'</select></div><p class="storage-copy">O ZIP inclui os registros completos do período, todas as versões de imagens e vídeos e uma lista dos links externos. Arquivos que estão no Google Drive permanecem no Drive; seus links entram no backup.</p><p class="hint" style="margin-top:12px">Mantenha esta janela aberta até concluir. Para arquivos grandes, prefira Chrome ou Edge com salvamento direto em disco. Antes da renovação, abra o ZIP e confira os arquivos.</p><p id="monthlyBackupStatus" role="status" style="margin-top:14px"></p>','<button class="btn btn-secondary" data-close-modal>Fechar</button><button class="btn" id="portalMonthlyDownload">Baixar backup completo</button>');
+ const btn=document.getElementById('portalMonthlyDownload');
+ btn.onclick=()=>runBusy(btn,'Gerando backup…',async()=>{
+  const status=document.getElementById('monthlyBackupStatus'),month=document.getElementById('backupMonthInput').value,clientId=document.getElementById('backupClientInput').value;
+  try{
+   const filename='climax-portal-'+month+'-'+(clientId==='all'?'todos':clientId)+'.zip';
+   const destination=await backupDestination(filename);
+   status.textContent='Lendo registros do mês…';
+   const snapshot=await portalMonthSnapshot(month,clientId);
+   async function* entries(){
+    yield {path:'registros.json',load:()=>new Blob([JSON.stringify(snapshot,null,2)],{type:'application/json'})};
+    yield {path:'LEIA-ME.txt',load:()=>new Blob(['Clímax Portal — Backup mensal '+month+'\n\nRegistros em registros.json; arquivos originais em midias/.\nLinks externos são referências, não cópias do Google Drive.\nA renovação remove somente mídias escolhidas, preservando histórico e links.'])};
+    for(const media of snapshot.media)yield {path:media.path,load:async()=>{const r=await db.storage.from('client-media').download(media.key);if(r.error||!r.data)throw new Error('Falha ao baixar '+media.key+': '+(r.error?.message||'arquivo vazio'));return r.data}};
+   }
+   const result=await backupZip(filename,entries(),progress=>{status.textContent=progress.count+' arquivo(s) processados · '+(progress.bytes/1048576).toFixed(1)+' MB'},destination);
+   portalBackupReceipt={userId:authUser.id,snapshot,completed:new Set(),verified:false};
+   status.textContent='Backup concluído: '+result.files+' arquivos. Abra o ZIP e confira o conteúdo antes de renovar as mídias. Nenhum dado foi excluído.';
+   toast('Backup mensal gerado.');
+  }catch(e){portalBackupReceipt=null;status.textContent=formatError(e,'Backup não concluído. A renovação permanece bloqueada.');toast('Não foi possível concluir o backup.','error')}
+ });
+}
+function openPortalRenewal(){
+ if(actualRole!=='admin'||role!=='admin')return;
+ const receipt=portalBackupReceipt;
+ if(!receipt||receipt.userId!==authUser.id){toast('Primeiro gere e confira o backup mensal nesta sessão.','error');return}
+ const eligible=receipt.snapshot.media.filter(x=>!x.shared),month=receipt.snapshot.month;
+ openModal('Renovação do portal · '+month,'<p class="storage-copy">Esta renovação remove apenas as imagens e os vídeos do Supabase incluídos no backup de <strong>'+escapeHtml(month)+'</strong>. Os textos dos editoriais, publicações, clientes, financeiro e todos os links do Drive serão preservados.</p><p class="hint" style="margin-top:12px">'+eligible.length+' arquivo(s) elegíveis. Arquivos compartilhados com outros períodos não serão removidos. Novos envios após o backup ficam preservados.</p><div class="field" style="margin-top:18px"><label><input id="confirmBackupVerified" type="checkbox"> Baixei, abri e conferi o ZIP, incluindo imagens e vídeos.</label></div><div class="field"><label for="renewMonthConfirm">Digite o mês '+escapeHtml(month)+' para confirmar</label><input id="renewMonthConfirm" placeholder="'+escapeHtml(month)+'"></div><p id="renewalStatus" role="status"></p>','<button class="btn btn-secondary" data-close-modal>Cancelar</button><button class="btn btn-danger" id="portalRenewMedia" '+(!eligible.length?'disabled':'')+'>Renovar mídias deste mês</button>');
+ const btn=document.getElementById('portalRenewMedia');
+ btn.onclick=()=>runBusy(btn,'Renovando…',async()=>{
+  const status=document.getElementById('renewalStatus');
+  if(!document.getElementById('confirmBackupVerified').checked||document.getElementById('renewMonthConfirm').value!==month){status.textContent='Confira o backup e digite o mês exatamente como indicado.';return}
+  if(actualRole!=='admin'||role!=='admin'||authUser.id!==receipt.userId)return;
+  try{
+   const fresh=await portalMonthSnapshot(month,receipt.snapshot.clientId),freshKeys=new Set(fresh.media.filter(x=>!x.shared).map(x=>x.key));
+   let completed=0;
+   for(const media of eligible){
+    if(receipt.completed.has(media.key)){completed++;continue}
+    if(!freshKeys.has(media.key))throw new Error('Os arquivos do período mudaram. Faça um novo backup antes de renovar.');
+    // Remove only the exact object and exact references recorded in the backup.
+    const removed=await db.storage.from('client-media').remove([media.key]);if(removed.error)throw removed.error;
+    const versionRows=receipt.snapshot.records.content_versions;
+    for(const row of versionRows){
+     const patch={};if(row.media_key===media.key){patch.media_key=null;patch.media_type=null;patch.size_bytes=null}if(row.thumbnail_key===media.key)patch.thumbnail_key=null;
+     if(Object.keys(patch).length){let q=db.from('content_versions').update(patch).eq('id',row.id);q=row.media_key===media.key?q.eq('media_key',media.key):q.eq('thumbnail_key',media.key);const r=await q;if(r.error)throw r.error}
+    }
+    for(const asset of receipt.snapshot.records.content_preview_assets.filter(x=>x.storage_key===media.key)){const r=await db.from('content_preview_assets').delete().eq('id',asset.id).eq('storage_key',media.key);if(r.error)throw r.error}
+    receipt.completed.add(media.key);completed++;status.textContent=completed+' de '+eligible.length+' mídias renovadas.';
+   }
+   status.textContent='Renovação concluída. Mídias removidas; links e histórico preservados.';toast('Mídias do período renovadas.');portalBackupReceipt=null;
+   const keepClient=currentClient;await hydrateFromBackend(authUser);if(clients.some(x=>x.id===keepClient))currentClient=keepClient;
+  }catch(e){status.textContent=formatError(e,'A renovação foi interrompida. Os arquivos já processados não serão repetidos ao tentar novamente.');toast('Confira o resultado da renovação.','error')}
+ });
+}
+
 function archiveView(){
-  return `${pageHead('Arquivos & backup','Mídias privadas vinculadas aos conteúdos e backup dos registros do portal.','<button class="btn" data-action="backup">Exportar backup JSON</button>')}<div class="archive-grid"><section class="surface storage-card"><div style="font-size:var(--type-small);color:var(--muted);font-weight:750">Armazenamento de mídia</div><div class="archive-state" style="margin-top:10px">● Supabase Storage ativo</div><p class="storage-copy" style="margin-top:12px">Imagens e vídeos enviados pelo Admin ficam privados e vinculados ao cliente correto. O limite atual é de 100 MB por arquivo. Para pastas, arquivos brutos e acervos maiores, use o link do Drive no editorial.</p></section><section class="surface archive-list"><div class="section-head" style="margin:11px 0 2px"><h3>Backup de dados</h3></div><div class="archive-month"><div><strong>Exportação manual</strong><p>Clientes, conteúdos, editoriais e metadados carregados nesta sessão. Os arquivos binários de mídia não entram no JSON.</p></div><span class="archive-state">Disponível</span></div></section></div>`;
+ return pageHead('Arquivos & backup','Backup mensal com mídias e renovação do armazenamento.')+'<section class="surface" style="padding:24px"><h2>Backup mensal completo</h2><p class="storage-copy" style="margin:14px 0">Guarde editoriais, publicações, comentários e todas as versões de imagens e vídeos em um ZIP. Os links do Drive entram nos registros e continuam disponíveis no portal.</p><div class="field"><label for="portalBackupMonth">Mês de referência</label><input type="month" id="portalBackupMonth" value="'+new Date().toISOString().slice(0,7)+'"></div><div class="drive-submission-actions"><button class="btn" data-monthly-backup>Baixar backup mensal</button><button class="btn btn-secondary" data-portal-renewal>Renovação do portal</button></div><p class="hint" style="margin-top:16px">Renovação de mídias: disponível somente após concluir e conferir o backup nesta sessão. O histórico e os links permanentes são preservados.</p></section>';
 }
 function settingsView(){
   const p=getPortalPrefs(),pay=portalPaymentSettings||{};
@@ -2958,6 +3063,8 @@ function render(){
   }
 }
 function bindUI(){
+ document.querySelectorAll('[data-monthly-backup]').forEach(b=>b.onclick=openMonthlyBackup);
+ document.querySelectorAll('[data-portal-renewal]').forEach(b=>b.onclick=openPortalRenewal);
   bindDriveUI();
   document.querySelectorAll('[data-theme-option]').forEach(b=>b.onclick=()=>{applyTheme(b.dataset.themeOption);render()});
   document.querySelectorAll('[data-toggle-theme]').forEach(b=>b.onclick=()=>{toggleTheme();closeMobileMore();render()});
@@ -3176,9 +3283,7 @@ function openEditorialFeedback(itemComments=[]){
   pendingEditorialItemComments=itemComments;openModal('Solicitar ajustes no editorial',`<div class="field"><label>Comentário geral (opcional se você comentou publicações específicas)</label><textarea id="editorialFeedback" maxlength="3000" style="min-height:150px" placeholder="O que você gostaria de ajustar no planejamento como um todo?">${escapeHtml(editorialFeedback)}</textarea></div>${itemComments.length?`<p class="hint" style="margin-top:10px">${itemComments.length} comentário(s) específico(s) serão enviados junto.</p>`:''}`,`<button class="btn btn-secondary" data-close-modal>Cancelar</button><button class="btn" id="sendEditorialFeedback">Enviar ajustes</button>`);const btn=document.getElementById('sendEditorialFeedback');btn.onclick=()=>runBusy(btn,'Enviando…',async()=>{editorialFeedback=document.getElementById('editorialFeedback').value.trim();if(!editorialFeedback&&!pendingEditorialItemComments.length){document.getElementById('editorialFeedback').focus();throw new Error('Escreva um comentário geral ou comente uma publicação específica.')}const ed=currentEditorial();try{await saveEditorialItemCommentsBackend(ed,pendingEditorialItemComments);const reviewNote=editorialFeedback||`Ajustes específicos enviados em ${pendingEditorialItemComments.length} publicação(ões).`;await reviewEditorialBackend(ed,'changes',reviewNote);ed.status='changes';ed.feedback=reviewNote;pendingEditorialItemComments=[];closeModal();toast('Ajustes enviados à Clímax.');render()}catch(err){toast(formatError(err,'Não foi possível enviar os ajustes.'),'error');throw err}}).catch(()=>{});
 }
 
-function openBackup(){
-  openModal('Exportar backup de dados',`<section class="surface" style="padding:15px"><strong style="font-size:var(--type-label)">O arquivo inclui</strong><p class="storage-copy" style="margin-top:8px">Clientes carregados, conteúdos, editoriais e metadados desta sessão em JSON. Mídias não estão incluídas porque o R2 ainda não está conectado.</p></section>`,`<button class="btn btn-secondary" data-close-modal>Cancelar</button><button class="btn" id="generateBackup">Baixar JSON</button>`);const btn=document.getElementById('generateBackup');btn.onclick=()=>{const payload={exportedAt:new Date().toISOString(),portal:'Clímax Portal',clients,contents:posts,editorials};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`climax-portal-backup-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);btn.textContent='Backup baixado ✓';toast('Backup JSON gerado.')};
-}
+function openBackup(){return openMonthlyBackup()}
 async function openHistory(id){
   const p=posts.find(x=>String(x.id)===String(id));if(!p)return;let entries=[];
   if(backendEnabled&&backendReady&&isUuid(p.id)){
