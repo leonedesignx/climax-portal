@@ -1483,6 +1483,14 @@ html[data-theme="light"] .publication-state.state-published{color:#377048}
 @media(min-width:1200px){.drive-folders:has(>.drive-folder-card:nth-child(2)){grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.drive-folder-card,.drive-extra,.drive-submission{padding:20px}.drive-toolbar{flex-direction:column;align-items:stretch;padding:20px}.drive-toolbar .field{min-width:0}.drive-heading{align-items:flex-start;gap:12px}.drive-heading h2{font-size:var(--type-title)}.drive-submission-head{flex-direction:column;gap:10px}.drive-access .btn,.drive-submission-actions .btn{width:100%;justify-content:center}}
 
+
+/* Keep editorial dates and actions inside narrow content cards. */
+.post-body{min-width:0;grid-template-columns:minmax(0,1fr)}
+.post-body>*,.post-meta>span{min-width:0}
+.post-title{overflow-wrap:anywhere}
+.post-meta{row-gap:5px}
+.post-meta>span:last-child{white-space:nowrap}
+.post-card .card-actions{display:flex;flex-wrap:wrap}
 </style>
 </head>
 <body>
