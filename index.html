@@ -2707,10 +2707,12 @@ function settingsView(){
 }
 
 const TUTORIALS=[
-  {id:'first-access',title:'Como acessar o Clímax Portal',description:'Aprenda a realizar seu primeiro acesso, configurar sua senha e entrar no portal.',youtubeId:'RdFIYJ2C2ig',available:false},
-  {id:'portal-overview',title:'Conhecendo o Clímax Portal',description:'Conheça as funcionalidades e descubra como acompanhar seus projetos.',youtubeId:'',available:false}
+  {id:'first-access',title:'Como acessar o Clímax Portal',description:'Entenda como acessar o portal pela primeira vez e configurar sua senha.',youtubeId:'RdFIYJ2C2ig',available:false},
+  {id:'portal-overview',title:'Conhecendo o Clímax Portal',description:'Entenda como o portal funciona e conheça suas funcionalidades.',youtubeId:'5N3sTn8W4-s',available:false},
+  {id:'meta-access',title:'Como dar acesso ao Instagram pelo Meta',description:'Entenda como conceder acesso à sua conta do Instagram à Clímax pelo Meta Business, sem compartilhar sua senha.',youtubeId:'NEtOGxbsOZY',available:false}
 ];
-const WELCOME_ONBOARDING={enabled:false,tutorialId:'portal-overview',title:'Bem-vindo ao Clímax Portal!',description:'Assista a uma apresentação rápida e descubra como aproveitar seu novo espaço.'};
+const WELCOME_ONBOARDING={enabled:true,tutorialId:'portal-overview',title:'Bem-vindo ao Clímax Portal!',description:'Assista a uma apresentação rápida e descubra como aproveitar seu novo espaço.'};
+let welcomeProgressSaving=false;
 let activeTutorialId=null,activeTutorialMode='watch',tutorialPreviousOverflow='',tutorialYoutubeApiPromise=null;
 function refreshTutorialAvailability(){
   TUTORIALS.forEach(t=>{t.available=/^[A-Za-z0-9_-]{11}$/.test(t.youtubeId||'')});
@@ -2862,7 +2864,7 @@ function openTutorialPlayer(tutorialId,mode='watch'){
 }
 function closeTutorialPlayer(saveDismissal=true){
   const overlay=document.getElementById('tutorialPlayer');if(!overlay)return;
-  if(saveDismissal&&activeTutorialMode==='welcome')saveWelcomeProgress('dismissed');
+  if(saveDismissal&&activeTutorialMode==='welcome')return saveWelcomeProgress('dismissed');
   overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');
   const frame=document.getElementById('tutorialVideoFrame');if(frame)frame.src='about:blank'
   setTimeout(()=>{overlay.hidden=true;document.getElementById('tutorialPlayerContent').replaceChildren()},210);
@@ -2870,13 +2872,26 @@ function closeTutorialPlayer(saveDismissal=true){
   activeTutorialId=null;activeTutorialMode='watch';
 }
 async function saveWelcomeProgress(state){
-  if(!authUser||!db||!['completed','dismissed'].includes(state))return;
-  const now=new Date().toISOString();
-  const row={user_id:authUser.id,tutorial_id:WELCOME_ONBOARDING.tutorialId,state,completed_at:state==='completed'?now:null,dismissed_at:state==='dismissed'?now:null,updated_at:now};
-  const {error}=await db.from('user_tutorial_progress').upsert(row,{onConflict:'user_id,tutorial_id'});
-  if(error){console.error('Não foi possível registrar o tutorial de boas-vindas:',error);return}
-  if(state==='completed')toast('Apresentação concluída.');
-  closeTutorialPlayer(false);
+  if(welcomeProgressSaving||!authUser||!db||!['completed','dismissed'].includes(state))return;
+  welcomeProgressSaving=true;
+  const userId=authUser.id,now=new Date().toISOString();
+  const row={user_id:userId,tutorial_id:WELCOME_ONBOARDING.tutorialId,state,completed_at:state==='completed'?now:null,dismissed_at:state==='dismissed'?now:null,updated_at:now};
+  const overlay=document.getElementById('tutorialPlayer');
+  overlay?.setAttribute('aria-busy','true');
+  try{
+    const {error}=await db.from('user_tutorial_progress').upsert(row,{onConflict:'user_id,tutorial_id'});
+    if(error)throw error;
+    if(authUser?.id===userId&&activeTutorialMode==='welcome'){
+      if(state==='completed')toast('Apresentação concluída. Você pode rever o vídeo em Tutoriais.');
+      closeTutorialPlayer(false);
+    }
+  }catch(err){
+    console.error('Não foi possível registrar o tutorial de boas-vindas:',err);
+    toast('Não foi possível salvar sua escolha. Confira sua conexão e tente fechar novamente.','error');
+  }finally{
+    welcomeProgressSaving=false;
+    overlay?.removeAttribute('aria-busy');
+  }
 }
 async function maybeShowWelcomeOnboarding(){
   if(!WELCOME_ONBOARDING.enabled||!authUser||!db)return;
