@@ -2720,7 +2720,7 @@ async function backupZip(name,entries,onProgress=()=>{},destination){
  }catch(e){if(sink)try{await sink.abort()}catch(_){}throw e}
 }
 
-async function backupDestination(name){return typeof window.showSaveFilePicker==='function'?window.showSaveFilePicker({suggestedName:name,types:[{description:'Backup ZIP',accept:{'application/zip':['.zip']}}]}):null}
+async function backupDestination(name,preferDisk=false){return preferDisk&&typeof window.showSaveFilePicker==='function'?window.showSaveFilePicker({suggestedName:name,types:[{description:'Backup ZIP',accept:{'application/zip':['.zip']}}]}):null}
 
 let portalBackupReceipt=null;
 function portalArchiveMonth(){return document.getElementById('portalBackupMonth')?.value||new Date().toISOString().slice(0,7)}
@@ -2743,13 +2743,13 @@ async function portalMonthSnapshot(month,clientId='all'){
 function openMonthlyBackup(){
  if(actualRole!=='admin'||role!=='admin')return;
  const month=portalArchiveMonth();
- openModal('Backup mensal do portal','<div class="field"><label for="backupMonthInput">Mês do backup</label><input id="backupMonthInput" type="month" value="'+escapeHtml(month)+'"></div><div class="field"><label for="backupClientInput">Cliente</label><select id="backupClientInput"><option value="all">Todos os clientes</option>'+clients.map(c=>'<option value="'+escapeHtml(c.id)+'">'+escapeHtml(c.name)+'</option>').join('')+'</select></div><p class="storage-copy">O ZIP inclui os registros completos do período, todas as versões de imagens e vídeos e uma lista dos links externos. Arquivos que estão no Google Drive permanecem no Drive; seus links entram no backup.</p><p class="hint" style="margin-top:12px">Mantenha esta janela aberta até concluir. Para arquivos grandes, prefira Chrome ou Edge com salvamento direto em disco. Antes da renovação, abra o ZIP e confira os arquivos.</p><p id="monthlyBackupStatus" role="status" style="margin-top:14px"></p>','<button class="btn btn-secondary" data-close-modal>Fechar</button><button class="btn" id="portalMonthlyDownload">Baixar backup completo</button>');
+ openModal('Backup mensal do portal','<div class="field"><label for="backupMonthInput">Mês do backup</label><input id="backupMonthInput" type="month" value="'+escapeHtml(month)+'"></div><div class="field"><label for="backupClientInput">Cliente</label><select id="backupClientInput"><option value="all">Todos os clientes</option>'+clients.map(c=>'<option value="'+escapeHtml(c.id)+'">'+escapeHtml(c.name)+'</option>').join('')+'</select></div><p class="storage-copy">O ZIP inclui os registros completos do período, todas as versões de imagens e vídeos e uma lista dos links externos. Arquivos que estão no Google Drive permanecem no Drive; seus links entram no backup.</p><div class="field" style="margin-top:16px"><label><input id="backupUseDisk" type="checkbox"> Salvar direto em disco (para backups maiores que 512 MB, no Chrome ou Edge)</label></div><p class="hint" style="margin-top:12px">Mantenha esta janela aberta até concluir. Para arquivos grandes, prefira Chrome ou Edge com salvamento direto em disco. Antes da renovação, abra o ZIP e confira os arquivos.</p><p id="monthlyBackupStatus" role="status" style="margin-top:14px"></p>','<button class="btn btn-secondary" data-close-modal>Fechar</button><button class="btn" id="portalMonthlyDownload">Baixar backup completo</button>');
  const btn=document.getElementById('portalMonthlyDownload');
  btn.onclick=()=>runBusy(btn,'Gerando backup…',async()=>{
   const status=document.getElementById('monthlyBackupStatus'),month=document.getElementById('backupMonthInput').value,clientId=document.getElementById('backupClientInput').value;
   try{
    const filename='climax-portal-'+month+'-'+(clientId==='all'?'todos':clientId)+'.zip';
-   const destination=await backupDestination(filename);
+   const destination=await backupDestination(filename,document.getElementById('backupUseDisk')?.checked);
    status.textContent='Lendo registros do mês…';
    const snapshot=await portalMonthSnapshot(month,clientId);
    async function* entries(){
