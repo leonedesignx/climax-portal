@@ -1491,6 +1491,17 @@ html[data-theme="light"] .publication-state.state-published{color:#377048}
 .post-meta{row-gap:5px}
 .post-meta>span:last-child{white-space:nowrap}
 .post-card .card-actions{display:flex;flex-wrap:wrap}
+
+/* Month planning and ready-to-copy client notices */
+.editorial-month-nav .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.editorial-month-nav{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 20px;margin-bottom:20px;flex-wrap:wrap}
+.editorial-month-nav strong{font-size:var(--type-body,15px)}
+.editorial-month-nav p{margin:5px 0 0;color:var(--muted);font-size:var(--type-caption,13px)}
+.editorial-month-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.editorial-month-controls input,.editorial-month-controls select{min-height:42px;width:auto;min-width:165px;color-scheme:dark}
+[data-theme="light"] .editorial-month-controls input{color-scheme:light}
+@media(max-width:640px){.editorial-month-controls{width:100%}.editorial-month-controls input,.editorial-month-controls select{flex:1;min-width:140px}.editorial-month-controls [data-editorial-current-month]{width:100%}.editorial-action-set{display:flex!important;flex-wrap:wrap;gap:8px}.editorial-action-set .btn{flex:1 1 145px;justify-content:center}}
+
 </style>
 </head>
 <body>
@@ -1845,13 +1856,15 @@ let editorials=[
 ];
 const editorialStatusLabel={draft:'Rascunho',waiting:'Aguardando aprovação',changes:'Ajustes solicitados',approved:'Editorial aprovado'};
 let editorialFeedback='';
+let editorialMonth=currentMonthStart();
+let contentMonthFilter='';
 function currentEditorial(){
   if(!currentClient)return null;
-  let ed=editorials.find(e=>e.client===currentClient);
-  if(!ed){ed=demoEditorial(currentClient);editorials.push(ed)}
+  let ed=editorialForClient(currentClient);
+  if(!ed){ed=demoEditorial(currentClient,editorialMonth);editorials.push(ed)}
   return ed;
 }
-function editorialForClient(id){return editorials.find(e=>e.client===id)}
+function editorialForClient(id,month=editorialMonth){return editorials.find(e=>e.client===id&&(e.monthStart||currentMonthStart())===month)}
 
 let role='admin';
 let route='home';
@@ -1935,7 +1948,32 @@ function scheduledLabel(value){if(!value)return'Sem data';const d=new Date(value
 function weekdayPt(dateStr){if(!dateStr)return'';return new Date(dateStr+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','').replace(/^./,m=>m.toUpperCase())}
 function currentMonthStart(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`}
 function currentMonthLabel(){return new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'}).replace(/^./,m=>m.toUpperCase())}
-function demoEditorial(clientId){return {id:'local-'+clientId,dbEditorialId:null,versionId:null,client:clientId,month:currentMonthLabel(),status:'draft',version:1,sentAt:null,approvedAt:null,items:[]}}
+function demoEditorial(clientId,monthStart=currentMonthStart()){return {id:'local-'+clientId+'-'+monthStart,dbEditorialId:null,versionId:null,client:clientId,month:ptMonth(monthStart),monthStart,status:'draft',version:1,sentAt:null,approvedAt:null,items:[]}}
+function validMonth(value){return /^\d{4}-(0[1-9]|1[0-2])$/.test(String(value))&&Number(String(value).slice(0,4))>=1900&&Number(String(value).slice(0,4))<=9999}
+function setEditorialMonth(value){
+ if(!validMonth(value)){toast('Escolha um mês válido.','error');return}
+ editorialMonth=value+'-01';editorialFeedback=editorialForClient(currentClient)?.feedback||'';render();
+}
+function shiftEditorialMonth(delta){
+ const [year,month]=editorialMonth.split('-').map(Number),date=new Date(year,month-1+Number(delta),1,12);
+ setEditorialMonth(date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0'));
+}
+function editorialMonthSelectorHTML(){
+ const value=editorialMonth.slice(0,7);
+ if(role==='client'){
+   const months=[...new Set([currentMonthStart(),...editorials.filter(e=>e.client===currentClient).map(e=>e.monthStart).filter(Boolean)])].sort().reverse();
+   return '<section class="surface editorial-month-nav"><div><strong>Mês do editorial</strong><p>Escolha o planejamento que deseja acompanhar.</p></div><div class="editorial-month-controls"><label class="sr-only" for="editorialMonthSelect">Mês do editorial</label><select id="editorialMonthSelect" data-editorial-month>'+months.map(m=>'<option value="'+escapeHtml(m.slice(0,7))+'" '+(m===editorialMonth?'selected':'')+'>'+escapeHtml(ptMonth(m))+'</option>').join('')+'</select></div></section>';
+ }
+ return '<section class="surface editorial-month-nav"><div><strong>Mês do editorial</strong><p>Prepare os próximos meses sem alterar o planejamento atual.</p></div><div class="editorial-month-controls"><button class="btn btn-secondary" data-editorial-month-shift="-1" aria-label="Mês anterior">'+ICONS.left+'</button><label class="sr-only" for="editorialMonthSelect">Mês do editorial</label><input id="editorialMonthSelect" type="month" min="1900-01" max="9999-12" data-editorial-month value="'+escapeHtml(value)+'"><button class="btn btn-secondary" data-editorial-month-shift="1" aria-label="Próximo mês">'+ICONS.right+'</button><button class="btn btn-secondary" data-editorial-current-month>Mês atual</button></div></section>';
+}
+function postMonthKey(p){
+ const planned=String(p.plannedPublishDate||'');if(/^\d{4}-\d{2}/.test(planned))return planned.slice(0,7);
+ if(p.scheduledAt){const date=new Date(p.scheduledAt);if(!Number.isNaN(date.getTime()))return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')}
+ return '';
+}
+function contentMonthSelectorHTML(){
+ return '<section class="surface editorial-month-nav"><div><strong>Mês dos conteúdos</strong><p>'+ (contentMonthFilter?'Mostrando o mês selecionado.':'Mostrando todos os meses.')+'</p></div><div class="editorial-month-controls"><label class="sr-only" for="contentMonthSelect">Mês dos conteúdos</label><input type="month" id="contentMonthSelect" min="1900-01" max="9999-12" data-content-month value="'+escapeHtml(contentMonthFilter)+'">'+(contentMonthFilter?'<button class="btn btn-secondary" data-content-all-months>Todos os meses</button>':'')+'</div></section>';
+}
 
 
 
@@ -2133,8 +2171,18 @@ async function ensureEditorialPersisted(ed){
   if(!backendEnabled||!backendReady)return ed;
   if(!ed.dbEditorialId){
     const monthStart=ed.monthStart||currentMonthStart();
-    const ins=await db.from('editorials').insert({client_id:ed.client,month_start:monthStart,created_by:authUser.id}).select().single();if(ins.error)throw ins.error;
-    ed.dbEditorialId=ins.data.id;ed.id=ins.data.id;ed.monthStart=monthStart;
+    if(!validMonth(monthStart.slice(0,7)))throw new Error('Escolha um mês válido para o editorial.');
+    let found=await db.from('editorials').select('id').eq('client_id',ed.client).eq('month_start',monthStart).maybeSingle();if(found.error)throw found.error;
+    let row=found.data;
+    if(!row){
+      const ins=await db.from('editorials').insert({client_id:ed.client,month_start:monthStart,created_by:authUser.id}).select().single();
+      if(ins.error&&ins.error.code!=='23505')throw ins.error;
+      row=ins.data;
+      if(!row){found=await db.from('editorials').select('id').eq('client_id',ed.client).eq('month_start',monthStart).single();if(found.error)throw found.error;row=found.data}
+    }
+    const versionCheck=await db.from('editorial_versions').select('id').eq('editorial_id',row.id).limit(1);if(versionCheck.error)throw versionCheck.error;
+    if(versionCheck.data?.length)throw new Error('Este mês já foi preparado em outra sessão. Atualize a página e selecione o mês para continuar.');
+    ed.dbEditorialId=row.id;ed.id=row.id;ed.monthStart=monthStart;
   }
   if(!ed.versionId){
     const ins=await db.from('editorial_versions').insert({editorial_id:ed.dbEditorialId,version:ed.version||1,status:ed.status||'draft',created_by:authUser.id}).select().single();if(ins.error)throw ins.error;ed.versionId=ins.data.id;
@@ -2289,7 +2337,18 @@ async function saveEditorialItemCommentsBackend(ed,comments){
   const {error}=await db.from('comments').insert(rows);if(error)throw error;
 }
 function captureEditorialItemComments(){return [...document.querySelectorAll('[data-editorial-item-comment]')].map(t=>({itemId:t.dataset.editorialItemComment,body:t.value.trim()})).filter(x=>x.body)}
-function openHashTarget(){const m=location.hash.match(/^#conteudo-(.+)$/);if(m&&posts.some(p=>String(p.id)===decodeURIComponent(m[1])))return setTimeout(()=>openPost(decodeURIComponent(m[1])),20);if(['#editorial','#drive','#backup'].includes(location.hash)){route=location.hash==='#backup'?'archive':location.hash.slice(1);render()}}
+function openHashTarget(){
+ const raw=location.hash.slice(1),split=raw.indexOf('?'),target=split<0?raw:raw.slice(0,split),params=new URLSearchParams(split<0?'':raw.slice(split+1));
+ const m=target.match(/^conteudo-(.+)$/);if(m){let id='';try{id=decodeURIComponent(m[1])}catch(_){return}if(posts.some(p=>String(p.id)===id))return setTimeout(()=>openPost(id),20)}
+ if(!['editorial','conteudos','content','drive','backup'].includes(target))return;
+ const month=params.get('mes');
+ if(target==='editorial'&&validMonth(month))editorialMonth=month+'-01';
+ if(target==='conteudos'||target==='content'){contentMonthFilter=validMonth(month)?month:'';activeFilter=params.get('status')==='waiting'?'waiting':'all'}
+ // Client identity always comes from the authenticated profile, never the link.
+ const requestedClient=params.get('cliente');if(actualRole==='admin'&&requestedClient&&clients.some(c=>c.id===requestedClient)){currentClient=requestedClient;adminViewClient=requestedClient}
+ route=target==='backup'?'archive':['conteudos','content'].includes(target)?'content':target;
+ render();
+}
 function monthLabelFromDate(d){return d.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}).replace(/^./,x=>x.toUpperCase())}
 function dateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function postDateObject(p){if(p.scheduledAt){const d=new Date(p.scheduledAt);return Number.isNaN(d.getTime())?null:d}const m=String(p.date||'').match(/^(\d{2})\/(\d{2})/);if(!m)return null;return new Date(calendarCursor.getFullYear(),Number(m[2])-1,Number(m[1]),12)}
@@ -2321,22 +2380,52 @@ function deliveryReviewInstruction(kind){
   return 'confere o material com atenção e observa todos os detalhes antes de aprovar';
 }
 function normalizeWhatsAppPhone(value=''){let d=String(value).replace(/\D/g,'');if((d.length===10||d.length===11)&&!d.startsWith('55'))d='55'+d;return d}
-function whatsappPortalLink(kind,id=''){const base=location.origin+location.pathname;return kind==='content'?base+'#conteudo-'+encodeURIComponent(id):['editorial','drive'].includes(kind)?base+'#'+kind:base}
+function whatsappPortalLink(kind,id='',context={}){
+ const base=location.origin+location.pathname;
+ if(kind==='content')return base+'#conteudo-'+encodeURIComponent(id);
+ if(kind==='editorial'||kind==='contents-month'){
+   const params=new URLSearchParams(),month=String(context.monthStart||'').slice(0,7);
+   if(validMonth(month))params.set('mes',month);
+   if(context.clientId)params.set('cliente',context.clientId);
+   return base+'#'+(kind==='editorial'?'editorial':'conteudos')+(params.size?'?'+params.toString():'');
+ }
+ return kind==='drive'?base+'#drive':base;
+}
 function whatsappMessageFor(client,kind,context={}){
   const first=(client.contact||client.displaySubtitle||client.name||'').trim().split(/\s+/)[0]||'tudo bem';
   const brand=client.name||'sua conta';
   const deliveryKind=context.deliveryKind||inferDeliveryKind(context.type),deliveryLabel=deliveryKindLabel(deliveryKind),reviewInstruction=deliveryReviewInstruction(deliveryKind),contentMeta=[deliveryLabel,context.type,context.date].filter(Boolean).join(' · ');
+  if(kind==='contents-month')return `Oi, ${first}! Tudo bem?\n\nOs conteúdos de ${context.month||'este mês'} da ${brand} já estão prontos no Clímax Portal e aguardando sua aprovação. 💚\n\nAcesse pelo link abaixo para conferir as artes, vídeos e legendas. Você pode aprovar os conteúdos ou solicitar ajustes diretamente pelo portal.\n\n${whatsappPortalLink('contents-month','',context)}\n\nSe precisar fazer login, entre com seu acesso e você será levado à área de Conteúdos.\n\nQualquer dúvida, me chama por aqui!\n— Leone · Clímax Studio`;
   if(kind==='drive')return `Oi, ${first}! Tudo bem?\n\nO seu Drive já está disponível no Clímax Portal! 💚\n\nÉ lá que você pode adicionar fotos e vídeos da sua marca, da equipe e dos bastidores para usarmos na produção dos seus conteúdos.\n\nAcesse a área Drive por aqui:\n${whatsappPortalLink('drive')}\n\nSe precisar, entre com seu acesso ao portal. Na página Drive, clique em “Acessar meu Drive” para abrir sua pasta e adicionar os materiais. Você também encontra essa área no menu do portal.\n\nQualquer dúvida, me chama por aqui!\n— Leone · Clímax Studio`;
-  if(kind==='editorial')return `Oi, ${first}! Tudo bem?\n\nPassando para te avisar que o editorial de ${context.month||'este mês'} da ${brand} já está disponível no Clímax Portal para revisão.\n\nQueria te pedir para olhar com atenção as pautas, formatos, legendas, referências e a organização do mês. Se estiver tudo certo, você pode aprovar diretamente pelo Portal. Se quiser qualquer ajuste, também pode solicitar por lá.\n\nFico no aguardo da sua aprovação para seguirmos com a produção dos conteúdos.\n\nAcesse aqui:\n${whatsappPortalLink('editorial')}\n\nQualquer coisa, pode me chamar por aqui também.\n— Leone · Clímax Studio`;
+  if(kind==='editorial')return `Oi, ${first}! Tudo bem?\n\nPassando para te avisar que o editorial de ${context.month||'este mês'} da ${brand} já está pronto no Clímax Portal e aguardando sua aprovação.\n\nQueria te pedir para olhar com atenção as pautas, formatos, legendas, referências e a organização do mês. Se estiver tudo certo, você pode aprovar diretamente pelo Portal. Se quiser qualquer ajuste, também pode solicitar por lá.\n\nFico no aguardo da sua aprovação para seguirmos com a produção dos conteúdos.\n\nAcesse aqui:\n${whatsappPortalLink('editorial','',context)}\n\nQualquer coisa, pode me chamar por aqui também.\n— Leone · Clímax Studio`;
   if(kind==='version')return `Oi, ${first}! Tudo bem?\n\nVi o seu pedido de alteração no conteúdo “${context.title||'conteúdo'}” da ${brand} e já fiz os ajustes solicitados.${contentMeta?'\n\n'+contentMeta:''}\n\nA nova versão já está disponível no Clímax Portal. Quando puder, ${reviewInstruction} e confirma se os ajustes que você pediu ficaram certinhos.\n\nSe estiver tudo certinho agora, pode aprovar diretamente por lá. Fico no aguardo da sua aprovação novamente para a gente seguir com esse conteúdo.\n\nConferir nova versão:\n${whatsappPortalLink('content',context.id)}\n\nSe ainda quiser mudar mais alguma coisinha, pode solicitar pelo próprio Portal.\n— Leone · Clímax Studio`;
   if(kind==='content')return `Oi, ${first}! Tudo bem?\n\nO conteúdo “${context.title||'novo conteúdo'}” da ${brand} já está disponível no Clímax Portal para sua aprovação.${contentMeta?'\n\n'+contentMeta:''}\n\nQuando puder, ${reviewInstruction}. Se estiver tudo certo, é só aprovar por lá. Se quiser alguma alteração, você também pode solicitar diretamente no Portal e me explicar o que gostaria de mudar.\n\nEstou no aguardo da sua aprovação para seguirmos com a publicação.\n\nAcesse o conteúdo aqui:\n${whatsappPortalLink('content',context.id)}\n\nQualquer dúvida, pode me chamar.\n— Leone · Clímax Studio`;
   return `Oi, ${first}! Tudo bem?\n\nTem uma nova atualização da ${brand} disponível no Clímax Portal. Quando puder, entra por lá e confere tudo com atenção.\n\nPortal:\n${whatsappPortalLink('home')}\n\nQualquer coisa, pode me chamar por aqui.\n— Leone · Clímax Studio`;
 }
+
+async function copyPortalMessage(message,input=null){
+ if(!message.trim()){toast('A mensagem está vazia.','error');return false}
+ try{await navigator.clipboard.writeText(message);toast('Mensagem copiada. É só colar no WhatsApp do cliente.');return true}
+ catch(_){if(input){input.focus();input.select()}toast('Não foi possível copiar automaticamente. Selecione o texto e use Copiar.','error');return false}
+}
+function openMonthlyMessage(kind){
+ if(role!=='admin')return;
+ const clientId=activeAdminScope()==='all'?(clients[0]?.id||''):activeAdminScope(),monthStart=kind==='editorial'?editorialMonth:(contentMonthFilter?contentMonthFilter+'-01':currentMonthStart());
+ if(!clientId){toast('Cadastre ou selecione um cliente primeiro.','error');return}
+ openModal(kind==='editorial'?'Mensagem · editorial do mês':'Mensagem · conteúdos para aprovação',
+ '<div class="form-grid"><div class="field"><label for="monthlyMessageClient">Cliente</label><select id="monthlyMessageClient">'+clients.map(c=>'<option value="'+escapeHtml(c.id)+'" '+(c.id===clientId?'selected':'')+'>'+escapeHtml(c.name)+'</option>').join('')+'</select></div><div class="field"><label for="monthlyMessageMonth">Mês de referência</label><input type="month" min="1900-01" max="9999-12" id="monthlyMessageMonth" value="'+escapeHtml(monthStart.slice(0,7))+'"></div><div class="field full"><label for="monthlyMessageText">Mensagem para copiar</label><textarea id="monthlyMessageText" maxlength="4000" style="min-height:260px"></textarea><span class="hint">Revise a mensagem antes de copiar. O link abre a área e o mês selecionados; nada é enviado automaticamente.</span></div></div>',
+ '<button class="btn btn-secondary" data-close-modal>Fechar</button><button class="btn" id="copyMonthlyMessage">'+ICONS.copy+' Copiar mensagem</button>');
+ const clientSelect=document.getElementById('monthlyMessageClient'),monthInput=document.getElementById('monthlyMessageMonth'),text=document.getElementById('monthlyMessageText');
+ const refresh=()=>{const value=monthInput.value;if(!validMonth(value)){text.value='';return}text.value=whatsappMessageFor(clientById(clientSelect.value),kind,{month:ptMonth(value+'-01'),monthStart:value+'-01',clientId:clientSelect.value})};
+ clientSelect.onchange=refresh;monthInput.onchange=refresh;refresh();
+ document.getElementById('copyMonthlyMessage').onclick=()=>copyPortalMessage(text.value,text);
+}
+
 function openWhatsAppComposer(clientId,kind='generic',context={}){
   const client=clientById(clientId);if(!client)return;
-  const message=whatsappMessageFor(client,kind,context);
+  const message=whatsappMessageFor(client,kind,{...context,clientId:client.id});
   openModal('Enviar WhatsApp · '+client.name,`<div class="whatsapp-compose"><div class="whatsapp-compose-head">${ICONS.message}<div><strong>Mensagem pronta</strong><span>Revise antes de abrir o WhatsApp. Nada será enviado automaticamente.</span></div></div><div class="field"><label>WhatsApp do cliente</label><input id="waPhone" inputmode="tel" value="${escapeHtml(client.whatsapp||'')}" placeholder="(81) 99999-9999"><span class="hint">Se estiver vazio, preencha agora. O número ficará salvo no perfil do cliente.</span></div><div class="field"><label>Mensagem</label><textarea id="waMessage" maxlength="4000" style="min-height:180px">${escapeHtml(message)}</textarea></div></div>`,`<button class="btn btn-secondary" data-close-modal>Cancelar</button><button class="btn btn-secondary" id="copyWhatsAppMessage">${ICONS.copy} Copiar mensagem</button><button class="btn whatsapp-send" id="openWhatsAppBtn">${ICONS.send} Abrir no WhatsApp</button>`);
-  document.getElementById('copyWhatsAppMessage').onclick=async()=>{const input=document.getElementById('waMessage'),message=input.value.trim();if(!message){toast('A mensagem está vazia.','error');return}try{await navigator.clipboard.writeText(message);toast('Mensagem copiada. É só colar e enviar ao cliente.')}catch(e){input.focus();input.select();toast('Selecione e copie a mensagem manualmente.','error')}};
+  document.getElementById('copyWhatsAppMessage').onclick=()=>{const input=document.getElementById('waMessage');return copyPortalMessage(input.value,input)};
   const btn=document.getElementById('openWhatsAppBtn');btn.onclick=()=>runBusy(btn,'Preparando…',async()=>{const raw=document.getElementById('waPhone').value.trim(),phone=normalizeWhatsAppPhone(raw),msg=document.getElementById('waMessage').value.trim();if(phone.length<12||phone.length>15)throw new Error('Informe um número de WhatsApp válido com DDD.');if(!msg)throw new Error('A mensagem está vazia.');const url='https://wa.me/'+phone+'?text='+encodeURIComponent(msg),a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener noreferrer';document.body.appendChild(a);a.click();a.remove();closeModal();toast('WhatsApp aberto com a mensagem pronta.');if(raw!==client.whatsapp){const u=await db.from('clients').update({whatsapp_phone:raw||null}).eq('id',client.id);if(u.error){toast('O WhatsApp abriu, mas o número não pôde ser salvo no perfil.','error');return}client.whatsapp=raw}}).catch(err=>toast(formatError(err,'Não foi possível abrir o WhatsApp.'),'error'));
 }
 function openSearchResults(query){
@@ -2369,16 +2458,16 @@ function visiblePosts(){
 function contextSelectorHTML(kind='conteúdo'){
   if(role!=='admin')return '';
   const selected=adminViewClient==='all'?'all':adminViewClient;
-  const count=kind==='editorial'?(selected==='all'?editorials.length:editorials.filter(e=>e.client===selected).length):kind==='publicações'?visiblePosts().filter(p=>p.status==='approved').length:visiblePosts().length;
+  const count=kind==='editorial'?editorials.filter(e=>(e.monthStart||currentMonthStart())===editorialMonth&&(selected==='all'||e.client===selected)).length:kind==='publicações'?visiblePosts().filter(p=>p.status==='approved').length:visiblePosts().length;
   const countLabel=kind==='editorial'?(count===1?'editorial':'editoriais'):kind==='aprovação'?(count===1?'aprovação':'aprovações'):kind==='publicações'?(count===1?'publicação':'publicações'):(count===1?'conteúdo':'conteúdos');
   return `<section class="view-context-bar"><div class="view-context-copy">${ICONS.users}<div><small>VOCÊ ESTÁ VENDO</small><strong>${selected==='all'?'Todos os clientes':escapeHtml(clientById(selected).name)}</strong><span>${count} ${countLabel} neste contexto</span></div></div><div class="view-context-select"><label for="viewClientScope">Filtrar cliente</label><div class="context-select-wrap"><select id="viewClientScope" data-view-client-scope><option value="all" ${selected==='all'?'selected':''}>Todos os clientes</option>${clients.map(c=>`<option value="${escapeHtml(c.id)}" ${selected===c.id?'selected':''}>${escapeHtml(c.name)}</option>`).join('')}</select>${ICONS.down}</div></div></section>`;
 }
 function editorialOverviewAll(){
-  const rows=clients.map(client=>{const ed=editorialForClient(client.id);if(!ed)return `<article class="surface editorial-overview-card empty"><div class="editorial-overview-avatar">${escapeHtml(client.init)}</div><div class="editorial-overview-main"><small>${escapeHtml(client.name)}</small><strong>Sem editorial disponível</strong><span>Nenhum planejamento encontrado para esta conta.</span></div><button class="btn btn-secondary" data-context-editorial-open="${escapeHtml(client.id)}">Selecionar cliente</button></article>`;return `<article class="surface editorial-overview-card"><div class="editorial-overview-avatar">${escapeHtml(client.init)}</div><div class="editorial-overview-main"><small>${escapeHtml(client.name)}</small><strong>${escapeHtml(ed.month)}</strong><span>${ed.items.length} publicações · versão ${ed.version}</span></div><span class="mini-badge st-${escapeHtml(ed.status)}"><span class="dot"></span>${escapeHtml(editorialStatusLabel[ed.status]||ed.status)}</span><button class="btn btn-secondary" data-context-editorial-open="${escapeHtml(client.id)}">Abrir editorial ${ICONS.right}</button></article>`}).join('');
+  const rows=clients.map(client=>{const ed=editorialForClient(client.id);if(!ed)return `<article class="surface editorial-overview-card empty"><div class="editorial-overview-avatar">${escapeHtml(client.init)}</div><div class="editorial-overview-main"><small>${escapeHtml(client.name)}</small><strong>Sem editorial neste mês</strong><span>Selecione o cliente para preparar este planejamento.</span></div><button class="btn btn-secondary" data-context-editorial-open="${escapeHtml(client.id)}">Selecionar cliente</button></article>`;return `<article class="surface editorial-overview-card"><div class="editorial-overview-avatar">${escapeHtml(client.init)}</div><div class="editorial-overview-main"><small>${escapeHtml(client.name)}</small><strong>${escapeHtml(ed.month)}</strong><span>${ed.items.length} publicações · versão ${ed.version}</span></div><span class="mini-badge st-${escapeHtml(ed.status)}"><span class="dot"></span>${escapeHtml(editorialStatusLabel[ed.status]||ed.status)}</span><button class="btn btn-secondary" data-context-editorial-open="${escapeHtml(client.id)}">Abrir editorial ${ICONS.right}</button></article>`}).join('');
   return `<div class="editorial-overview-grid">${rows||'<section class="surface empty-state"><strong>Nenhum cliente cadastrado</strong></section>'}</div>`;
 }
 function filteredPosts(){
-  const base=visiblePosts();
+  const base=visiblePosts().filter(p=>!contentMonthFilter||postMonthKey(p)===contentMonthFilter);
   if(activeFilter==='all') return base;
   if(activeFilter==='waiting') return base.filter(p=>p.status==='waiting');
   if(activeFilter==='approved') return base.filter(p=>p.status==='approved');
@@ -2657,27 +2746,27 @@ function editorialItemCard(item,ed){
   return `<article class="surface editorial-item"><div class="editorial-date"><strong>${escapeHtml(item.day)}</strong><span>${escapeHtml(item.weekday)}</span><span class="editorial-format">${escapeHtml(item.type)}</span></div><div class="editorial-copy"><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.idea)}</p><div class="editorial-meta-grid">${item.objective?`<div class="editorial-meta"><small>Objetivo</small><span>${escapeHtml(item.objective)}</span></div>`:''}<div class="editorial-meta"><small>Referência</small>${ref?`<a href="${escapeHtml(ref)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.referenceLabel||'Abrir referência')} ${ICONS.external}</a>`:`<span>${escapeHtml(item.referenceLabel||'Sem referência externa')}</span>`}</div>${item.caption?`<div class="editorial-meta" style="grid-column:1/-1"><small>Legenda / copy</small><span>${escapeHtml(item.caption)}</span></div>`:''}${drive?`<div class="editorial-meta" style="grid-column:1/-1"><small>Materiais no Drive</small><a href="${escapeHtml(drive)}" target="_blank" rel="noopener noreferrer">Abrir pasta ou arquivo no Drive ${ICONS.external}</a></div>`:''}${item.notes?`<div class="editorial-meta" style="grid-column:1/-1"><small>Como será produzido</small><span>${escapeHtml(item.notes)}</span></div>`:''}</div></div>${controls}</article>`;
 }
 function editorialView(){
-  if(role==='admin'&&adminViewClient==='all')return `${pageHead('Editorial mensal','Planeje, documente referências e acompanhe o planejamento de cada cliente.')}${contextSelectorHTML('editorial')}${editorialOverviewAll()}`;
+  if(role==='admin'&&adminViewClient==='all')return `${pageHead('Editorial mensal','Planeje, documente referências e acompanhe o planejamento de cada cliente.','<button class="btn btn-secondary" data-monthly-message="editorial">'+ICONS.copy+' Copiar mensagem</button>')}${contextSelectorHTML('editorial')}${editorialMonthSelectorHTML()}${editorialOverviewAll()}`;
   const scopedClient=role==='admin'?adminViewClient:currentClient;if(role==='admin'&&scopedClient!=='all')currentClient=scopedClient;
   const ed=currentEditorial();if(!ed)return `${pageHead('Editorial mensal','Selecione um cliente para visualizar o planejamento.')}${contextSelectorHTML('editorial')}<section class="surface empty-state"><strong>Nenhum editorial disponível</strong></section>`;const client=clientById(ed.client),approved=ed.status==='approved';
-  const action=role==='admin'?`<div class="editorial-action-set"><button class="btn btn-secondary editorial-add-btn" data-action="new-editorial-item">${ICONS.plus}<span>Adicionar publicação</span></button><button class="btn btn-secondary" data-whatsapp-editorial="${escapeHtml(client.id)}">${ICONS.message}<span>WhatsApp</span></button><button class="btn editorial-send-btn" data-action="${approved?'new-editorial-version':'send-editorial'}">${approved?ICONS.copy:ICONS.check}<span>${approved?'Criar nova versão':'Enviar para aprovação'}</span></button></div>`:!approved?`<div class="editorial-action-set single"><button class="btn btn-secondary editorial-add-btn" data-action="new-editorial-item">${ICONS.plus}<span>Adicionar publicação</span></button></div>`:'';
+  const action=role==='admin'?`<div class="editorial-action-set"><button class="btn btn-secondary editorial-add-btn" data-action="new-editorial-item">${ICONS.plus}<span>Adicionar publicação</span></button><button class="btn btn-secondary" data-whatsapp-editorial="${escapeHtml(client.id)}">${ICONS.message}<span>WhatsApp</span></button><button class="btn btn-secondary" data-monthly-message="editorial">${ICONS.copy}<span>Copiar mensagem</span></button><button class="btn editorial-send-btn" ${!ed.items.length?'disabled':''} data-action="${approved?'new-editorial-version':'send-editorial'}">${approved?ICONS.copy:ICONS.check}<span>${approved?'Criar nova versão':'Enviar para aprovação'}</span></button></div>`:!approved&&Boolean(ed.versionId)?`<div class="editorial-action-set single"><button class="btn btn-secondary editorial-add-btn" data-action="new-editorial-item">${ICONS.plus}<span>Adicionar publicação</span></button></div>`:'';
   const header=pageHead(role==='client'?'Planejamento editorial':'Editorial mensal',role==='client'?'Revise e edite o planejamento antes de a produção começar.':'Planeje, documente referências e aprove o mês antes de produzir.',action);const when=ed.approvedAt||'data registrada no sistema';
   const approvedBanner=approved?`<div class="editorial-approved-banner"><div><strong>✓ Editorial aprovado · produção liberada</strong><span>${role==='admin'?`${escapeHtml(client.contact||client.name)} aprovou em ${escapeHtml(when)}. Esta versão fica registrada no histórico.`:`Você aprovou este planejamento em ${escapeHtml(when)}. A Clímax já pode iniciar a produção.`}</span></div>${role==='admin'?'<button class="btn btn-secondary" data-action="new-editorial-version">Criar nova versão</button>':''}</div>`:'';
-  const clientActions=role==='client'&&!approved?`<div class="editorial-client-actions"><button class="btn btn-secondary" data-editorial-change>Solicitar ajustes</button><button class="btn" data-editorial-approve>Aprovar editorial do mês</button></div>`:'';
-  return `${header}${contextSelectorHTML('editorial')}${approvedBanner}<section class="surface editorial-hero"><div><div class="editorial-kicker">${role==='admin'?escapeHtml(client.name):'Editorial mensal'}</div><h2>${escapeHtml(ed.month)}</h2><p>Temas, formatos e referências do mês. Revise os itens abaixo e aprove o editorial para liberar a produção.</p><div class="editorial-summary"><span class="summary-pill">${ed.items.length} publicações</span><span class="summary-pill">Versão ${ed.version}</span><span class="summary-pill">${role==='admin'?escapeHtml(client.contact||client.name):'Planejamento Clímax'}</span></div></div>${editorialStatusCard(ed)}</section><section class="surface workflow-strip"><div class="workflow-step done"><div class="workflow-num">1</div><div><strong>Planejamento</strong><span>Editorial montado pela Clímax</span></div></div><div class="workflow-step ${approved?'done':'active'}"><div class="workflow-num">2</div><div><strong>Aprovação</strong><span>${approved?'Cliente aprovou esta versão':'Cliente revisa o mês completo'}</span></div></div><div class="workflow-step ${approved?'active':''}"><div class="workflow-num">3</div><div><strong>Produção</strong><span>${approved?'Conteúdos liberados para execução':'Inicia somente após a aprovação'}</span></div></div></section><div class="section-head editorial-list-head"><h3>Publicações do mês</h3></div><div class="editorial-list">${ed.items.length?ed.items.map(item=>editorialItemCard(item,ed)).join(''):`<section class="surface empty-state"><strong>Nenhuma publicação planejada ainda.</strong><p>Adicione as ideias do mês antes de enviar o editorial.</p></section>`}</div><div class="editorial-note"><div class="editorial-note-icon">i</div><div><strong>A aprovação fica registrada.</strong><p>Quando o editorial for aprovado, a versão, data e responsável ficam associados ao mês. Se o planejamento mudar depois, a Clímax cria uma nova versão.</p></div></div>${clientActions}`;
+  const clientActions=role==='client'&&!approved&&Boolean(ed.versionId)?`<div class="editorial-client-actions"><button class="btn btn-secondary" data-editorial-change>Solicitar ajustes</button><button class="btn" data-editorial-approve>Aprovar editorial do mês</button></div>`:'';
+  return `${header}${contextSelectorHTML('editorial')}${editorialMonthSelectorHTML()}${approvedBanner}<section class="surface editorial-hero"><div><div class="editorial-kicker">${role==='admin'?escapeHtml(client.name):'Editorial mensal'}</div><h2>${escapeHtml(ed.month)}</h2><p>Temas, formatos e referências do mês. Revise os itens abaixo e aprove o editorial para liberar a produção.</p><div class="editorial-summary"><span class="summary-pill">${ed.items.length} publicações</span><span class="summary-pill">Versão ${ed.version}</span><span class="summary-pill">${role==='admin'?escapeHtml(client.contact||client.name):'Planejamento Clímax'}</span></div></div>${editorialStatusCard(ed)}</section><section class="surface workflow-strip"><div class="workflow-step done"><div class="workflow-num">1</div><div><strong>Planejamento</strong><span>Editorial montado pela Clímax</span></div></div><div class="workflow-step ${approved?'done':'active'}"><div class="workflow-num">2</div><div><strong>Aprovação</strong><span>${approved?'Cliente aprovou esta versão':'Cliente revisa o mês completo'}</span></div></div><div class="workflow-step ${approved?'active':''}"><div class="workflow-num">3</div><div><strong>Produção</strong><span>${approved?'Conteúdos liberados para execução':'Inicia somente após a aprovação'}</span></div></div></section><div class="section-head editorial-list-head"><h3>Publicações do mês</h3></div><div class="editorial-list">${ed.items.length?ed.items.map(item=>editorialItemCard(item,ed)).join(''):`<section class="surface empty-state"><strong>Nenhuma publicação planejada ainda.</strong><p>${role==='admin'?'Adicione a primeira publicação para preparar o editorial de '+escapeHtml(ed.month)+'. Os outros meses permanecem disponíveis no seletor.':'A Clímax ainda está preparando o planejamento deste mês.'}</p></section>`}</div><div class="editorial-note"><div class="editorial-note-icon">i</div><div><strong>A aprovação fica registrada.</strong><p>Quando o editorial for aprovado, a versão, data e responsável ficam associados ao mês. Se o planejamento mudar depois, a Clímax cria uma nova versão.</p></div></div>${clientActions}`;
 }
 
 function contentView(){
   const heading=role==='client'?'Seus conteúdos':'Conteúdos';
   const sub=role==='client'?'Visualize as artes, deslize pelos carrosséis e aprove cada conteúdo com facilidade.':'Toda a produção da Clímax, com prévias visuais, arquivos, Drive e status de aprovação.';
-  const action=role==='admin'?primaryBtn('Novo conteúdo'):'';
+  const action=role==='admin'?'<button class="btn btn-secondary" data-monthly-message="contents-month">'+ICONS.copy+' Copiar mensagem</button>'+primaryBtn('Novo conteúdo'):'';
   const fp=filteredPosts();let gate='';
   if(role==='client'||adminViewClient!=='all'){
     const scoped=role==='client'?currentClient:adminViewClient;if(role==='admin')currentClient=scoped;
-    const ed=currentEditorial();
-    gate=!ed?`<div class="editorial-note" style="margin:0 0 16px"><div class="editorial-note-icon">!</div><div><strong>Sem editorial para este cliente</strong><p>Você ainda pode gerenciar os conteúdos existentes desta conta.</p></div></div>`:role==='client'||ed.status==='approved'?`<div class="editorial-approved-banner"><div><strong>${ed.status==='approved'?'✓ Produção vinculada ao editorial aprovado':'Conteúdos produzidos a partir do planejamento aprovado'}</strong><span>${ed.month} · versão ${ed.version}</span></div><button class="btn btn-secondary" data-route="editorial">Ver editorial</button></div>`:`<div class="editorial-note" style="margin:0 0 16px"><div class="editorial-note-icon">!</div><div><strong>Editorial ainda não aprovado</strong><p>A produção deve começar depois que o cliente aprovar o planejamento mensal.</p></div></div>`;
+    const ed=editorialForClient(scoped,contentMonthFilter?contentMonthFilter+'-01':currentMonthStart());
+    gate=!ed?`<div class="editorial-note" style="margin:0 0 16px"><div class="editorial-note-icon">!</div><div><strong>Sem editorial para este cliente</strong><p>Você ainda pode gerenciar os conteúdos existentes desta conta.</p></div></div>`:role==='client'||ed.status==='approved'?`<div class="editorial-approved-banner"><div><strong>${ed.status==='approved'?'✓ Produção vinculada ao editorial aprovado':'Conteúdos produzidos a partir do planejamento aprovado'}</strong><span>${ed.month} · versão ${ed.version}</span></div><button class="btn btn-secondary" data-route="editorial" data-editorial-month-target="${escapeHtml(ed.monthStart||currentMonthStart())}">Ver editorial</button></div>`:`<div class="editorial-note" style="margin:0 0 16px"><div class="editorial-note-icon">!</div><div><strong>Editorial ainda não aprovado</strong><p>A produção deve começar depois que o cliente aprovar o planejamento mensal.</p></div></div>`;
   }
-  return `${pageHead(heading,sub,action)}${contextSelectorHTML('conteúdo')}${gate}${filtersHTML()}<div class="post-grid">${fp.map(postCard).join('')||'<section class="surface empty-state"><strong>Nenhum conteúdo neste filtro</strong><p>Tente outro cliente ou status.</p></section>'}</div>`;
+  return `${pageHead(heading,sub,action)}${contextSelectorHTML('conteúdo')}${contentMonthSelectorHTML()}${gate}${filtersHTML()}<div class="post-grid">${fp.map(postCard).join('')||'<section class="surface empty-state"><strong>Nenhum conteúdo neste filtro</strong><p>Tente outro cliente ou status.</p></section>'}</div>`;
 }
 function publicationsView(){
   const eligible=visiblePosts().filter(p=>p.status==='approved');
@@ -3083,12 +3172,19 @@ function render(){
   }
 }
 function bindUI(){
+ document.querySelectorAll('[data-editorial-month]').forEach(el=>el.onchange=()=>setEditorialMonth(el.value));
+ document.querySelectorAll('[data-editorial-month-shift]').forEach(b=>b.onclick=()=>shiftEditorialMonth(b.dataset.editorialMonthShift));
+ document.querySelectorAll('[data-editorial-current-month]').forEach(b=>b.onclick=()=>setEditorialMonth(currentMonthStart().slice(0,7)));
+ document.querySelectorAll('[data-content-month]').forEach(el=>el.onchange=()=>{if(el.value&&!validMonth(el.value)){toast('Escolha um mês válido.','error');return}contentMonthFilter=el.value;render()});
+ document.querySelectorAll('[data-content-all-months]').forEach(b=>b.onclick=()=>{contentMonthFilter='';render()});
+ document.querySelectorAll('[data-monthly-message]').forEach(b=>b.onclick=()=>openMonthlyMessage(b.dataset.monthlyMessage));
+
  document.querySelectorAll('[data-monthly-backup]').forEach(b=>b.onclick=openMonthlyBackup);
  document.querySelectorAll('[data-portal-renewal]').forEach(b=>b.onclick=openPortalRenewal);
   bindDriveUI();
   document.querySelectorAll('[data-theme-option]').forEach(b=>b.onclick=()=>{applyTheme(b.dataset.themeOption);render()});
   document.querySelectorAll('[data-toggle-theme]').forEach(b=>b.onclick=()=>{toggleTheme();closeMobileMore();render()});
-  document.querySelectorAll('[data-route]').forEach(b=>b.onclick=()=>{route=b.dataset.route;activeFilter='all';closeMobileMore();render();window.scrollTo({top:0,behavior:'smooth'})});
+  document.querySelectorAll('[data-route]').forEach(b=>b.onclick=()=>{route=b.dataset.route;if(b.dataset.editorialMonthTarget)editorialMonth=b.dataset.editorialMonthTarget;activeFilter='all';closeMobileMore();render();window.scrollTo({top:0,behavior:'smooth'})});
   document.querySelectorAll('[data-tutorial-play]').forEach(b=>b.onclick=()=>openTutorialPlayer(b.dataset.tutorialPlay));
   document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{activeFilter=b.dataset.filter;render()});
   document.querySelectorAll('[data-view-client-scope]').forEach(s=>s.onchange=()=>{adminViewClient=s.value;if(s.value!=='all')currentClient=s.value;activeFilter='all';render();window.scrollTo({top:0,behavior:'smooth'})});
@@ -3109,7 +3205,7 @@ function bindUI(){
   document.querySelectorAll('[data-status-set]').forEach(b=>b.onclick=async(e)=>{e.stopPropagation();const [idx,s]=b.dataset.statusSet.split('|'),i=Number(idx),old=posts[i]?.status;if(!posts[i])return;posts[i].status=s;render();try{await persistContentStatus(i,s);toast('Status atualizado.')}catch(err){posts[i].status=old;render();toast(formatError(err,'Não foi possível atualizar o status.'),'error')}});
   document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>handleAction(b.dataset.action,b));
   document.querySelectorAll('[data-access-client]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();openClientAccess(b.dataset.accessClient)});
-  document.querySelectorAll('[data-finance-client]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();openClientFinanceAdmin(b.dataset.financeClient)});document.querySelectorAll('[data-whatsapp-client]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();openWhatsAppComposer(b.dataset.whatsappClient,'generic')});document.querySelectorAll('[data-whatsapp-editorial]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();const ed=currentEditorial();openWhatsAppComposer(b.dataset.whatsappEditorial,'editorial',{month:ed?.month||''})});document.querySelectorAll('[data-whatsapp-content]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();const p=posts.find(x=>String(x.id)===String(b.dataset.whatsappContent));if(p)openWhatsAppComposer(p.client,(p.reviewNote&&p.version>1)||p.status==='changes'||p.status==='rejected'?'version':'content',{id:p.id,title:p.title,type:p.type,deliveryKind:p.deliveryKind,date:p.date})});
+  document.querySelectorAll('[data-finance-client]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();openClientFinanceAdmin(b.dataset.financeClient)});document.querySelectorAll('[data-whatsapp-client]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();openWhatsAppComposer(b.dataset.whatsappClient,'generic')});document.querySelectorAll('[data-whatsapp-editorial]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();const ed=currentEditorial();openWhatsAppComposer(b.dataset.whatsappEditorial,'editorial',{month:ed?.month||'',monthStart:ed?.monthStart||editorialMonth})});document.querySelectorAll('[data-whatsapp-content]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();const p=posts.find(x=>String(x.id)===String(b.dataset.whatsappContent));if(p)openWhatsAppComposer(p.client,(p.reviewNote&&p.version>1)||p.status==='changes'||p.status==='rejected'?'version':'content',{id:p.id,title:p.title,type:p.type,deliveryKind:p.deliveryKind,date:p.date})});
   document.querySelectorAll('[data-copy-pix]').forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(portalPaymentSettings.pix_key||'');toast('Chave Pix copiada.')}catch(e){toast('Não foi possível copiar automaticamente.','error')}});
   document.querySelectorAll('[data-save-payment-settings]').forEach(b=>b.onclick=()=>runBusy(b,'Salvando…',async()=>{const payload={id:1,pix_key:document.getElementById('paymentPixKey').value.trim()||null,pix_key_type:document.getElementById('paymentPixType').value.trim()||null,recipient_name:document.getElementById('paymentRecipient').value.trim()||null,bank_name:document.getElementById('paymentBank').value.trim()||null,document_label:document.getElementById('paymentDocument').value.trim()||null,instructions:document.getElementById('paymentInstructions').value.trim()||null,updated_at:new Date().toISOString()};const r=await db.from('portal_payment_settings').upsert(payload).select().single();if(r.error)throw r.error;portalPaymentSettings={...portalPaymentSettings,...r.data};toast('Dados de pagamento atualizados.');render()}).catch(err=>toast(formatError(err,'Não foi possível salvar os dados de pagamento.'),'error')));
   document.querySelectorAll('[data-client]').forEach(b=>b.onclick=()=>{currentClient=b.dataset.client;adminViewClient=b.dataset.client;route='clientspace';activeFilter='all';render()});
@@ -3283,7 +3379,7 @@ function openClientFinanceAdmin(clientId){
 }
 
 function openEditorialItem(id=null){
-  const ed=currentEditorial();if(!ed){toast('Selecione um cliente primeiro.','error');return}const item=id?ed.items.find(x=>String(x.id)===String(id)):null;openModal(item?'Editar publicação do editorial':'Nova publicação no editorial',`<div class="form-grid"><div class="field"><label>Dia</label><input id="edDay" type="number" min="1" max="31" value="${escapeHtml(item?.day||'01')}"></div><div class="field"><label>Formato</label><select id="edType">${['Post','Carrossel','Reels','Story'].map(t=>`<option ${item?.type===t?'selected':''}>${t}</option>`).join('')}</select></div><div class="field full"><label>Tema / título</label><input id="edTitle" maxlength="160" value="${escapeHtml(item?.title||'')}" placeholder="Ex.: 5 sinais que você não deve ignorar"></div><div class="field full"><label>Ideia e direcionamento</label><textarea id="edIdea" maxlength="3000" placeholder="Explique o que será abordado e como a publicação deve funcionar.">${escapeHtml(item?.idea||'')}</textarea></div><div class="field"><label>Objetivo</label><input id="edObjective" maxlength="300" value="${escapeHtml(item?.objective||'')}" placeholder="Ex.: autoridade + salvamentos"></div><div class="field"><label>Link de referência</label><input id="edReference" value="${escapeHtml(item?.reference||'')}" placeholder="https://..."></div><div class="field full"><label>Legenda / copy</label><textarea id="edCaption" maxlength="4000" placeholder="Texto da legenda, roteiro curto ou copy prevista...">${escapeHtml(item?.caption||'')}</textarea></div><div class="field full"><label>Link do Drive / materiais</label><input id="edDrive" value="${escapeHtml(item?.drive||'')}" placeholder="https://drive.google.com/..."><span class="hint">Use para fotos, vídeos, briefing ou arquivos pesados sem ocupar armazenamento no portal.</span></div><div class="field full"><label>Como será produzido</label><textarea id="edNotes" maxlength="3000" placeholder="Visual, quantidade de páginas, dinâmica, gravação, CTA...">${escapeHtml(item?.notes||'')}</textarea></div></div>`,`<button class="btn btn-secondary" data-close-modal>Cancelar</button><button class="btn" id="saveEditorialItem">${item?'Salvar alterações':'Adicionar ao editorial'}</button>`);
+  const ed=currentEditorial();if(!ed){toast('Selecione um cliente primeiro.','error');return}const item=id?ed.items.find(x=>String(x.id)===String(id)):null;openModal((item?'Editar publicação':'Nova publicação')+' · '+ed.month,`<div class="form-grid"><div class="field"><label>Dia</label><input id="edDay" type="number" min="1" max="31" value="${escapeHtml(item?.day||'01')}"></div><div class="field"><label>Formato</label><select id="edType">${['Post','Carrossel','Reels','Story'].map(t=>`<option ${item?.type===t?'selected':''}>${t}</option>`).join('')}</select></div><div class="field full"><label>Tema / título</label><input id="edTitle" maxlength="160" value="${escapeHtml(item?.title||'')}" placeholder="Ex.: 5 sinais que você não deve ignorar"></div><div class="field full"><label>Ideia e direcionamento</label><textarea id="edIdea" maxlength="3000" placeholder="Explique o que será abordado e como a publicação deve funcionar.">${escapeHtml(item?.idea||'')}</textarea></div><div class="field"><label>Objetivo</label><input id="edObjective" maxlength="300" value="${escapeHtml(item?.objective||'')}" placeholder="Ex.: autoridade + salvamentos"></div><div class="field"><label>Link de referência</label><input id="edReference" value="${escapeHtml(item?.reference||'')}" placeholder="https://..."></div><div class="field full"><label>Legenda / copy</label><textarea id="edCaption" maxlength="4000" placeholder="Texto da legenda, roteiro curto ou copy prevista...">${escapeHtml(item?.caption||'')}</textarea></div><div class="field full"><label>Link do Drive / materiais</label><input id="edDrive" value="${escapeHtml(item?.drive||'')}" placeholder="https://drive.google.com/..."><span class="hint">Use para fotos, vídeos, briefing ou arquivos pesados sem ocupar armazenamento no portal.</span></div><div class="field full"><label>Como será produzido</label><textarea id="edNotes" maxlength="3000" placeholder="Visual, quantidade de páginas, dinâmica, gravação, CTA...">${escapeHtml(item?.notes||'')}</textarea></div></div>`,`<button class="btn btn-secondary" data-close-modal>Cancelar</button><button class="btn" id="saveEditorialItem">${item?'Salvar alterações':'Adicionar ao editorial'}</button>`);
   const btn=document.getElementById('saveEditorialItem');btn.onclick=()=>runBusy(btn,'Salvando…',async()=>{const dayNum=Number(document.getElementById('edDay').value),baseMonth=ed.monthStart||currentMonthStart(),lastDay=new Date(Number(baseMonth.slice(0,4)),Number(baseMonth.slice(5,7)),0).getDate(),title=document.getElementById('edTitle').value.trim(),ref=document.getElementById('edReference').value.trim(),drive=document.getElementById('edDrive').value.trim();if(!Number.isInteger(dayNum)||dayNum<1||dayNum>lastDay){document.getElementById('edDay').focus();throw new Error(`Informe um dia entre 1 e ${lastDay}.`)}if(!title){document.getElementById('edTitle').focus();throw new Error('Informe o tema/título da publicação.')}if(ref&&!safeUrl(ref)){document.getElementById('edReference').focus();throw new Error('O link de referência precisa começar com http:// ou https://.')}if(drive&&!safeUrl(drive)){document.getElementById('edDrive').focus();throw new Error('O link do Drive precisa começar com http:// ou https://.')}const day=String(dayNum).padStart(2,'0'),data={day,weekday:'',publishDate:`${baseMonth.slice(0,8)}${day}`,type:document.getElementById('edType').value,title,idea:document.getElementById('edIdea').value.trim(),objective:document.getElementById('edObjective').value.trim(),reference:ref,referenceLabel:ref?'Abrir referência':'Sem referência externa',caption:document.getElementById('edCaption').value.trim(),drive,notes:document.getElementById('edNotes').value.trim()};let target=item,isNew=!item;if(item)Object.assign(item,data);else{target={id:'local-item-'+Date.now(),position:ed.items.length,...data};ed.items.push(target)}target.weekday=weekdayPt(target.publishDate);if(actualRole==='admin'){ed.status='draft';ed.approvedAt=null}try{await saveEditorialItemBackend(ed,target);closeModal();toast('Editorial atualizado.');render()}catch(err){if(isNew)ed.items=ed.items.filter(x=>x!==target);toast(formatError(err,'Não foi possível salvar.'),'error');throw err}}).catch(()=>{});
 }
 function openEditorialItemAdjustment(itemId){
