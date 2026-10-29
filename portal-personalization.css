@@ -174,3 +174,13 @@ html[data-client-palette=true] .client-welcome:before{content:'';display:block;w
 .app-shell.sidebar-collapsed .brand-monogram{opacity:1;transform:translate(-50%,-50%) scale(1)}
 @media(min-width:841px) and (max-width:1180px){.sidebar .brand-logo{width:218px!important;height:74px!important;opacity:0;pointer-events:none}.sidebar .brand-monogram{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 @media(prefers-reduced-motion:reduce){.sidebar .brand-logo,.sidebar .brand-monogram{transition:none}}
+
+/* Keep preview labels readable independently of the client accent. */
+html[data-theme="light"] .content-badges .preview-badge,
+html[data-theme="light"][data-client-palette="true"] .content-badges .preview-badge{
+ color:#3f6200;background:rgba(63,98,0,.10);border-color:rgba(63,98,0,.20)
+}
+html[data-theme="dark"] .content-badges .preview-badge,
+html[data-theme="dark"][data-client-palette="true"] .content-badges .preview-badge{
+ color:#adf403;background:rgba(173,244,3,.10);border-color:rgba(173,244,3,.20)
+}
