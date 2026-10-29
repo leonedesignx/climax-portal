@@ -184,3 +184,44 @@ html[data-theme="dark"] .content-badges .preview-badge,
 html[data-theme="dark"][data-client-palette="true"] .content-badges .preview-badge{
  color:#adf403;background:rgba(173,244,3,.10);border-color:rgba(173,244,3,.20)
 }
+
+/* Light appearance uses a readable accent everywhere, not fluorescent text. */
+html[data-theme="light"]{
+ --lime:#3f6200;--lime-soft:#334f00;--lime-ink:#3f6200;
+ --accent-rgb:63,98,0;--on-accent:#fff;
+ --muted:#52604c;--muted-2:#606b5a
+}
+html[data-theme="light"] h1,html[data-theme="light"] h2,
+html[data-theme="light"] h3,html[data-theme="light"] h4,
+html[data-theme="light"] .sidebar-client,
+html[data-theme="light"] .sidebar-client.active,
+html[data-theme="light"] .sidebar-client:hover,
+html[data-theme="light"] .sidebar-client-copy strong,
+html[data-theme="light"] .month-switcher{color:var(--text)}
+html[data-theme="light"] .sidebar-client-copy span,
+html[data-theme="light"] .dashboard-card-head small,
+html[data-theme="light"] .dashboard-legend span,
+html[data-theme="light"] .dashboard-approval-row em,
+html[data-theme="light"] .stat .k,
+html[data-theme="light"] .stat .trend,
+html[data-theme="light"] .hint,
+html[data-theme="light"] .post-meta,
+html[data-theme="light"] .post-client{color:var(--muted)}
+html[data-theme="light"] .stat .trend.good,
+html[data-theme="light"] .dashboard-eyebrow,
+html[data-theme="light"] .dashboard-rate,
+html[data-theme="light"] .stat-icon,
+html[data-theme="light"] .editorial-card-cta,
+html[data-theme="light"] .period-heading small,
+html[data-theme="light"] .feed-profile small{color:var(--lime-ink)}
+html[data-theme="light"] .btn:not(.btn-secondary):not(.btn-danger){color:var(--on-accent);background:var(--lime)}
+html[data-theme="light"] .priority-total,
+html[data-theme="light"] .sidebar-client-avatar,
+html[data-theme="light"] .approval-avatar,
+html[data-theme="light"] .workload-avatar{background:var(--panel-3);color:var(--lime-ink);border-color:var(--line)}
+html[data-theme="light"] .sidebar-client:hover{background:var(--panel-2)}
+html[data-theme="light"] .sidebar-client.active{background:rgba(var(--accent-rgb),.09)}
+html[data-theme="light"] .dashboard-legend>div,
+html[data-theme="light"] .dashboard-approval-row{border-color:var(--line)}
+html[data-theme="light"] input::placeholder,
+html[data-theme="light"] textarea::placeholder{color:var(--muted-2)}
