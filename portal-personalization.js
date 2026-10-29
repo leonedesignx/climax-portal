@@ -153,20 +153,21 @@ function showClientEntryQuestion(client=clientById(currentClient),brand=portalBr
  let overlay=document.getElementById('portalEntryOverlay');
  if(!entryState)overlay=paintEntryOverlay(client,brand,preview);
  const who=welcomeIdentity(client,brand);
- const choices=[['editorial','calendar','Quero ver meu calendário editorial','Ideias e datas do seu planejamento.'],['contents','content','Quero ver meus conteúdos do mês','Artes, vídeos e materiais do seu mês.'],['approvals','check','Quero aprovar publicações','Veja o que está aguardando seu retorno.'],['tutorials','video','Quero ver os tutoriais','Uma ajuda rápida para usar o portal.']];
+ const choices=[['editorial','plan','Ver ou aprovar o planejamento do mês','Confira as ideias e aprove o editorial para iniciarmos a produção.'],['tutorials','video','Quero conhecer melhor o portal','Precisa de ajuda? Assista aos tutoriais e descubra como usar cada recurso.'],['approvals','check','Aprovar as publicações finalizadas','Revise os conteúdos prontos do mês e aprove para seguirmos com as postagens.'],['calendar','calendar','Ver meu calendário de postagens','Acompanhe as datas das publicações agendadas e já publicadas neste mês.'],['feed','image','Ver a prévia do meu feed do Instagram','Veja como as publicações vão ficar juntas no seu perfil.']];
  setSafeHTML(overlay,'<section class="entry-question"><header><div><small>'+escapeHtml(client.name)+'</small><h2 id="portalEntryTitle">O que você procura no portal?</h2><p>Escolha um atalho para começar, '+escapeHtml(who.name||'vamos lá')+'.</p></div><button class="entry-close" id="closeEntryQuestion" aria-label="Fechar atalhos">×</button></header><div class="entry-shortcuts">'+choices.map(([key,icon,title,copy])=>'<button data-entry-destination="'+key+'"><span class="entry-shortcut-icon">'+ICONS[icon]+'</span><span><strong>'+title+'</strong><small>'+copy+'</small></span>'+ICONS.right+'</button>').join('')+'</div><div class="entry-question-footer"><button class="entry-dismiss-day" id="dismissEntryToday">Já conheço bem o portal. Não mostrar mais hoje :)</button><button class="entry-skip" id="skipEntryQuestion">Vou explorar por conta própria</button></div><p id="entryQuestionStatus" role="status"></p>'+(preview?'<div class="entry-preview-note">Prévia · nenhuma preferência do cliente será alterada.</div>':'')+'</section>');
  overlay.querySelector('#closeEntryQuestion').onclick=closePortalEntry;
  overlay.querySelector('#skipEntryQuestion').onclick=closePortalEntry;
  overlay.querySelectorAll('[data-entry-destination]').forEach(b=>b.onclick=()=>{
   const target=b.dataset.entryDestination;
-  if(preview){closePortalEntry();toast('Este atalho abrirá '+({editorial:'o calendário editorial',contents:'os conteúdos do mês',approvals:'as publicações aguardando aprovação',tutorials:'os tutoriais'}[target])+' para o cliente.');return}
+  if(preview){closePortalEntry();toast('Este atalho abrirá '+({editorial:'o planejamento editorial do mês',calendar:'o calendário de postagens do mês',feed:'a prévia do feed do Instagram',approvals:'as publicações finalizadas do mês aguardando aprovação',tutorials:'os tutoriais do portal'}[target])+' para o cliente.');return}
   closePortalEntry();
   if(document.getElementById('detailOverlay').classList.contains('open'))closeDetail();
   if(document.getElementById('modalWrap').classList.contains('open'))closeModal();
   activeFilter=target==='approvals'?'waiting':'all';
-  if(target==='editorial'){route='editorial';editorialLayout='calendar';editorialMonth=currentMonthStart()}
+  if(target==='editorial'){route='editorial';editorialLayout='cards';editorialMonth=currentMonthStart()}
   else if(target==='tutorials')route='tutorials';
-  else{route='content';contentLayout='cards';contentMonthFilter=target==='contents'?currentMonthStart().slice(0,7):''}
+  else if(target==='calendar'){route='calendar';const now=new Date();calendarCursor=new Date(now.getFullYear(),now.getMonth(),1)}
+  else{route='content';contentLayout=target==='feed'?'feed':'cards';contentMonthFilter=currentMonthStart().slice(0,7)}
   render();window.scrollTo({top:0,behavior:'smooth'});
  });
  overlay.querySelector('#dismissEntryToday').onclick=async()=>{
