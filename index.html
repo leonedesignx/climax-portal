@@ -1502,6 +1502,107 @@ html[data-theme="light"] .publication-state.state-published{color:#377048}
 [data-theme="light"] .editorial-month-controls input{color-scheme:light}
 @media(max-width:640px){.editorial-month-controls{width:100%}.editorial-month-controls input,.editorial-month-controls select{flex:1;min-width:140px}.editorial-month-controls [data-editorial-current-month]{width:100%}.editorial-action-set{display:flex!important;flex-wrap:wrap;gap:8px}.editorial-action-set .btn{flex:1 1 145px;justify-content:center}}
 
+
+/* Editorial: overview first, readable details on demand. */
+.editorial-period{padding:22px;margin-bottom:24px}
+.period-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px}
+.period-heading small,.feed-profile small{display:block;color:var(--lime);font-size:var(--type-caption);font-weight:800;letter-spacing:.1em;margin-bottom:6px}
+.period-heading strong{font-size:var(--type-subtitle)}.period-heading>span{color:var(--muted)}
+.period-tabs{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:thin}
+.period-tab{flex:1;min-width:150px;max-width:240px;text-align:left;padding:16px 18px;border:1px solid var(--line);background:var(--bg-2);border-radius:13px;transition:background .18s,border-color .18s}
+.period-tab span{display:block;font-size:var(--type-subtitle);font-weight:750}
+.period-tab small{display:block;color:var(--muted);font-size:var(--type-small);margin-top:7px}
+.period-tab.active{border-color:var(--lime);background:color-mix(in srgb,var(--lime) 9%,var(--panel))}
+.period-tab.active span{color:var(--lime)}
+.period-other{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-top:12px;color:var(--muted);font-size:var(--type-small)}
+.period-other input{max-width:190px;background:var(--bg-2);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px}
+.editorial-card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.editorial-card-grid>.empty-state{grid-column:1/-1}
+.editorial-plan-card{overflow:hidden;display:flex;flex-direction:column;transition:border-color .18s,transform .18s}
+.editorial-plan-card:hover{border-color:var(--line-strong);transform:translateY(-2px)}
+.editorial-card-open{display:flex;flex:1;flex-direction:column;align-items:stretch;background:transparent;text-align:left;padding:24px;min-width:0}
+.editorial-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:24px}
+.editorial-card-date{display:flex;gap:9px;align-items:baseline}
+.editorial-card-date strong{font-size:32px;letter-spacing:-.05em;line-height:1}
+.editorial-card-date small{color:var(--muted);font-size:var(--type-small)}
+.editorial-card-open h3{font-size:var(--type-title);line-height:1.5;overflow-wrap:anywhere;margin-bottom:12px}
+.editorial-card-open p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;color:var(--muted);font-size:var(--type-body);line-height:1.8;margin-bottom:24px;white-space:pre-line}
+.editorial-card-cta{margin-top:auto;color:var(--lime);font-size:var(--type-label);font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.editorial-card-cta svg{width:16px;height:16px}
+.editorial-card-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 20px;border-top:1px solid var(--line)}
+.editorial-card-tools .mini-action{width:auto;min-height:34px;display:flex;gap:6px;align-items:center}
+.editorial-card-tools .mini-action svg{width:14px;height:14px}
+.editorial-card-tools .danger{margin-left:auto}
+.view-switch{display:inline-flex;gap:4px;padding:4px;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;flex-shrink:0}
+.view-switch button{padding:10px 16px;border-radius:8px;background:transparent;color:var(--muted);font-size:var(--type-label);font-weight:700}
+.view-switch button.active{background:var(--panel-3);color:var(--text)}
+.editorial-list-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:28px;margin-bottom:18px}
+.editorial-calendar-wrap{min-width:0}
+.editorial-calendar-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:16px;scrollbar-width:thin}
+.editorial-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));min-width:760px;background:var(--panel)}
+.editorial-cal-weekday{padding:14px;text-align:center;color:var(--muted);font-size:var(--type-small);font-weight:700;border-bottom:1px solid var(--line)}
+.editorial-cal-cell{min-height:140px;padding:12px 8px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.editorial-cal-cell:nth-child(7n){border-right:0}
+.editorial-cal-cell.outside{background:var(--bg-2);opacity:.55}
+.editorial-cal-date{font-size:var(--type-label);color:var(--muted);padding:0 4px}
+.editorial-cal-event{display:block;text-align:left;background:color-mix(in srgb,var(--lime) 7%,var(--panel));border:1px solid color-mix(in srgb,var(--lime) 20%,var(--line));border-radius:9px;padding:10px;min-width:0}
+.editorial-cal-event small{display:block;color:var(--lime);font-size:var(--type-caption);margin-bottom:6px}
+.editorial-cal-event strong{font-size:var(--type-small);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.editorial-reading .modal{width:min(940px,calc(100vw - 40px))}
+.editorial-reader{display:grid;grid-template-columns:70px minmax(0,1fr);gap:24px;padding:8px}
+.editorial-reader .editorial-copy h3{font-size:var(--type-section);line-height:1.5;margin-bottom:20px}
+.editorial-reader .editorial-copy>p{white-space:pre-wrap;font-size:var(--type-subtitle);line-height:1.95;color:var(--text);margin-bottom:28px;overflow-wrap:anywhere}
+.editorial-reader .editorial-meta-grid{gap:16px}
+.editorial-reader .editorial-meta{padding:20px}
+.editorial-reader .editorial-meta span{font-size:var(--type-body);line-height:1.95;white-space:pre-wrap;overflow-wrap:anywhere}
+.editorial-reader .editorial-meta a{font-size:var(--type-body);line-height:1.7;overflow-wrap:anywhere}
+.production-private{border:1px solid var(--line);border-radius:12px;padding:16px}
+.visibility-option{display:flex!important;align-items:flex-start;gap:10px;line-height:1.7!important}
+.visibility-option input[type=checkbox]{width:18px!important;height:18px!important;min-height:18px!important;flex-shrink:0;accent-color:var(--lime);margin-top:3px}
+.production-private .visibility-option{margin:14px 0 8px}
+.content-layout-toolbar{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.content-layout-toolbar .filter-tabs{margin:0}
+.feed-preview{max-width:860px;margin:0 auto;overflow:hidden}
+.feed-profile{display:flex;gap:22px;align-items:center;padding:28px}
+.feed-avatar{width:76px;height:76px;border-radius:50%;border:2px solid var(--lime);display:grid;place-items:center;font-weight:800;color:var(--lime);font-size:24px;flex-shrink:0}
+.feed-profile h2{font-size:var(--type-section);margin-bottom:8px}
+.feed-profile p{color:var(--muted);font-size:var(--type-body);line-height:1.6}
+.feed-notice{font-size:var(--type-small);line-height:1.8;color:var(--muted);padding:0 28px 24px}
+.feed-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;background:var(--line)}
+.feed-tile{position:relative;aspect-ratio:3/4;background:var(--bg-2);overflow:hidden;padding:0;min-width:0;display:grid;place-items:center}
+.feed-tile>.post-cover-image{width:100%;height:100%;object-fit:cover}
+.feed-tile .cover-icon{position:static;transform:none;color:var(--muted)}
+.feed-format{position:absolute;top:12px;right:12px;color:#fff;filter:drop-shadow(0 1px 3px #000)}
+.feed-format svg{width:18px;height:18px}
+.feed-tile-title{position:absolute;inset:auto 0 0;padding:24px 12px 12px;background:linear-gradient(transparent,rgba(0,0,0,.8));color:#fff;font-size:var(--type-small);line-height:1.5;text-align:left;opacity:0;transition:opacity .18s;overflow-wrap:anywhere}
+.feed-tile:hover .feed-tile-title,.feed-tile:focus-visible .feed-tile-title{opacity:1}
+.archive-month-panel{padding:32px;max-width:900px}
+.archive-month-panel h2{margin:10px 0 18px;font-size:var(--type-section)}
+.archive-month-panel .storage-copy{margin-bottom:24px;max-width:720px;line-height:1.9}
+.archive-month-panel .field{max-width:280px;margin-bottom:24px}
+.archive-month-panel .hint{margin-top:22px;line-height:1.9}
+.renewal-warning{border:1px solid color-mix(in srgb,var(--danger) 30%,var(--line));background:color-mix(in srgb,var(--danger) 5%,var(--panel));border-radius:12px;padding:20px}
+.renewal-warning strong{color:var(--danger)}
+.renewal-warning p{margin-top:12px;font-size:var(--type-body);line-height:1.9}
+@media(min-width:1600px){.editorial-card-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1200px){.editorial-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){
+ .editorial-period{padding:18px}.period-tab{min-width:145px;padding:14px}
+ .editorial-card-grid{grid-template-columns:minmax(0,1fr);gap:14px}
+ .editorial-card-open{padding:22px}.editorial-list-head{align-items:flex-start;flex-direction:column}
+ .editorial-reading .modal{width:100%}.editorial-reader{grid-template-columns:minmax(0,1fr);gap:18px;padding:0}
+ .editorial-reader .editorial-date{display:flex;gap:10px;align-items:baseline;border:0;padding:0}
+ .editorial-reader .editorial-meta-grid{grid-template-columns:minmax(0,1fr)}
+ .editorial-reader .editorial-meta{padding:18px}
+ .editorial-reader .editorial-copy>p{font-size:var(--type-body);line-height:1.9}
+ .content-layout-toolbar{display:block}.content-layout-toolbar .view-switch{margin-bottom:8px}
+ .feed-profile{padding:22px;gap:16px}.feed-avatar{width:58px;height:58px;font-size:18px}
+ .feed-notice{padding:0 22px 20px}.feed-grid{gap:2px}.feed-format{top:8px;right:8px}
+ .feed-tile-title{font-size:10px;padding:16px 7px 7px}.archive-month-panel{padding:22px}
+}
+@media(prefers-reduced-motion:reduce){.editorial-plan-card,.period-tab,.feed-tile-title{transition:none}.editorial-plan-card:hover{transform:none}}
+
+
 </style>
 </head>
 <body>
@@ -1858,8 +1959,11 @@ const editorialStatusLabel={draft:'Rascunho',waiting:'Aguardando aprovação',ch
 let editorialFeedback='';
 let editorialMonth=currentMonthStart();
 let contentMonthFilter='';
+let editorialLayout='cards',contentLayout='cards';
+let archivedEditorialMonths=[];
 function currentEditorial(){
   if(!currentClient)return null;
+  normalizeEditorialMonth(currentClient);
   let ed=editorialForClient(currentClient);
   if(!ed){ed=demoEditorial(currentClient,editorialMonth);editorials.push(ed)}
   return ed;
@@ -1952,6 +2056,7 @@ function demoEditorial(clientId,monthStart=currentMonthStart()){return {id:'loca
 function validMonth(value){return /^\d{4}-(0[1-9]|1[0-2])$/.test(String(value))&&Number(String(value).slice(0,4))>=1900&&Number(String(value).slice(0,4))<=9999}
 function setEditorialMonth(value){
  if(!validMonth(value)){toast('Escolha um mês válido.','error');return}
+ if(isEditorialMonthArchived(value+'-01',role==='client'?currentClient:adminViewClient)){toast('Este mês já foi renovado.','error');return}
  editorialMonth=value+'-01';editorialFeedback=editorialForClient(currentClient)?.feedback||'';render();
 }
 function shiftEditorialMonth(delta){
@@ -1959,13 +2064,24 @@ function shiftEditorialMonth(delta){
  setEditorialMonth(date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0'));
 }
 function editorialMonthSelectorHTML(){
- const value=editorialMonth.slice(0,7);
- if(role==='client'){
-   const months=[...new Set([currentMonthStart(),...editorials.filter(e=>e.client===currentClient).map(e=>e.monthStart).filter(Boolean)])].sort().reverse();
-   return '<section class="surface editorial-month-nav"><div><strong>Mês do editorial</strong><p>Escolha o planejamento que deseja acompanhar.</p></div><div class="editorial-month-controls"><label class="sr-only" for="editorialMonthSelect">Mês do editorial</label><select id="editorialMonthSelect" data-editorial-month>'+months.map(m=>'<option value="'+escapeHtml(m.slice(0,7))+'" '+(m===editorialMonth?'selected':'')+'>'+escapeHtml(ptMonth(m))+'</option>').join('')+'</select></div></section>';
- }
- return '<section class="surface editorial-month-nav"><div><strong>Mês do editorial</strong><p>Prepare os próximos meses sem alterar o planejamento atual.</p></div><div class="editorial-month-controls"><button class="btn btn-secondary" data-editorial-month-shift="-1" aria-label="Mês anterior">'+ICONS.left+'</button><label class="sr-only" for="editorialMonthSelect">Mês do editorial</label><input id="editorialMonthSelect" type="month" min="1900-01" max="9999-12" data-editorial-month value="'+escapeHtml(value)+'"><button class="btn btn-secondary" data-editorial-month-shift="1" aria-label="Próximo mês">'+ICONS.right+'</button><button class="btn btn-secondary" data-editorial-current-month>Mês atual</button></div></section>';
+ const scope=role==='client'?currentClient:adminViewClient;normalizeEditorialMonth(scope);
+ return '<section class="surface editorial-period"><div class="period-heading"><div><small>PLANEJAMENTO EDITORIAL</small><strong>Escolha o mês</strong></div><span>'+editorialMonth.slice(0,4)+'</span></div><div class="period-tabs" aria-label="Mês do editorial">'+availableEditorialMonths(scope).map(m=>'<button class="period-tab '+(m===editorialMonth?'active':'')+'" data-editorial-period="'+m.slice(0,7)+'" aria-pressed="'+(m===editorialMonth)+'"><span>'+escapeHtml(ptMonth(m).split(' de ')[0])+'</span><small>'+m.slice(0,4)+(editorials.some(e=>(scope==='all'||e.client===scope)&&e.monthStart===m&&e.items.length)?' · Disponível':' · A preparar')+'</small></button>').join('')+'</div>'+(role==='admin'?'<div class="period-other"><label for="editorialMonthSelect">Outro período</label><input id="editorialMonthSelect" type="month" data-editorial-month value="'+editorialMonth.slice(0,7)+'"></div>':'')+'</section>';
 }
+function isEditorialMonthArchived(month,scope){
+ const ids=scope==='all'?clients.map(c=>c.id):[scope];
+ return ids.length>0&&ids.every(id=>archivedEditorialMonths.some(x=>x.client_id===id&&x.month_start===month));
+}
+function availableEditorialMonths(scope){
+ const now=currentMonthStart(),year=Number(now.slice(0,4)),start=Number(now.slice(5,7));
+ const future=Array.from({length:13-start},(_,i)=>year+'-'+String(start+i).padStart(2,'0')+'-01');
+ const existing=editorials.filter(e=>scope==='all'||e.client===scope).map(e=>e.monthStart).filter(Boolean);
+ const months=[...new Set([...future,...existing,editorialMonth])].filter(m=>!isEditorialMonthArchived(m,scope)).sort();
+ return months.length?months:[(year+1)+'-01-01'];
+}
+function normalizeEditorialMonth(scope){
+ if(isEditorialMonthArchived(editorialMonth,scope))editorialMonth=availableEditorialMonths(scope).find(m=>m>=currentMonthStart())||availableEditorialMonths(scope)[0];
+}
+
 function postMonthKey(p){
  const planned=String(p.plannedPublishDate||'');if(/^\d{4}-\d{2}/.test(planned))return planned.slice(0,7);
  if(p.scheduledAt){const date=new Date(p.scheduledAt);if(!Number.isNaN(date.getTime()))return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')}
@@ -2058,6 +2174,9 @@ async function hydrateFromBackend(user){
     const versionIds=versionRows.map(v=>v.id);
     if(versionIds.length){const ir=await db.from('editorial_items').select('*').in('editorial_version_id',versionIds).order('position');if(ir.error)throw ir.error;itemRows=ir.data||[];}
   }
+  const [notesRes,archiveRes]=await Promise.all([db.from('editorial_production_notes').select('item_id,notes,client_visible'),db.from('portal_month_archives').select('client_id,month_start')]);
+  if(notesRes.error)throw notesRes.error;if(archiveRes.error)throw archiveRes.error;
+  const productionNotes=new Map((notesRes.data||[]).map(n=>[n.item_id,n]));archivedEditorialMonths=archiveRes.data||[];
   // Recover missing editorial dates without replacing manually changed content dates.
   const editorialDates=new Map(itemRows.filter(i=>i.publish_date).map(i=>[i.id,i.publish_date]));
   for(const p of posts){
@@ -2072,7 +2191,7 @@ async function hydrateFromBackend(user){
   editorials=(edRows||[]).map(e=>{
     const versions=versionRows.filter(v=>v.editorial_id===e.id).sort((a,b)=>b.version-a.version);
     const v=versions[0];if(!v)return null;
-    return {id:e.id,dbEditorialId:e.id,versionId:v.id,client:e.client_id,month:ptMonth(e.month_start),monthStart:e.month_start,status:v.status,version:v.version,sentAt:shortDateTime(v.sent_at),approvedAt:shortDateTime(v.approved_at),feedback:v.feedback||'',items:itemRows.filter(it=>it.editorial_version_id===v.id).map(it=>({id:it.id,day:it.publish_date?String(new Date(it.publish_date+'T12:00:00').getDate()).padStart(2,'0'):'',publishDate:it.publish_date,weekday:weekdayPt(it.publish_date),type:it.format,title:it.title,idea:it.idea||'',objective:it.objective||'',reference:it.reference_url||'',referenceLabel:it.reference_label||'Abrir referência',caption:it.caption_draft||'',drive:it.drive_url||'',notes:it.production_notes||'',position:it.position||0}))};
+    return {id:e.id,dbEditorialId:e.id,versionId:v.id,client:e.client_id,month:ptMonth(e.month_start),monthStart:e.month_start,status:v.status,version:v.version,sentAt:shortDateTime(v.sent_at),approvedAt:shortDateTime(v.approved_at),feedback:v.feedback||'',items:itemRows.filter(it=>it.editorial_version_id===v.id).map(it=>({id:it.id,day:it.publish_date?String(new Date(it.publish_date+'T12:00:00').getDate()).padStart(2,'0'):'',publishDate:it.publish_date,weekday:weekdayPt(it.publish_date),type:it.format,title:it.title,idea:it.idea||'',objective:it.objective||'',reference:it.reference_url||'',referenceLabel:it.reference_label||'Abrir referência',caption:it.caption_draft||'',drive:it.drive_url||'',notes:productionNotes.get(it.id)?.notes||'',notesVisible:Boolean(productionNotes.get(it.id)?.client_visible),position:it.position||0}))};
   }).filter(Boolean);
   for(const c of clients){if(!editorials.some(e=>e.client===c.id))editorials.push(demoEditorial(c.id));}
 
@@ -2191,8 +2310,9 @@ async function ensureEditorialPersisted(ed){
 }
 async function saveEditorialItemBackend(ed,item){
   if(!backendEnabled||!backendReady)return item;await ensureEditorialPersisted(ed);
-  const payload={editorial_version_id:ed.versionId,publish_date:item.publishDate||`${ed.monthStart?.slice(0,8)||currentMonthStart().slice(0,8)}${item.day}`,format:item.type,title:item.title,idea:item.idea,objective:item.objective,reference_url:safeUrl(item.reference)||null,reference_label:item.referenceLabel||null,caption_draft:item.caption||null,drive_url:safeUrl(item.drive)||null,production_notes:item.notes,position:Number.isFinite(item.position)?item.position:ed.items.indexOf(item)};
+  const payload={editorial_version_id:ed.versionId,publish_date:item.publishDate||`${ed.monthStart?.slice(0,8)||currentMonthStart().slice(0,8)}${item.day}`,format:item.type,title:item.title,idea:item.idea,objective:item.objective,reference_url:safeUrl(item.reference)||null,reference_label:item.referenceLabel||null,caption_draft:item.caption||null,drive_url:safeUrl(item.drive)||null,production_notes:null,position:Number.isFinite(item.position)?item.position:ed.items.indexOf(item)};
   if(!isUuid(item.id)){const r=await db.from('editorial_items').insert(payload).select().single();if(r.error)throw r.error;item.id=r.data.id;item.publishDate=r.data.publish_date}else{const r=await db.from('editorial_items').update(payload).eq('id',item.id).select().single();if(r.error)throw r.error}
+  if(role==='admin')await saveProductionNotes(ed,item);
   if(ed.status!=='draft'&&actualRole==='admin'){const reset=await db.from('editorial_versions').update({status:'draft',approved_at:null,approved_by:null}).eq('id',ed.versionId);if(reset.error)throw reset.error}
   return item;
 }
@@ -2308,11 +2428,14 @@ async function createContentBackend(data){
 }
 async function createClientAccessBackend(data){if(!backendEnabled||!backendReady)throw new Error('Supabase não está conectado.');return callAuthGateway('admin-create-client',{name:data.name,access_name:data.accessName,temporary_password:data.temporaryPassword,contact_name:data.contact||'',contact_email:data.email||null,category:data.category||'Social Media',commercial:data.commercial||{}},true)}
 async function resetClientAccessBackend(clientId,temporaryPassword){const access=clientAccessMap[clientId];if(!access?.userId)throw new Error('Este cliente ainda não possui um usuário vinculado.');const result=await callAuthGateway('admin-reset-access',{user_id:access.userId,temporary_password:temporaryPassword},true);access.mustChange=true;return result}
+async function saveProductionNotes(ed,item){
+ const r=await db.from('editorial_production_notes').upsert({item_id:item.id,client_id:ed.client,notes:item.notes||'',client_visible:Boolean(item.notesVisible),updated_at:new Date().toISOString()},{onConflict:'item_id'});if(r.error)throw r.error;
+}
 async function newEditorialVersionBackend(ed){
   if(!backendEnabled||!backendReady)return;await ensureEditorialPersisted(ed);
   const next=(ed.version||1)+1;const r=await db.from('editorial_versions').insert({editorial_id:ed.dbEditorialId,version:next,status:'draft',created_by:authUser.id}).select().single();if(r.error)throw r.error;
   const oldItems=[...ed.items];ed.version=next;ed.versionId=r.data.id;ed.status='draft';ed.sentAt=null;ed.approvedAt=null;ed.items=[];
-  for(let i=0;i<oldItems.length;i++){const old=oldItems[i];const payload={editorial_version_id:ed.versionId,publish_date:old.publishDate||null,format:old.type,title:old.title,idea:old.idea,objective:old.objective,reference_url:old.reference||null,reference_label:old.referenceLabel||null,caption_draft:old.caption||null,drive_url:old.drive||null,production_notes:old.notes,position:i};const ir=await db.from('editorial_items').insert(payload).select().single();if(ir.error)throw ir.error;ed.items.push({...old,id:ir.data.id})}
+  for(let i=0;i<oldItems.length;i++){const old=oldItems[i];const payload={editorial_version_id:ed.versionId,publish_date:old.publishDate||null,format:old.type,title:old.title,idea:old.idea,objective:old.objective,reference_url:old.reference||null,reference_label:old.referenceLabel||null,caption_draft:old.caption||null,drive_url:old.drive||null,production_notes:null,position:i};const ir=await db.from('editorial_items').insert(payload).select().single();if(ir.error)throw ir.error;const copy={...old,id:ir.data.id};ed.items.push(copy);await saveProductionNotes(ed,copy)}
 }
 
 async function bootApp(){
@@ -2740,12 +2863,32 @@ function clientsView(){
 }
 
 function editorialStatusCard(ed){const approved=ed.status==='approved',when=ed.approvedAt||'data registrada no sistema';return `<div class="editorial-status ${approved?'approved':''}"><small>Status do mês</small><strong>${escapeHtml(editorialStatusLabel[ed.status]||ed.status)}</strong><span>${approved?`Aprovado em ${escapeHtml(when)}. Produção liberada.`:(ed.sentAt?'Enviado em '+escapeHtml(ed.sentAt):'Em preparação para revisão.')}</span></div>`}
-function editorialItemCard(item,ed){
+function editorialReaderHTML(item,ed){
   const ref=safeUrl(item.reference),drive=safeUrl(item.drive),canEdit=ed.status!=='approved';
   const controls=role==='admin'?`<div class="editorial-actions"><button class="mini-action primary" data-edit-editorial-item="${escapeHtml(item.id)}">${ICONS.edit}<span>Editar</span></button><button class="mini-action" data-duplicate-editorial-item="${escapeHtml(item.id)}">${ICONS.copy}<span>Duplicar</span></button>${canEdit?`<button class="mini-action danger" data-delete-editorial-item="${escapeHtml(item.id)}">${ICONS.trash}<span>Excluir</span></button>`:''}</div>`:role==='client'&&canEdit?`<div class="editorial-actions"><button class="mini-action" data-edit-editorial-item="${escapeHtml(item.id)}">${ICONS.edit}<span>Editar</span></button><button class="mini-action" data-request-editorial-adjustment="${escapeHtml(item.id)}">${ICONS.message}<span>Pedir ajuste</span></button></div>`:'';
-  return `<article class="surface editorial-item"><div class="editorial-date"><strong>${escapeHtml(item.day)}</strong><span>${escapeHtml(item.weekday)}</span><span class="editorial-format">${escapeHtml(item.type)}</span></div><div class="editorial-copy"><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.idea)}</p><div class="editorial-meta-grid">${item.objective?`<div class="editorial-meta"><small>Objetivo</small><span>${escapeHtml(item.objective)}</span></div>`:''}<div class="editorial-meta"><small>Referência</small>${ref?`<a href="${escapeHtml(ref)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.referenceLabel||'Abrir referência')} ${ICONS.external}</a>`:`<span>${escapeHtml(item.referenceLabel||'Sem referência externa')}</span>`}</div>${item.caption?`<div class="editorial-meta" style="grid-column:1/-1"><small>Legenda / copy</small><span>${escapeHtml(item.caption)}</span></div>`:''}${drive?`<div class="editorial-meta" style="grid-column:1/-1"><small>Materiais no Drive</small><a href="${escapeHtml(drive)}" target="_blank" rel="noopener noreferrer">Abrir pasta ou arquivo no Drive ${ICONS.external}</a></div>`:''}${item.notes?`<div class="editorial-meta" style="grid-column:1/-1"><small>Como será produzido</small><span>${escapeHtml(item.notes)}</span></div>`:''}</div></div>${controls}</article>`;
+  return `<article class="editorial-reader"><div class="editorial-date"><strong>${escapeHtml(item.day)}</strong><span>${escapeHtml(item.weekday)}</span><span class="editorial-format">${escapeHtml(item.type)}</span></div><div class="editorial-copy"><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.idea)}</p><div class="editorial-meta-grid">${item.objective?`<div class="editorial-meta"><small>Objetivo</small><span>${escapeHtml(item.objective)}</span></div>`:''}<div class="editorial-meta"><small>Referência</small>${ref?`<a href="${escapeHtml(ref)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.referenceLabel||'Abrir referência')} ${ICONS.external}</a>`:`<span>${escapeHtml(item.referenceLabel||'Sem referência externa')}</span>`}</div>${item.caption?`<div class="editorial-meta" style="grid-column:1/-1"><small>Legenda / copy</small><span>${escapeHtml(item.caption)}</span></div>`:''}${drive?`<div class="editorial-meta" style="grid-column:1/-1"><small>Materiais no Drive</small><a href="${escapeHtml(drive)}" target="_blank" rel="noopener noreferrer">Abrir pasta ou arquivo no Drive ${ICONS.external}</a></div>`:''}${item.notes&&(role==='admin'||item.notesVisible)?`<div class="editorial-meta" style="grid-column:1/-1"><small>Como será produzido</small><span>${escapeHtml(item.notes)}</span></div>`:''}</div></div></article>`;
+}
+
+function editorialItemCard(item,ed){
+ return '<article class="surface editorial-plan-card"><button class="editorial-card-open" data-read-editorial="'+escapeHtml(item.id)+'"><span class="editorial-card-top"><span class="editorial-card-date"><strong>'+escapeHtml(item.day)+'</strong><small>'+escapeHtml(item.weekday)+'</small></span><span class="summary-pill">'+escapeHtml(item.type)+'</span></span><h3>'+escapeHtml(item.title)+'</h3><p>'+escapeHtml(item.idea||item.objective||'Abra para conhecer o planejamento desta publicação.')+'</p><span class="editorial-card-cta">Ver planejamento completo '+ICONS.right+'</span></button><div class="editorial-card-tools">'+(role==='admin'?'<button class="mini-action" data-edit-editorial-item="'+escapeHtml(item.id)+'">'+ICONS.edit+' Editar</button><button class="mini-action" data-duplicate-editorial-item="'+escapeHtml(item.id)+'">'+ICONS.copy+' Duplicar</button>'+(ed.status!=='approved'?'<button class="mini-action danger" data-delete-editorial-item="'+escapeHtml(item.id)+'" aria-label="Excluir publicação">'+ICONS.trash+'</button>':''):ed.status!=='approved'?'<button class="mini-action" data-edit-editorial-item="'+escapeHtml(item.id)+'">'+ICONS.edit+' Editar</button><button class="mini-action" data-request-editorial-adjustment="'+escapeHtml(item.id)+'">'+ICONS.message+' Pedir ajuste</button>':'<span class="hint">Planejamento aprovado</span>')+'</div></article>';
+}
+function openEditorialRead(id){
+ const ed=currentEditorial(),item=ed?.items.find(x=>String(x.id)===String(id));if(!item)return;
+ openModal(item.type+' · '+item.day+' de '+ed.month,editorialReaderHTML(item,ed),'<button class="btn btn-secondary" data-close-modal>Fechar</button>'+(role==='admin'||ed.status!=='approved'?'<button class="btn" id="editorialReadEdit">'+ICONS.edit+' Editar publicação</button>':'')+(role==='client'&&ed.status!=='approved'?'<button class="btn btn-secondary" id="editorialReadAdjust">Pedir ajuste</button>':''));
+ document.getElementById('modalWrap').classList.add('editorial-reading');
+ const edit=document.getElementById('editorialReadEdit'),adjust=document.getElementById('editorialReadAdjust');
+ if(edit)edit.onclick=()=>{closeModal();openEditorialItem(id)};
+ if(adjust)adjust.onclick=()=>{closeModal();openEditorialItemAdjustment(id)};
+}
+function editorialCalendarHTML(ed){
+ const [year,month]=ed.monthStart.split('-').map(Number),offset=(new Date(year,month-1,1,12).getDay()+6)%7,days=new Date(year,month,0).getDate();
+ const cells=Array.from({length:offset},()=>'<div class="editorial-cal-cell outside" aria-hidden="true"></div>');
+ for(let day=1;day<=days;day++)cells.push('<div class="editorial-cal-cell"><span class="editorial-cal-date">'+day+'</span>'+ed.items.filter(i=>Number(i.day)===day).map(i=>'<button class="editorial-cal-event" data-read-editorial="'+escapeHtml(i.id)+'"><small>'+escapeHtml(i.type)+'</small><strong>'+escapeHtml(i.title)+'</strong></button>').join('')+'</div>');
+ return '<div class="editorial-calendar-scroll"><div class="editorial-calendar" aria-label="Calendário editorial de '+escapeHtml(ed.month)+'">'+['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'].map(x=>'<div class="editorial-cal-weekday">'+x+'</div>').join('')+cells.join('')+'</div></div><p class="hint" style="margin-top:12px">Datas previstas. Clique em uma publicação para ler os detalhes.</p>';
 }
 function editorialView(){
+ normalizeEditorialMonth(role==='client'?currentClient:adminViewClient);
+
   if(role==='admin'&&adminViewClient==='all')return `${pageHead('Editorial mensal','Planeje, documente referências e acompanhe o planejamento de cada cliente.','<button class="btn btn-secondary" data-monthly-message="editorial">'+ICONS.copy+' Copiar mensagem</button>')}${contextSelectorHTML('editorial')}${editorialMonthSelectorHTML()}${editorialOverviewAll()}`;
   const scopedClient=role==='admin'?adminViewClient:currentClient;if(role==='admin'&&scopedClient!=='all')currentClient=scopedClient;
   const ed=currentEditorial();if(!ed)return `${pageHead('Editorial mensal','Selecione um cliente para visualizar o planejamento.')}${contextSelectorHTML('editorial')}<section class="surface empty-state"><strong>Nenhum editorial disponível</strong></section>`;const client=clientById(ed.client),approved=ed.status==='approved';
@@ -2753,10 +2896,18 @@ function editorialView(){
   const header=pageHead(role==='client'?'Planejamento editorial':'Editorial mensal',role==='client'?'Revise e edite o planejamento antes de a produção começar.':'Planeje, documente referências e aprove o mês antes de produzir.',action);const when=ed.approvedAt||'data registrada no sistema';
   const approvedBanner=approved?`<div class="editorial-approved-banner"><div><strong>✓ Editorial aprovado · produção liberada</strong><span>${role==='admin'?`${escapeHtml(client.contact||client.name)} aprovou em ${escapeHtml(when)}. Esta versão fica registrada no histórico.`:`Você aprovou este planejamento em ${escapeHtml(when)}. A Clímax já pode iniciar a produção.`}</span></div>${role==='admin'?'<button class="btn btn-secondary" data-action="new-editorial-version">Criar nova versão</button>':''}</div>`:'';
   const clientActions=role==='client'&&!approved&&Boolean(ed.versionId)?`<div class="editorial-client-actions"><button class="btn btn-secondary" data-editorial-change>Solicitar ajustes</button><button class="btn" data-editorial-approve>Aprovar editorial do mês</button></div>`:'';
-  return `${header}${contextSelectorHTML('editorial')}${editorialMonthSelectorHTML()}${approvedBanner}<section class="surface editorial-hero"><div><div class="editorial-kicker">${role==='admin'?escapeHtml(client.name):'Editorial mensal'}</div><h2>${escapeHtml(ed.month)}</h2><p>Temas, formatos e referências do mês. Revise os itens abaixo e aprove o editorial para liberar a produção.</p><div class="editorial-summary"><span class="summary-pill">${ed.items.length} publicações</span><span class="summary-pill">Versão ${ed.version}</span><span class="summary-pill">${role==='admin'?escapeHtml(client.contact||client.name):'Planejamento Clímax'}</span></div></div>${editorialStatusCard(ed)}</section><section class="surface workflow-strip"><div class="workflow-step done"><div class="workflow-num">1</div><div><strong>Planejamento</strong><span>Editorial montado pela Clímax</span></div></div><div class="workflow-step ${approved?'done':'active'}"><div class="workflow-num">2</div><div><strong>Aprovação</strong><span>${approved?'Cliente aprovou esta versão':'Cliente revisa o mês completo'}</span></div></div><div class="workflow-step ${approved?'active':''}"><div class="workflow-num">3</div><div><strong>Produção</strong><span>${approved?'Conteúdos liberados para execução':'Inicia somente após a aprovação'}</span></div></div></section><div class="section-head editorial-list-head"><h3>Publicações do mês</h3></div><div class="editorial-list">${ed.items.length?ed.items.map(item=>editorialItemCard(item,ed)).join(''):`<section class="surface empty-state"><strong>Nenhuma publicação planejada ainda.</strong><p>${role==='admin'?'Adicione a primeira publicação para preparar o editorial de '+escapeHtml(ed.month)+'. Os outros meses permanecem disponíveis no seletor.':'A Clímax ainda está preparando o planejamento deste mês.'}</p></section>`}</div><div class="editorial-note"><div class="editorial-note-icon">i</div><div><strong>A aprovação fica registrada.</strong><p>Quando o editorial for aprovado, a versão, data e responsável ficam associados ao mês. Se o planejamento mudar depois, a Clímax cria uma nova versão.</p></div></div>${clientActions}`;
+  return `${header}${contextSelectorHTML('editorial')}${editorialMonthSelectorHTML()}${approvedBanner}<section class="surface editorial-hero"><div><div class="editorial-kicker">${role==='admin'?escapeHtml(client.name):'Editorial mensal'}</div><h2>${escapeHtml(ed.month)}</h2><p>Temas, formatos e referências do mês. Revise os itens abaixo e aprove o editorial para liberar a produção.</p><div class="editorial-summary"><span class="summary-pill">${ed.items.length} publicações</span><span class="summary-pill">Versão ${ed.version}</span><span class="summary-pill">${role==='admin'?escapeHtml(client.contact||client.name):'Planejamento Clímax'}</span></div></div>${editorialStatusCard(ed)}</section><section class="surface workflow-strip"><div class="workflow-step done"><div class="workflow-num">1</div><div><strong>Planejamento</strong><span>Editorial montado pela Clímax</span></div></div><div class="workflow-step ${approved?'done':'active'}"><div class="workflow-num">2</div><div><strong>Aprovação</strong><span>${approved?'Cliente aprovou esta versão':'Cliente revisa o mês completo'}</span></div></div><div class="workflow-step ${approved?'active':''}"><div class="workflow-num">3</div><div><strong>Produção</strong><span>${approved?'Conteúdos liberados para execução':'Inicia somente após a aprovação'}</span></div></div></section><div class="section-head editorial-list-head"><h3>Publicações do mês</h3><div class="view-switch"><button data-editorial-layout="cards" class="${editorialLayout==='cards'?'active':''}">Cards</button><button data-editorial-layout="calendar" class="${editorialLayout==='calendar'?'active':''}">Calendário</button></div></div><div class="${editorialLayout==='calendar'?'editorial-calendar-wrap':'editorial-card-grid'}">${ed.items.length?(editorialLayout==='calendar'?editorialCalendarHTML(ed):ed.items.map(item=>editorialItemCard(item,ed)).join('')):`<section class="surface empty-state"><strong>Nenhuma publicação planejada ainda.</strong><p>${role==='admin'?'Adicione a primeira publicação para preparar o editorial de '+escapeHtml(ed.month)+'. Os outros meses permanecem disponíveis no seletor.':'A Clímax ainda está preparando o planejamento deste mês.'}</p></section>`}</div><div class="editorial-note"><div class="editorial-note-icon">i</div><div><strong>A aprovação fica registrada.</strong><p>Quando o editorial for aprovado, a versão, data e responsável ficam associados ao mês. Se o planejamento mudar depois, a Clímax cria uma nova versão.</p></div></div>${clientActions}`;
 }
 
+
+function contentFeedHTML(items){
+ const id=role==='client'?currentClient:adminViewClient;
+ if(id==='all')return '<section class="surface empty-state"><strong>Escolha um cliente para ver a prévia do feed</strong><p>O feed reúne os conteúdos de uma única conta.</p></section>';
+ const client=clientById(id),sorted=[...items].filter(p=>p.type!=='Story').sort((a,b)=>String(b.scheduledAt||b.plannedPublishDate||'').localeCompare(String(a.scheduledAt||a.plannedPublishDate||'')));
+ return '<section class="surface feed-preview"><div class="feed-profile"><span class="feed-avatar">'+escapeHtml(client.init)+'</span><div><small>PRÉVIA DO FEED</small><h2>'+escapeHtml(client.name)+'</h2><p>Uma visão de como seus conteúdos ficam juntos.</p></div></div><div class="feed-notice">Simulação visual · mais recentes primeiro. Clique em uma imagem para revisar. Stories ficam na visualização de conteúdos.</div><div class="feed-grid">'+sorted.map(p=>'<button class="feed-tile" data-open-post="'+escapeHtml(p.id)+'" aria-label="Revisar '+escapeHtml(p.title)+'">'+contentPreviewCover(p)+'<span class="feed-format">'+mediaIcon(p.type,p.deliveryKind)+'</span><span class="feed-tile-title">'+escapeHtml(p.title)+'</span></button>').join('')+'</div>'+(!sorted.length?'<div class="empty-state"><strong>Nenhuma publicação de feed neste filtro</strong></div>':'')+'</section>';
+}
 function contentView(){
+
   const heading=role==='client'?'Seus conteúdos':'Conteúdos';
   const sub=role==='client'?'Visualize as artes, deslize pelos carrosséis e aprove cada conteúdo com facilidade.':'Toda a produção da Clímax, com prévias visuais, arquivos, Drive e status de aprovação.';
   const action=role==='admin'?'<button class="btn btn-secondary" data-monthly-message="contents-month">'+ICONS.copy+' Copiar mensagem</button>'+primaryBtn('Novo conteúdo'):'';
@@ -2766,7 +2917,7 @@ function contentView(){
     const ed=editorialForClient(scoped,contentMonthFilter?contentMonthFilter+'-01':currentMonthStart());
     gate=!ed?`<div class="editorial-note" style="margin:0 0 16px"><div class="editorial-note-icon">!</div><div><strong>Sem editorial para este cliente</strong><p>Você ainda pode gerenciar os conteúdos existentes desta conta.</p></div></div>`:role==='client'||ed.status==='approved'?`<div class="editorial-approved-banner"><div><strong>${ed.status==='approved'?'✓ Produção vinculada ao editorial aprovado':'Conteúdos produzidos a partir do planejamento aprovado'}</strong><span>${ed.month} · versão ${ed.version}</span></div><button class="btn btn-secondary" data-route="editorial" data-editorial-month-target="${escapeHtml(ed.monthStart||currentMonthStart())}">Ver editorial</button></div>`:`<div class="editorial-note" style="margin:0 0 16px"><div class="editorial-note-icon">!</div><div><strong>Editorial ainda não aprovado</strong><p>A produção deve começar depois que o cliente aprovar o planejamento mensal.</p></div></div>`;
   }
-  return `${pageHead(heading,sub,action)}${contextSelectorHTML('conteúdo')}${contentMonthSelectorHTML()}${gate}${filtersHTML()}<div class="post-grid">${fp.map(postCard).join('')||'<section class="surface empty-state"><strong>Nenhum conteúdo neste filtro</strong><p>Tente outro cliente ou status.</p></section>'}</div>`;
+  return `${pageHead(heading,sub,action)}${contextSelectorHTML('conteúdo')}${contentMonthSelectorHTML()}${gate}<div class="content-layout-toolbar">${filtersHTML()}<div class="view-switch"><button data-content-layout="cards">Conteúdos</button><button data-content-layout="feed">Prévia do feed</button></div></div>${contentLayout==='feed'?contentFeedHTML(fp):`<div class="post-grid">${fp.map(postCard).join('')||'<section class="surface empty-state"><strong>Nenhum conteúdo neste filtro</strong><p>Tente outro cliente ou status.</p></section>'}</div>`}`;
 }
 function publicationsView(){
   const eligible=visiblePosts().filter(p=>p.status==='approved');
@@ -2835,80 +2986,86 @@ let portalBackupReceipt=null;
 function portalArchiveMonth(){return document.getElementById('portalBackupMonth')?.value||new Date().toISOString().slice(0,7)}
 async function portalMonthSnapshot(month,clientId='all'){
  backupMonth(month);
- const tables=['clients','contents','editorials','editorial_versions','editorial_items','content_versions','content_preview_assets','comments','reviews','client_drive_submissions'];
- const entries=await Promise.all(tables.map(async table=>[table,await backupReadAll(db,table)]));
- const extra=await Promise.all([db.from('client_financials').select('*'),db.from('portal_payment_settings').select('*'),db.from('profiles').select('id,full_name,role,client_id')]);for(const r of extra)if(r.error)throw r.error;
- const all=Object.fromEntries(entries),clientOK=row=>clientId==='all'||row.client_id===clientId;
- const eds=all.editorials.filter(row=>clientOK(row)&&backupInMonth(row.month_start,month)),edIds=new Set(eds.map(x=>x.id));
- const evs=all.editorial_versions.filter(x=>edIds.has(x.editorial_id)),evIds=new Set(evs.map(x=>x.id));
- const eis=all.editorial_items.filter(x=>evIds.has(x.editorial_version_id)),eiIds=new Set(eis.map(x=>x.id));
- const contents=all.contents.filter(x=>clientOK(x)&&(eiIds.has(x.editorial_item_id)||backupInMonth(x.planned_publish_date||x.scheduled_at||x.created_at,month)));
- const contentIds=new Set(contents.map(x=>x.id));
- const versions=all.content_versions.filter(x=>contentIds.has(x.content_id)),assets=all.content_preview_assets.filter(x=>contentIds.has(x.content_id));
- const keySet=new Set([...versions.flatMap(x=>[x.media_key,x.thumbnail_key]),...assets.map(x=>x.storage_key)].filter(Boolean));
- const outside=new Set([...all.content_versions.filter(x=>!contentIds.has(x.content_id)).flatMap(x=>[x.media_key,x.thumbnail_key]),...all.content_preview_assets.filter(x=>!contentIds.has(x.content_id)).map(x=>x.storage_key)].filter(Boolean));
- return {format:'climax-portal-month-v1',month,clientId,exportedAt:new Date().toISOString(),records:{client_financials:extra[0].data.filter(x=>clientId==='all'||x.client_id===clientId),portal_payment_settings:extra[1].data,people:extra[2].data.filter(x=>clientId==='all'||x.client_id===clientId),clients:all.clients.filter(x=>clientId==='all'||x.id===clientId),contents,editorials:eds,editorial_versions:evs,editorial_items:eis,content_versions:versions,content_preview_assets:assets,comments:all.comments.filter(x=>contentIds.has(x.content_id)||evIds.has(x.editorial_version_id)||eiIds.has(x.editorial_item_id)),reviews:all.reviews.filter(x=>contentIds.has(x.content_id)||evIds.has(x.editorial_version_id)),client_drive_submissions:all.client_drive_submissions.filter(clientOK)},media:[...keySet].sort().map(key=>({key,path:'midias/'+backupSafePath(key),shared:outside.has(key)})),preserved:'Links de Drive, clientes, credenciais, financeiro, editoriais e publicações não são apagados pela renovação de mídias.'};
+ const r=await db.rpc('prepare_portal_month_backup',{p_month:month+'-01',p_client:clientId==='all'?null:clientId});
+ if(r.error)throw r.error;
+ const snapshot=r.data.manifest;snapshot.media=snapshot.media.map(m=>({...m,path:'midias/'+backupSafePath(m.key)}));
+ return {snapshot,receiptId:r.data.receipt_id};
 }
+function rememberPortalRenewal(receipt){
+ try{if(receipt)localStorage.setItem('climax-pending-renewal',JSON.stringify({userId:receipt.userId,receiptId:receipt.receiptId,month:receipt.snapshot.month,renewed:Boolean(receipt.renewed)}));else localStorage.removeItem('climax-pending-renewal')}catch(_){}
+}
+function currentPortalBackupReceipt(){
+ if(portalBackupReceipt?.userId===authUser?.id)return portalBackupReceipt;
+ try{const x=JSON.parse(localStorage.getItem('climax-pending-renewal')||'null');if(x?.userId===authUser?.id&&x.receiptId){portalBackupReceipt={...x,snapshot:{month:x.month}};return portalBackupReceipt}}catch(_){}
+ return null;
+}
+
 function openMonthlyBackup(){
  if(actualRole!=='admin'||role!=='admin')return;
  const month=portalArchiveMonth();
- openModal('Backup mensal do portal','<div class="field"><label for="backupMonthInput">Mês do backup</label><input id="backupMonthInput" type="month" value="'+escapeHtml(month)+'"></div><div class="field"><label for="backupClientInput">Cliente</label><select id="backupClientInput"><option value="all">Todos os clientes</option>'+clients.map(c=>'<option value="'+escapeHtml(c.id)+'">'+escapeHtml(c.name)+'</option>').join('')+'</select></div><p class="storage-copy">O ZIP inclui os registros completos do período, todas as versões de imagens e vídeos e uma lista dos links externos. Arquivos que estão no Google Drive permanecem no Drive; seus links entram no backup.</p><div class="field" style="margin-top:16px"><label><input id="backupUseDisk" type="checkbox"> Salvar direto em disco (para backups maiores que 512 MB, no Chrome ou Edge)</label></div><p class="hint" style="margin-top:12px">Mantenha esta janela aberta até concluir. Para arquivos grandes, prefira Chrome ou Edge com salvamento direto em disco. Antes da renovação, abra o ZIP e confira os arquivos.</p><p id="monthlyBackupStatus" role="status" style="margin-top:14px"></p>','<button class="btn btn-secondary" data-close-modal>Fechar</button><button class="btn" id="portalMonthlyDownload">Baixar backup completo</button>');
- const btn=document.getElementById('portalMonthlyDownload');
+ openModal('Backup mensal completo','<div class="form-grid"><div class="field"><label for="backupMonthInput">Mês do backup</label><input id="backupMonthInput" type="month" value="'+escapeHtml(month)+'"></div><div class="field"><label for="backupClientInput">Cliente</label><select id="backupClientInput"><option value="all">Todos os clientes</option>'+clients.map(c=>'<option value="'+escapeHtml(c.id)+'">'+escapeHtml(c.name)+'</option>').join('')+'</select></div></div><p class="storage-copy">O ZIP reúne o editorial, publicações, comentários, aprovações, orientações de produção e todas as versões de imagens e vídeos do período. Links externos entram nos registros; os arquivos do Google Drive permanecem no Drive.</p><div class="field" style="margin-top:18px"><label class="visibility-option"><input id="backupUseDisk" type="checkbox"> Salvar direto em disco (recomendado para arquivos grandes, no Chrome ou Edge)</label></div><p class="hint">Mantenha esta janela aberta até concluir. Depois, abra e confira o ZIP antes de renovar o mês.</p><p id="monthlyBackupStatus" role="status" style="margin-top:16px"></p>','<button class="btn btn-secondary" data-close-modal>Fechar</button><button class="btn btn-secondary" id="reviewRenewalAfterBackup" hidden>Revisar renovação</button><button class="btn" id="portalMonthlyDownload">Baixar backup completo</button>');
+ const btn=document.getElementById('portalMonthlyDownload'),next=document.getElementById('reviewRenewalAfterBackup');
+ next.onclick=openPortalRenewal;
  btn.onclick=()=>runBusy(btn,'Gerando backup…',async()=>{
-  const status=document.getElementById('monthlyBackupStatus'),month=document.getElementById('backupMonthInput').value,clientId=document.getElementById('backupClientInput').value;
+  const status=document.getElementById('monthlyBackupStatus'),month=document.getElementById('backupMonthInput').value,clientId=document.getElementById('backupClientInput').value,wrap=document.getElementById('modalWrap');
+  let destination=null;
   try{
-   const filename='climax-portal-'+month+'-'+(clientId==='all'?'todos':clientId)+'.zip';
-   const destination=await backupDestination(filename,document.getElementById('backupUseDisk')?.checked);
-   status.textContent='Lendo registros do mês…';
-   const snapshot=await portalMonthSnapshot(month,clientId);
+   backupMonth(month);const filename='climax-portal-'+month+'-'+(clientId==='all'?'todos':clientId)+'.zip';
+   destination=await backupDestination(filename,document.getElementById('backupUseDisk').checked);
+   wrap.dataset.busy='1';next.hidden=true;status.textContent='Preparando os registros do mês…';
+   const {snapshot,receiptId}=await portalMonthSnapshot(month,clientId);
    async function* entries(){
     yield {path:'registros.json',load:()=>new Blob([JSON.stringify(snapshot,null,2)],{type:'application/json'})};
-    yield {path:'LEIA-ME.txt',load:()=>new Blob(['Clímax Portal — Backup mensal '+month+'\n\nRegistros em registros.json; arquivos originais em midias/.\nLinks externos são referências, não cópias do Google Drive.\nA renovação remove somente mídias escolhidas, preservando histórico e links.'])};
+    yield {path:'LEIA-ME.txt',load:()=>new Blob(['Clímax Portal — Backup mensal '+month+'\n\nRegistros em registros.json; arquivos originais em midias/.\nLinks externos são referências, não cópias do Google Drive.\nA renovação é uma etapa manual separada. Ela remove os editoriais e conteúdos deste período após sua confirmação, preservando cadastros, acessos, financeiro e links permanentes do Drive.'])};
     for(const media of snapshot.media)yield {path:media.path,load:async()=>{const r=await db.storage.from('client-media').download(media.key);if(r.error||!r.data)throw new Error('Falha ao baixar '+media.key+': '+(r.error?.message||'arquivo vazio'));return r.data}};
    }
    const result=await backupZip(filename,entries(),progress=>{status.textContent=progress.count+' arquivo(s) processados · '+(progress.bytes/1048576).toFixed(1)+' MB'},destination);
-   portalBackupReceipt={userId:authUser.id,snapshot,completed:new Set(),verified:false};
-   status.textContent='Backup concluído: '+result.files+' arquivos. Abra o ZIP e confira o conteúdo antes de renovar as mídias. Nenhum dado foi excluído.';
-   toast('Backup mensal gerado.');
-  }catch(e){portalBackupReceipt=null;status.textContent=formatError(e,'Backup não concluído. A renovação permanece bloqueada.');toast('Não foi possível concluir o backup.','error')}
- });
+   const completed=await db.rpc('complete_portal_month_backup',{p_receipt:receiptId});if(completed.error)throw completed.error;
+   portalBackupReceipt={userId:authUser.id,receiptId,snapshot,renewed:false};rememberPortalRenewal(portalBackupReceipt);
+   status.textContent='ZIP concluído: '+result.files+' arquivos. Abra e confira o backup. Quando estiver tudo certo, clique em Revisar renovação. Nenhum dado foi excluído.';
+   next.hidden=false;toast('Backup mensal concluído.');
+  }catch(e){
+   status.textContent=formatError(e,'Backup não concluído. A renovação deste arquivo não foi liberada.');toast('Não foi possível concluir o backup.','error');
+  }finally{delete wrap.dataset.busy}
+ }).catch(()=>{});
 }
+
 function openPortalRenewal(){
  if(actualRole!=='admin'||role!=='admin')return;
- const receipt=portalBackupReceipt;
- if(!receipt||receipt.userId!==authUser.id){toast('Primeiro gere e confira o backup mensal nesta sessão.','error');return}
- const eligible=receipt.snapshot.media.filter(x=>!x.shared),month=receipt.snapshot.month;
- openModal('Renovação do portal · '+month,'<p class="storage-copy">Esta renovação remove apenas as imagens e os vídeos do Supabase incluídos no backup de <strong>'+escapeHtml(month)+'</strong>. Os textos dos editoriais, publicações, clientes, financeiro e todos os links do Drive serão preservados.</p><p class="hint" style="margin-top:12px">'+eligible.length+' arquivo(s) elegíveis. Arquivos compartilhados com outros períodos não serão removidos. Novos envios após o backup ficam preservados.</p><div class="field" style="margin-top:18px"><label><input id="confirmBackupVerified" type="checkbox"> Baixei, abri e conferi o ZIP, incluindo imagens e vídeos.</label></div><div class="field"><label for="renewMonthConfirm">Digite o mês '+escapeHtml(month)+' para confirmar</label><input id="renewMonthConfirm" placeholder="'+escapeHtml(month)+'"></div><p id="renewalStatus" role="status"></p>','<button class="btn btn-secondary" data-close-modal>Cancelar</button><button class="btn btn-danger" id="portalRenewMedia" '+(!eligible.length?'disabled':'')+'>Renovar mídias deste mês</button>');
+ const receipt=currentPortalBackupReceipt();
+ if(!receipt){toast('Primeiro gere e confira o backup mensal completo.','error');return}
+ const month=receipt.snapshot.month,records=receipt.snapshot.records,counts=records?records.editorials.length+' editorial(is), '+records.contents.length+' conteúdo(s), '+records.comments.length+' comentário(s) e '+records.reviews.length+' aprovação(ões).':'O período foi registrado no backup concluído.';
+ openModal('Renovação mensal · '+month,'<div class="renewal-warning"><strong>'+escapeHtml(receipt.renewed?'Concluir limpeza de arquivos':'Revise antes de renovar')+'</strong><p>Serão removidos os editoriais, conteúdos, versões, comentários, aprovações e mídias exclusivas de <strong>'+escapeHtml(month)+'</strong>, no período e clientes incluídos no ZIP. Esse mês sairá do portal administrativo e do portal dos clientes.</p><p>'+escapeHtml(counts)+'</p></div><div class="editorial-meta" style="margin-top:16px"><small>O que permanece</small><span>Clientes, acessos, financeiro, tutoriais, links permanentes do Drive e os demais meses. Arquivos usados em outros períodos são preservados.</span></div><div class="field" style="margin-top:20px"><label class="visibility-option"><input id="confirmBackupVerified" type="checkbox"> Baixei, abri e conferi o ZIP, incluindo imagens e vídeos.</label></div><div class="field"><label for="renewMonthConfirm">Digite '+escapeHtml(month)+' para confirmar o período</label><input id="renewMonthConfirm" placeholder="'+escapeHtml(month)+'" autocomplete="off"></div><p id="renewalStatus" role="status"></p>','<button class="btn btn-secondary" data-close-modal>Cancelar</button><button class="btn btn-danger" id="portalRenewMedia">'+(receipt.renewed?'Concluir limpeza pendente':'Renovar este mês')+'</button>');
  const btn=document.getElementById('portalRenewMedia');
  btn.onclick=()=>runBusy(btn,'Renovando…',async()=>{
-  const status=document.getElementById('renewalStatus');
-  if(!document.getElementById('confirmBackupVerified').checked||document.getElementById('renewMonthConfirm').value!==month){status.textContent='Confira o backup e digite o mês exatamente como indicado.';return}
+  const status=document.getElementById('renewalStatus'),wrap=document.getElementById('modalWrap');
+  if(!document.getElementById('confirmBackupVerified').checked||document.getElementById('renewMonthConfirm').value!==month){status.textContent='Confira o ZIP e digite o mês exatamente como indicado.';return}
   if(actualRole!=='admin'||role!=='admin'||authUser.id!==receipt.userId)return;
   try{
-   const fresh=await portalMonthSnapshot(month,receipt.snapshot.clientId),freshKeys=new Set(fresh.media.filter(x=>!x.shared).map(x=>x.key));
-   let completed=0;
-   for(const media of eligible){
-    if(receipt.completed.has(media.key)){completed++;continue}
-    if(!freshKeys.has(media.key))throw new Error('Os arquivos do período mudaram. Faça um novo backup antes de renovar.');
-    // Remove only the exact object and exact references recorded in the backup.
-    const removed=await db.storage.from('client-media').remove([media.key]);if(removed.error)throw removed.error;
-    const versionRows=receipt.snapshot.records.content_versions;
-    for(const row of versionRows){
-     const patch={};if(row.media_key===media.key){patch.media_key=null;patch.media_type=null;patch.size_bytes=null}if(row.thumbnail_key===media.key)patch.thumbnail_key=null;
-     if(Object.keys(patch).length){let q=db.from('content_versions').update(patch).eq('id',row.id);q=row.media_key===media.key?q.eq('media_key',media.key):q.eq('thumbnail_key',media.key);const r=await q;if(r.error)throw r.error}
-    }
-    for(const asset of receipt.snapshot.records.content_preview_assets.filter(x=>x.storage_key===media.key)){const r=await db.from('content_preview_assets').delete().eq('id',asset.id).eq('storage_key',media.key);if(r.error)throw r.error}
-    receipt.completed.add(media.key);completed++;status.textContent=completed+' de '+eligible.length+' mídias renovadas.';
-   }
-   status.textContent='Renovação concluída. Mídias removidas; links e histórico preservados.';toast('Mídias do período renovadas.');portalBackupReceipt=null;
-   const keepClient=currentClient;await hydrateFromBackend(authUser);if(clients.some(x=>x.id===keepClient))currentClient=keepClient;
-  }catch(e){status.textContent=formatError(e,'A renovação foi interrompida. Os arquivos já processados não serão repetidos ao tentar novamente.');toast('Confira o resultado da renovação.','error')}
- });
+   wrap.dataset.busy='1';
+   const r=await db.rpc('renew_portal_month',{p_receipt:receipt.receiptId,p_confirm_month:month});if(r.error)throw r.error;
+   receipt.renewed=true;rememberPortalRenewal(receipt);status.textContent='Registros do mês renovados. Limpando arquivos que não são usados em outros períodos…';
+   const pending=await db.rpc('portal_month_cleanup_keys',{p_receipt:receipt.receiptId});if(pending.error)throw pending.error;
+   const keys=pending.data.keys||[];
+   for(let i=0;i<keys.length;i+=50){const removed=await db.storage.from('client-media').remove(keys.slice(i,i+50));if(removed.error)throw removed.error;status.textContent='Limpando arquivos: '+Math.min(i+50,keys.length)+' de '+keys.length}
+   const finished=await db.rpc('finish_portal_month_cleanup',{p_receipt:receipt.receiptId});if(finished.error)throw finished.error;
+   portalBackupReceipt=null;rememberPortalRenewal(null);
+   const keepClient=currentClient;await hydrateFromBackend(authUser);if(clients.some(c=>c.id===keepClient))currentClient=keepClient;
+   normalizeEditorialMonth(role==='client'?currentClient:adminViewClient);render();
+   status.textContent='Renovação concluída. O mês saiu do portal e os dados permanentes foram preservados.';btn.hidden=true;toast('Mês renovado com sucesso.');
+  }catch(e){
+   status.textContent=(receipt.renewed?'Registros já renovados; limpeza de arquivos pendente. Você pode retomar esta etapa com segurança. ':'')+formatError(e,'Não foi possível concluir a renovação.');
+   toast(receipt.renewed?'A limpeza de arquivos ficou pendente.':'Renovação não concluída.','error');
+   if(receipt.renewed){const keep=currentClient;try{await hydrateFromBackend(authUser);if(clients.some(c=>c.id===keep))currentClient=keep;render()}catch(_){}}
+  }finally{delete wrap.dataset.busy}
+ }).catch(()=>{});
 }
 
 function archiveView(){
- return pageHead('Arquivos & backup','Backup mensal com mídias e renovação do armazenamento.')+'<section class="surface" style="padding:24px"><h2>Backup mensal completo</h2><p class="storage-copy" style="margin:14px 0">Guarde editoriais, publicações, comentários e todas as versões de imagens e vídeos em um ZIP. Os links do Drive entram nos registros e continuam disponíveis no portal.</p><div class="field"><label for="portalBackupMonth">Mês de referência</label><input type="month" id="portalBackupMonth" value="'+new Date().toISOString().slice(0,7)+'"></div><div class="drive-submission-actions"><button class="btn" data-monthly-backup>Baixar backup mensal</button><button class="btn btn-secondary" data-portal-renewal>Renovação do portal</button></div><p class="hint" style="margin-top:16px">Renovação de mídias: disponível somente após concluir e conferir o backup nesta sessão. O histórico e os links permanentes são preservados.</p></section>';
+ const receipt=currentPortalBackupReceipt();
+ return pageHead('Arquivos & backup','Guarde seu mês e prepare o portal para o próximo ciclo.')+'<section class="surface archive-month-panel"><div class="editorial-kicker">ORGANIZAÇÃO MENSAL</div><h2>Seu mês, guardado por completo.</h2><p class="storage-copy">Baixe um ZIP com editoriais, conteúdos, comentários, aprovações e arquivos originais do período. Depois de conferir o backup, você pode renovar esse mês manualmente.</p><div class="field"><label for="portalBackupMonth">Mês de referência</label><input type="month" id="portalBackupMonth" value="'+new Date().toISOString().slice(0,7)+'"></div><div class="drive-submission-actions"><button class="btn" data-monthly-backup>'+ICONS.download+' Baixar backup mensal</button><button class="btn btn-secondary" data-portal-renewal>'+(receipt?.renewed?'Retomar limpeza de '+escapeHtml(receipt.snapshot.month):'Revisar renovação')+'</button></div><p class="hint">O calendário virar não exclui nada. A renovação exige um backup completo, conferência do ZIP e confirmação do mês. Cadastros, acessos, financeiro e links permanentes do Drive ficam preservados.</p></section>';
 }
+
 function settingsView(){
   const p=getPortalPrefs(),pay=portalPaymentSettings||{};
   return `${pageHead('Configurações','Preferências e integrações do Clímax Portal.')}<div class="settings-grid">
@@ -3172,6 +3329,10 @@ function render(){
   }
 }
 function bindUI(){
+ document.querySelectorAll('[data-read-editorial]').forEach(b=>b.onclick=()=>openEditorialRead(b.dataset.readEditorial));
+ document.querySelectorAll('[data-editorial-period]').forEach(b=>b.onclick=()=>setEditorialMonth(b.dataset.editorialPeriod));
+ document.querySelectorAll('[data-editorial-layout]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.editorialLayout===editorialLayout));b.onclick=()=>{editorialLayout=b.dataset.editorialLayout;render()}});
+ document.querySelectorAll('[data-content-layout]').forEach(b=>{b.classList.toggle('active',b.dataset.contentLayout===contentLayout);b.setAttribute('aria-pressed',String(b.dataset.contentLayout===contentLayout));b.onclick=()=>{contentLayout=b.dataset.contentLayout;render()}});
  document.querySelectorAll('[data-editorial-month]').forEach(el=>el.onchange=()=>setEditorialMonth(el.value));
  document.querySelectorAll('[data-editorial-month-shift]').forEach(b=>b.onclick=()=>shiftEditorialMonth(b.dataset.editorialMonthShift));
  document.querySelectorAll('[data-editorial-current-month]').forEach(b=>b.onclick=()=>setEditorialMonth(currentMonthStart().slice(0,7)));
@@ -3216,7 +3377,7 @@ function bindUI(){
   document.querySelectorAll('[data-editorial-approve]').forEach(b=>b.onclick=async()=>{const comments=captureEditorialItemComments();if(comments.length){toast('Você escreveu comentários em publicações. Envie os ajustes ou limpe os comentários antes de aprovar.','error');return}const ed=currentEditorial();await runBusy(b,'Aprovando…',async()=>{try{await reviewEditorialBackend(ed,'approved','');ed.status='approved';ed.approvedAt='agora';editorialFeedback='';for(const item of ed.items){if(posts.some(p=>String(p.editorialItemId)===String(item.id)))continue;posts.push({id:'editorial-'+item.id,client:ed.client,title:item.title,type:item.type,caption:item.caption||item.idea||'',status:'draft',publicationStatus:'not_ready',plannedPublishDate:item.publishDate||null,scheduledAt:null,editorialItemId:item.id,version:1,previewAssets:[]})}toast('Editorial aprovado. Os itens foram enviados para Conteúdos.');render()}catch(err){toast(formatError(err,'Não foi possível aprovar o editorial.'),'error')}})});
   document.querySelectorAll('[data-editorial-change]').forEach(b=>b.onclick=()=>openEditorialFeedback(captureEditorialItemComments()));
   document.querySelectorAll('[data-edit-editorial-item]').forEach(b=>b.onclick=()=>openEditorialItem(b.dataset.editEditorialItem));
-  document.querySelectorAll('[data-duplicate-editorial-item]').forEach(b=>b.onclick=async()=>{const ed=currentEditorial(),item=ed.items.find(x=>String(x.id)===String(b.dataset.duplicateEditorialItem));if(!item)return;await runBusy(b,'Duplicando…',async()=>{const day=String(Math.min(31,Number(item.day||1)+2)).padStart(2,'0'),base=ed.monthStart||currentMonthStart(),clone={...item,id:'local-item-'+Date.now(),day,publishDate:`${base.slice(0,8)}${day}`,weekday:weekdayPt(`${base.slice(0,8)}${day}`),title:item.title+' — variação',position:ed.items.length};try{ed.items.push(clone);await saveEditorialItemBackend(ed,clone);ed.status='draft';toast('Publicação duplicada.');render()}catch(err){ed.items=ed.items.filter(x=>x!==clone);toast(formatError(err,'Não foi possível duplicar.'),'error')}})});
+  document.querySelectorAll('[data-duplicate-editorial-item]').forEach(b=>b.onclick=async()=>{const ed=currentEditorial(),item=ed.items.find(x=>String(x.id)===String(b.dataset.duplicateEditorialItem));if(!item)return;await runBusy(b,'Duplicando…',async()=>{const day=String(Math.min(new Date(Number(ed.monthStart.slice(0,4)),Number(ed.monthStart.slice(5,7)),0).getDate(),Number(item.day||1)+2)).padStart(2,'0'),base=ed.monthStart||currentMonthStart(),clone={...item,id:'local-item-'+Date.now(),day,publishDate:`${base.slice(0,8)}${day}`,weekday:weekdayPt(`${base.slice(0,8)}${day}`),title:item.title+' — variação',position:ed.items.length};try{ed.items.push(clone);await saveEditorialItemBackend(ed,clone);ed.status='draft';toast('Publicação duplicada.');render()}catch(err){ed.items=ed.items.filter(x=>x!==clone);toast(formatError(err,'Não foi possível duplicar.'),'error')}})});
 }
 async function handleAction(action,sourceButton=null){
   if(action==='new-content'||action==='Planejar conteúdo')return openNewContent();if(action==='new-client')return openNewClient();if(action==='backup')return openBackup();if(action==='view-client')return switchRole();if(action==='new-editorial-item')return openEditorialItem();
@@ -3260,8 +3421,8 @@ function bindDetail(){
   document.querySelectorAll('[data-status-set]').forEach(b=>b.onclick=async(e)=>{e.stopPropagation();const [idx,s]=b.dataset.statusSet.split('|'),i=Number(idx),old=posts[i]?.status;if(!posts[i])return;posts[i].status=s;openPost(detailPostId);renderNavigation();try{await persistContentStatus(i,s);toast('Status atualizado.')}catch(err){posts[i].status=old;openPost(detailPostId);renderNavigation();toast(formatError(err,'Não foi possível atualizar.'),'error')}});
 }
 function closeDetail(){document.querySelectorAll('[data-preview-carousel].is-fullscreen').forEach(c=>setPreviewFullscreen(c,false));const o=document.getElementById('detailOverlay');o.classList.remove('open');o.setAttribute('aria-hidden','true');document.body.style.overflow='';render()}
-function openModal(title,body,actions){document.getElementById('modalTitle').textContent=title;setSafeHTML('#modalBody',body);setSafeHTML('#modalActions',actions);const wrap=document.getElementById('modalWrap');wrap.classList.add('open');wrap.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';document.querySelectorAll('[data-close-modal]').forEach(b=>b.onclick=closeModal);setTimeout(()=>{if(wrap.classList.contains('open'))(wrap.querySelector('#modalBody input:not([disabled]),#modalBody textarea:not([disabled]),#modalBody select:not([disabled]),#modalActions button:not([disabled])')||wrap.querySelector('[data-close-modal]'))?.focus()},20)}
-function closeModal(){const w=document.getElementById('modalWrap');w.classList.remove('open');w.setAttribute('aria-hidden','true');if(!document.getElementById('detailOverlay').classList.contains('open'))document.body.style.overflow=''}
+function openModal(title,body,actions){document.getElementById('modalWrap').classList.remove('editorial-reading');document.getElementById('modalTitle').textContent=title;setSafeHTML('#modalBody',body);setSafeHTML('#modalActions',actions);const wrap=document.getElementById('modalWrap');wrap.classList.add('open');wrap.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';document.querySelectorAll('[data-close-modal]').forEach(b=>b.onclick=closeModal);setTimeout(()=>{if(wrap.classList.contains('open'))(wrap.querySelector('#modalBody input:not([disabled]),#modalBody textarea:not([disabled]),#modalBody select:not([disabled]),#modalActions button:not([disabled])')||wrap.querySelector('[data-close-modal]'))?.focus()},20)}
+function closeModal(){const w=document.getElementById('modalWrap');if(w.dataset.busy==='1'){toast('Aguarde a operação terminar.');return}w.classList.remove('editorial-reading');w.classList.remove('open');w.setAttribute('aria-hidden','true');if(!document.getElementById('detailOverlay').classList.contains('open'))document.body.style.overflow=''}
 async function performContentReview(p,action,note=''){
   if(!p)return;
   await reviewContentBackend(p.id,action,note);
@@ -3379,8 +3540,8 @@ function openClientFinanceAdmin(clientId){
 }
 
 function openEditorialItem(id=null){
-  const ed=currentEditorial();if(!ed){toast('Selecione um cliente primeiro.','error');return}const item=id?ed.items.find(x=>String(x.id)===String(id)):null;openModal((item?'Editar publicação':'Nova publicação')+' · '+ed.month,`<div class="form-grid"><div class="field"><label>Dia</label><input id="edDay" type="number" min="1" max="31" value="${escapeHtml(item?.day||'01')}"></div><div class="field"><label>Formato</label><select id="edType">${['Post','Carrossel','Reels','Story'].map(t=>`<option ${item?.type===t?'selected':''}>${t}</option>`).join('')}</select></div><div class="field full"><label>Tema / título</label><input id="edTitle" maxlength="160" value="${escapeHtml(item?.title||'')}" placeholder="Ex.: 5 sinais que você não deve ignorar"></div><div class="field full"><label>Ideia e direcionamento</label><textarea id="edIdea" maxlength="3000" placeholder="Explique o que será abordado e como a publicação deve funcionar.">${escapeHtml(item?.idea||'')}</textarea></div><div class="field"><label>Objetivo</label><input id="edObjective" maxlength="300" value="${escapeHtml(item?.objective||'')}" placeholder="Ex.: autoridade + salvamentos"></div><div class="field"><label>Link de referência</label><input id="edReference" value="${escapeHtml(item?.reference||'')}" placeholder="https://..."></div><div class="field full"><label>Legenda / copy</label><textarea id="edCaption" maxlength="4000" placeholder="Texto da legenda, roteiro curto ou copy prevista...">${escapeHtml(item?.caption||'')}</textarea></div><div class="field full"><label>Link do Drive / materiais</label><input id="edDrive" value="${escapeHtml(item?.drive||'')}" placeholder="https://drive.google.com/..."><span class="hint">Use para fotos, vídeos, briefing ou arquivos pesados sem ocupar armazenamento no portal.</span></div><div class="field full"><label>Como será produzido</label><textarea id="edNotes" maxlength="3000" placeholder="Visual, quantidade de páginas, dinâmica, gravação, CTA...">${escapeHtml(item?.notes||'')}</textarea></div></div>`,`<button class="btn btn-secondary" data-close-modal>Cancelar</button><button class="btn" id="saveEditorialItem">${item?'Salvar alterações':'Adicionar ao editorial'}</button>`);
-  const btn=document.getElementById('saveEditorialItem');btn.onclick=()=>runBusy(btn,'Salvando…',async()=>{const dayNum=Number(document.getElementById('edDay').value),baseMonth=ed.monthStart||currentMonthStart(),lastDay=new Date(Number(baseMonth.slice(0,4)),Number(baseMonth.slice(5,7)),0).getDate(),title=document.getElementById('edTitle').value.trim(),ref=document.getElementById('edReference').value.trim(),drive=document.getElementById('edDrive').value.trim();if(!Number.isInteger(dayNum)||dayNum<1||dayNum>lastDay){document.getElementById('edDay').focus();throw new Error(`Informe um dia entre 1 e ${lastDay}.`)}if(!title){document.getElementById('edTitle').focus();throw new Error('Informe o tema/título da publicação.')}if(ref&&!safeUrl(ref)){document.getElementById('edReference').focus();throw new Error('O link de referência precisa começar com http:// ou https://.')}if(drive&&!safeUrl(drive)){document.getElementById('edDrive').focus();throw new Error('O link do Drive precisa começar com http:// ou https://.')}const day=String(dayNum).padStart(2,'0'),data={day,weekday:'',publishDate:`${baseMonth.slice(0,8)}${day}`,type:document.getElementById('edType').value,title,idea:document.getElementById('edIdea').value.trim(),objective:document.getElementById('edObjective').value.trim(),reference:ref,referenceLabel:ref?'Abrir referência':'Sem referência externa',caption:document.getElementById('edCaption').value.trim(),drive,notes:document.getElementById('edNotes').value.trim()};let target=item,isNew=!item;if(item)Object.assign(item,data);else{target={id:'local-item-'+Date.now(),position:ed.items.length,...data};ed.items.push(target)}target.weekday=weekdayPt(target.publishDate);if(actualRole==='admin'){ed.status='draft';ed.approvedAt=null}try{await saveEditorialItemBackend(ed,target);closeModal();toast('Editorial atualizado.');render()}catch(err){if(isNew)ed.items=ed.items.filter(x=>x!==target);toast(formatError(err,'Não foi possível salvar.'),'error');throw err}}).catch(()=>{});
+  const ed=currentEditorial();if(!ed){toast('Selecione um cliente primeiro.','error');return}const item=id?ed.items.find(x=>String(x.id)===String(id)):null;openModal((item?'Editar publicação':'Nova publicação')+' · '+ed.month,`<div class="form-grid"><div class="field"><label>Dia</label><input id="edDay" type="number" min="1" max="31" value="${escapeHtml(item?.day||'01')}"></div><div class="field"><label>Formato</label><select id="edType">${['Post','Carrossel','Reels','Story'].map(t=>`<option ${item?.type===t?'selected':''}>${t}</option>`).join('')}</select></div><div class="field full"><label>Tema / título</label><input id="edTitle" maxlength="160" value="${escapeHtml(item?.title||'')}" placeholder="Ex.: 5 sinais que você não deve ignorar"></div><div class="field full"><label>Ideia e direcionamento</label><textarea id="edIdea" maxlength="12000" placeholder="Explique o que será abordado e como a publicação deve funcionar.">${escapeHtml(item?.idea||'')}</textarea></div><div class="field"><label>Objetivo</label><input id="edObjective" maxlength="300" value="${escapeHtml(item?.objective||'')}" placeholder="Ex.: autoridade + salvamentos"></div><div class="field"><label>Link de referência</label><input id="edReference" value="${escapeHtml(item?.reference||'')}" placeholder="https://..."></div><div class="field full"><label>Legenda / copy</label><textarea id="edCaption" maxlength="4000" placeholder="Texto da legenda, roteiro curto ou copy prevista...">${escapeHtml(item?.caption||'')}</textarea></div><div class="field full"><label>Link do Drive / materiais</label><input id="edDrive" value="${escapeHtml(item?.drive||'')}" placeholder="https://drive.google.com/..."><span class="hint">Use para fotos, vídeos, briefing ou arquivos pesados sem ocupar armazenamento no portal.</span></div>${role==='admin'?'<div class="field full production-private"><label for="edNotes">Como será produzido · orientações de produção</label><textarea id="edNotes" maxlength="16000" placeholder="Orientações internas, gravação e materiais necessários...">'+escapeHtml(item?.notes||'')+'</textarea><label class="visibility-option"><input type="checkbox" id="edNotesVisible" '+(item?.notesVisible?'checked':'')+'> Compartilhar estas orientações com o cliente</label><span class="hint">Privado por padrão. Marque apenas quando o cliente precisar destas instruções.</span></div>':item?.notesVisible&&item.notes?'<div class="editorial-meta"><small>Orientações para a produção</small><span>'+escapeHtml(item.notes)+'</span></div>':''}</div>`,`<button class="btn btn-secondary" data-close-modal>Cancelar</button><button class="btn" id="saveEditorialItem">${item?'Salvar alterações':'Adicionar ao editorial'}</button>`);
+  const btn=document.getElementById('saveEditorialItem');btn.onclick=()=>runBusy(btn,'Salvando…',async()=>{const dayNum=Number(document.getElementById('edDay').value),baseMonth=ed.monthStart||currentMonthStart(),lastDay=new Date(Number(baseMonth.slice(0,4)),Number(baseMonth.slice(5,7)),0).getDate(),title=document.getElementById('edTitle').value.trim(),ref=document.getElementById('edReference').value.trim(),drive=document.getElementById('edDrive').value.trim();if(!Number.isInteger(dayNum)||dayNum<1||dayNum>lastDay){document.getElementById('edDay').focus();throw new Error(`Informe um dia entre 1 e ${lastDay}.`)}if(!title){document.getElementById('edTitle').focus();throw new Error('Informe o tema/título da publicação.')}if(ref&&!safeUrl(ref)){document.getElementById('edReference').focus();throw new Error('O link de referência precisa começar com http:// ou https://.')}if(drive&&!safeUrl(drive)){document.getElementById('edDrive').focus();throw new Error('O link do Drive precisa começar com http:// ou https://.')}const day=String(dayNum).padStart(2,'0'),data={day,weekday:'',publishDate:`${baseMonth.slice(0,8)}${day}`,type:document.getElementById('edType').value,title,idea:document.getElementById('edIdea').value.trim(),objective:document.getElementById('edObjective').value.trim(),reference:ref,referenceLabel:ref?'Abrir referência':'Sem referência externa',caption:document.getElementById('edCaption').value.trim(),drive,notes:role==='admin'?document.getElementById('edNotes').value.trim():(item?.notes||''),notesVisible:role==='admin'?document.getElementById('edNotesVisible').checked:Boolean(item?.notesVisible)};let target=item,isNew=!item;if(item)Object.assign(item,data);else{target={id:'local-item-'+Date.now(),position:ed.items.length,...data};ed.items.push(target)}target.weekday=weekdayPt(target.publishDate);if(actualRole==='admin'){ed.status='draft';ed.approvedAt=null}try{await saveEditorialItemBackend(ed,target);closeModal();toast('Editorial atualizado.');render()}catch(err){if(isNew)ed.items=ed.items.filter(x=>x!==target);toast(formatError(err,'Não foi possível salvar.'),'error');throw err}}).catch(()=>{});
 }
 function openEditorialItemAdjustment(itemId){
   const ed=currentEditorial(),item=ed?.items.find(x=>String(x.id)===String(itemId));if(!ed||!item)return;
