@@ -123,8 +123,8 @@ begin
  if p_month is null or p_month<>date_trunc('month',p_month)::date then raise exception 'Mês inválido';end if;
  if p_client is not null and not exists(select 1 from public.clients where id=p_client) then raise exception 'Cliente inválido';end if;
  m:=private.portal_month_manifest(p_month,p_client);
- insert into private.portal_backup_receipts(user_id,month_start,client_id,fingerprint,manifest)
- values(auth.uid(),p_month,p_client,md5(m::text),m) returning id into receipt;
+ insert into private.portal_backup_receipts(user_id,month_start,client_id,fingerprint)
+ values(auth.uid(),p_month,p_client,md5(m::text)) returning id into receipt;
  return jsonb_build_object('receipt_id',receipt,'manifest',m);
 end;$fn$;
 revoke all on function public.prepare_portal_month_backup(date,uuid) from public,anon;
