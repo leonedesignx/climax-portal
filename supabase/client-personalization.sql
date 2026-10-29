@@ -41,10 +41,10 @@ insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
 create policy branding_images_read on storage.objects for select to authenticated
  using(bucket_id='client-branding' and ((select public.is_admin()) or (storage.foldername(name))[1]=(select public.current_client_id())::text));
 create policy branding_images_insert on storage.objects for insert to authenticated
- with check(bucket_id='client-branding' and (select public.is_admin()) and exists(select 1 from public.clients where id::text=(storage.foldername(name))[1]));
+ with check(bucket_id='client-branding' and (select public.is_admin()) and exists(select 1 from public.clients c where c.id::text=(storage.foldername(storage.objects.name))[1]));
 create policy branding_images_update on storage.objects for update to authenticated
  using(bucket_id='client-branding' and (select public.is_admin()))
- with check(bucket_id='client-branding' and (select public.is_admin()) and exists(select 1 from public.clients where id::text=(storage.foldername(name))[1]));
+ with check(bucket_id='client-branding' and (select public.is_admin()) and exists(select 1 from public.clients c where c.id::text=(storage.foldername(storage.objects.name))[1]));
 create policy branding_images_delete on storage.objects for delete to authenticated
  using(bucket_id='client-branding' and (select public.is_admin()));
 notify pgrst,'reload schema';
