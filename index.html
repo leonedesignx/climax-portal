@@ -2954,11 +2954,16 @@ function editorialView(){
 }
 
 
+function isFeedPreviewEligible(p){
+ const kind=p.deliveryKind||inferDeliveryKind(p.type);
+ const assets=p.previewAssets||[],cover=assets.find(a=>a.isCover)||assets[0];
+ return p.status==='approved'&&['Post','Carrossel','Reels'].includes(p.type)&&['image','carousel','video'].includes(kind)&&Boolean(cover?.url);
+}
 function contentFeedHTML(items){
  const id=role==='client'?currentClient:adminViewClient;
  if(id==='all')return '<section class="surface empty-state"><strong>Escolha um cliente para ver a prévia do feed</strong><p>O feed reúne os conteúdos de uma única conta.</p></section>';
- const client=clientById(id),sorted=[...items].filter(p=>p.type!=='Story').sort((a,b)=>String(b.scheduledAt||b.plannedPublishDate||'').localeCompare(String(a.scheduledAt||a.plannedPublishDate||'')));
- return '<section class="surface feed-preview"><div class="feed-profile"><span class="feed-avatar">'+clientAvatarHTML(client)+'</span><div><small>PRÉVIA DO FEED</small><h2>'+escapeHtml(client.name)+'</h2><p>Uma visão de como seus conteúdos ficam juntos.</p></div></div><div class="feed-notice">Simulação visual · mais recentes primeiro. Clique em uma imagem para revisar. Stories ficam na visualização de conteúdos.</div><div class="feed-grid">'+sorted.map(p=>'<button class="feed-tile" data-open-post="'+escapeHtml(p.id)+'" aria-label="Revisar '+escapeHtml(p.title)+'">'+contentPreviewCover(p)+(p.type==='Reels'?'<span class="feed-format">'+ICONS.video+'</span>':'')+'<span class="feed-tile-title">'+escapeHtml(p.title)+'</span></button>').join('')+'</div>'+(!sorted.length?'<div class="empty-state"><strong>Nenhuma publicação de feed neste filtro</strong></div>':'')+'</section>';
+ const client=clientById(id),sorted=[...items].filter(isFeedPreviewEligible).sort((a,b)=>String(b.scheduledAt||b.plannedPublishDate||'').localeCompare(String(a.scheduledAt||a.plannedPublishDate||'')));
+ return '<section class="surface feed-preview"><div class="feed-profile"><span class="feed-avatar">'+clientAvatarHTML(client)+'</span><div><small>PRÉVIA DO FEED</small><h2>'+escapeHtml(client.name)+'</h2><p>Uma visão de como seus conteúdos ficam juntos.</p></div></div><div class="feed-notice">Somente posts, carrosséis e reels aprovados, com imagem de apresentação · mais recentes primeiro. Clique em uma imagem para revisar.</div><div class="feed-grid">'+sorted.map(p=>'<button class="feed-tile" data-open-post="'+escapeHtml(p.id)+'" aria-label="Revisar '+escapeHtml(p.title)+'">'+contentPreviewCover(p)+(p.type==='Reels'?'<span class="feed-format">'+ICONS.video+'</span>':'')+'<span class="feed-tile-title">'+escapeHtml(p.title)+'</span></button>').join('')+'</div>'+(!sorted.length?'<div class="empty-state"><strong>Seu feed está sendo preparado</strong><p>Posts, carrosséis e reels aparecem aqui após a aprovação do conteúdo e a inclusão de uma imagem de apresentação. Sites, stories e outras entregas ficam em Conteúdos.</p></div>':'')+'</section>';
 }
 function contentView(){
 
