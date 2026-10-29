@@ -41,7 +41,7 @@ function syncClientAppearance(){
  const scoped=backendReady&&role==='client',brand=scoped?portalBrand(currentClient):null;
  const mode=scoped?(actualRole==='client'?portalUserPreferences.theme_mode:previewThemeMode):readAdminTheme();
  const signature=JSON.stringify([scoped,currentClient,mode,brand?.enabled,brand?.primary_color,brand?.secondary_color,brand?.background_color]);
- if(signature===appearanceSignature)return;
+ if(signature===appearanceSignature){syncPortalLogos();return}
  appearanceSignature=signature;portalThemeMode=mode;
  clearClientPalette();
  if(scoped&&mode==='brand'){
@@ -51,7 +51,7 @@ function syncClientAppearance(){
   const meta=document.getElementById('themeColorMeta');if(meta)meta.content=currentTheme==='light'?'#f3f5ef':'#090a08';
  }
  document.querySelectorAll('.brand-logo,.mobile-logo,.auth-showcase-logo,.auth-mobile-logo').forEach(img=>{if(DARK_LOGO)img.src=currentTheme==='light'?LIGHT_LOGO:DARK_LOGO});
- syncThemeUI();
+ syncThemeUI();syncPortalLogos();
 }
 async function loadPortalPersonalization(){
  const [branding,prefs]=await Promise.all([db.from('client_portal_branding').select('*'),db.from('portal_user_preferences').select('theme_mode,welcome_dismissed_on').eq('user_id',authUser.id).maybeSingle()]);
@@ -239,4 +239,13 @@ function openClientBranding(clientId){
   }catch(e){if(newPath&&!linked){try{await db.storage.from('client-branding').remove([newPath])}catch(_){}}if(linked){closeModal();toast('Personalização salva. Atualize a página para carregar a prévia.');return}throw e}
  }).catch(e=>toast(formatError(e,'Não foi possível salvar a personalização.'),'error'));
  updatePreview();
+}
+/* Resolve the supplied vector identity from the current surface and appearance. */
+function syncPortalLogos(){
+ const custom=backendReady&&role==='client'&&portalThemeMode==='brand'&&portalBrand(currentClient).enabled;
+ const variant=currentTheme==='light'?'black':custom?'white':'green';
+ const full='./assets/brand/'+(variant==='green'?'climax-green.svg':'portal-'+variant+'.svg');
+ const mark='./assets/brand/monogram-'+variant+'.svg';
+ document.querySelectorAll('.brand-logo,.mobile-logo,.auth-showcase-logo,.auth-mobile-logo').forEach(img=>{if(img.getAttribute('src')!==full)img.src=full;img.alt='Clímax · Portal do cliente'});
+ document.querySelectorAll('.brand-monogram,.boot-loader-icon').forEach(img=>{if(img.getAttribute('src')!==mark)img.src=mark});
 }
