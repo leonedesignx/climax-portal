@@ -2038,7 +2038,7 @@ let recoveryState={accessName:'',questionKey:''};
 const PORTAL_PREFS_KEY='climax-portal-preferences-v1';
 const SIDEBAR_PREF_KEY='climax-portal-sidebar-collapsed';
 const SIDEBAR_CLIENTS_PREF_KEY='climax-portal-sidebar-clients-collapsed';
-function isSidebarCollapsed(){try{return localStorage.getItem(SIDEBAR_PREF_KEY)==='1'}catch(e){return false}}
+function isSidebarCollapsed(){try{const saved=localStorage.getItem(SIDEBAR_PREF_KEY);return saved===null?window.matchMedia('(min-width:841px) and (max-width:1180px)').matches:saved==='1'}catch(e){return false}}
 function applySidebarState(collapsed=isSidebarCollapsed(),persist=false){const shell=document.querySelector('.app-shell'),btn=document.getElementById('sidebarToggle');if(shell)shell.classList.toggle('sidebar-collapsed',Boolean(collapsed));if(btn){btn.innerHTML=collapsed?ICONS.panelOpen:ICONS.panelClose;btn.setAttribute('aria-label',collapsed?'Expandir barra lateral':'Recolher barra lateral');btn.title=collapsed?'Expandir barra lateral':'Recolher barra lateral';hydrateLucideIcons(btn)}syncPortalLogos();if(persist)try{localStorage.setItem(SIDEBAR_PREF_KEY,collapsed?'1':'0')}catch(e){}}
 function toggleSidebar(){applySidebarState(!document.querySelector('.app-shell')?.classList.contains('sidebar-collapsed'),true)}
 function areSidebarClientsCollapsed(){try{return localStorage.getItem(SIDEBAR_CLIENTS_PREF_KEY)==='1'}catch(e){return false}}
