@@ -89,4 +89,42 @@ begin
  end if;
 end $patch$;
 
+
+create or replace function private.climax_editorial_shared_fields() returns trigger language plpgsql security definer set search_path='' as $body$
+begin
+ if pg_trigger_depth()>1 then return new;end if;
+ if tg_table_name='editorial_items' then
+ update public.contents c set
+ title=case when new.title is distinct from old.title then new.title else c.title end,
+ type=case when new.format is distinct from old.format then new.format else c.type end,
+ caption=case when new.caption_draft is distinct from old.caption_draft then new.caption_draft else c.caption end,
+ drive_url=case when new.drive_url is distinct from old.drive_url then new.drive_url else c.drive_url end,
+ planned_publish_date=case when new.publish_date is distinct from old.publish_date then new.publish_date else c.planned_publish_date end,
+ scheduled_at=case when new.publish_date is distinct from old.publish_date and c.scheduled_at is not null then ((new.publish_date::text||' '||(c.scheduled_at at time zone 'America/Sao_Paulo')::time::text)::timestamp at time zone 'America/Sao_Paulo') else c.scheduled_at end,
+ updated_at=now()
+ where c.editorial_item_id=new.id and c.panel_deleted_at is null
+ and c.client_id=(select e.client_id from public.editorial_versions v join public.editorials e on e.id=v.editorial_id where v.id=new.editorial_version_id);
+ else
+ update public.editorial_items i set
+ title=case when new.title is distinct from old.title then new.title else i.title end,
+ format=case when new.type is distinct from old.type and new.type in ('Post','Carrossel','Reels','Story') then new.type else i.format end,
+ caption_draft=case when new.caption is distinct from old.caption then new.caption else i.caption_draft end,
+ drive_url=case when new.drive_url is distinct from old.drive_url then new.drive_url else i.drive_url end,
+ publish_date=case when new.scheduled_at is distinct from old.scheduled_at then (new.scheduled_at at time zone 'America/Sao_Paulo')::date when new.planned_publish_date is distinct from old.planned_publish_date then new.planned_publish_date else i.publish_date end,
+ updated_at=now()
+ where i.id=new.editorial_item_id and i.panel_deleted_at is null
+ and new.client_id=(select e.client_id from public.editorial_versions v join public.editorials e on e.id=v.editorial_id where v.id=i.editorial_version_id);
+ end if;
+ return new;
+end $body$;
+revoke all on function private.climax_editorial_shared_fields() from public,anon,authenticated;
+drop trigger if exists climax_editorial_shared_fields on public.editorial_items;
+create trigger climax_editorial_shared_fields after update of title,format,caption_draft,drive_url,publish_date on public.editorial_items for each row
+ when (old.title is distinct from new.title or old.format is distinct from new.format or old.caption_draft is distinct from new.caption_draft or old.drive_url is distinct from new.drive_url or old.publish_date is distinct from new.publish_date)
+ execute function private.climax_editorial_shared_fields();
+drop trigger if exists climax_content_shared_fields on public.contents;
+create trigger climax_content_shared_fields after update of title,type,caption,drive_url,scheduled_at,planned_publish_date on public.contents for each row
+ when (old.title is distinct from new.title or old.type is distinct from new.type or old.caption is distinct from new.caption or old.drive_url is distinct from new.drive_url or old.scheduled_at is distinct from new.scheduled_at or old.planned_publish_date is distinct from new.planned_publish_date)
+ execute function private.climax_editorial_shared_fields();
+
 commit;
