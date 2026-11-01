@@ -2190,7 +2190,7 @@ async function hydrateFromBackend(user){
     db.from('clients').select('*').eq('active',true).order('name'),
     db.from('client_financials').select('*'),
     db.from('portal_payment_settings').select('*').eq('id',1).maybeSingle(),
-    db.from('contents').select('*').order('scheduled_at',{ascending:true,nullsFirst:false}),
+    db.from('contents').select('*').is('panel_deleted_at',null).order('scheduled_at',{ascending:true,nullsFirst:false}),
     db.from('editorials').select('*').order('month_start',{ascending:false})
   ]);
   if(accessRes.error)throw accessRes.error;if(clientRes.error)throw clientRes.error;if(financialRes.error)throw financialRes.error;if(paymentRes.error)throw paymentRes.error;if(contentRes.error)throw contentRes.error;if(editorialRes.error)throw editorialRes.error;
@@ -2225,7 +2225,7 @@ async function hydrateFromBackend(user){
     const vr=await db.from('editorial_versions').select('*').in('editorial_id',edIds).order('version',{ascending:false});
     if(vr.error)throw vr.error;versionRows=vr.data||[];
     const versionIds=versionRows.map(v=>v.id);
-    if(versionIds.length){const ir=await db.from('editorial_items').select('*').in('editorial_version_id',versionIds).order('position');if(ir.error)throw ir.error;itemRows=ir.data||[];}
+    if(versionIds.length){const ir=await db.from('editorial_items').select('*').is('panel_deleted_at',null).in('editorial_version_id',versionIds).order('position');if(ir.error)throw ir.error;itemRows=ir.data||[];}
   }
   const [notesRes,archiveRes]=await Promise.all([db.from('editorial_production_notes').select('item_id,notes,client_visible'),db.from('portal_month_archives').select('client_id,month_start')]);
   if(notesRes.error)throw notesRes.error;if(archiveRes.error)throw archiveRes.error;
