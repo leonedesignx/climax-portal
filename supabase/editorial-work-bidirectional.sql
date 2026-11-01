@@ -62,7 +62,7 @@ begin
  caption=case when p_patch?'caption_draft' then p_patch->>'caption_draft' else caption end,
  drive_url=case when p_patch?'drive_url' then nullif(p_patch->>'drive_url','') else drive_url end,
  planned_publish_date=case when p_patch?'publish_date' then (p_patch->>'publish_date')::date else planned_publish_date end,
- scheduled_at=case when p_patch?'scheduled_at' then (p_patch->>'scheduled_at')::timestamptz else scheduled_at end,
+ scheduled_at=case when p_patch?'scheduled_at' then (p_patch->>'scheduled_at')::timestamptz when p_patch?'publish_date' and scheduled_at is not null then (((p_patch->>'publish_date')::date::text||' '||(scheduled_at at time zone 'America/Sao_Paulo')::time::text)::timestamp at time zone 'America/Sao_Paulo') else scheduled_at end,
  updated_at=now() where id=c.id;
  else raise exception 'Ação inválida'; end if;
  return jsonb_build_object('ok',true,'revision',private.climax_work_revision(c.id),'content_id',c.id);
