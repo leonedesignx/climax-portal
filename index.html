@@ -2104,16 +2104,20 @@ function editorialMonthSelectorHTML(){
  const scope=role==='client'?currentClient:adminViewClient;normalizeEditorialMonth(scope);
  return '<section class="surface editorial-period"><div class="period-heading"><div><small>PLANEJAMENTO EDITORIAL</small><strong>Escolha o mês</strong></div><span>'+editorialMonth.slice(0,4)+'</span></div><div class="period-tabs" aria-label="Mês do editorial">'+availableEditorialMonths(scope).map(m=>'<button class="period-tab '+(m===editorialMonth?'active':'')+'" data-editorial-period="'+m.slice(0,7)+'" aria-pressed="'+(m===editorialMonth)+'"><span>'+escapeHtml(ptMonth(m).split(' de ')[0])+'</span><small>'+m.slice(0,4)+(editorials.some(e=>(scope==='all'||e.client===scope)&&e.monthStart===m&&e.items.length)?' · Disponível':' · A preparar')+'</small></button>').join('')+'</div>'+(role==='admin'?'<div class="period-other"><label for="editorialMonthSelect">Outro período</label><input id="editorialMonthSelect" type="month" data-editorial-month value="'+editorialMonth.slice(0,7)+'"></div>':'')+'</section>';
 }
+let portalSharedRevisionSignature='';
 async function refreshPortalArchiveState(){
  if(!backendReady||!authUser||document.hidden||document.querySelector('#modalWrap.open,#detailOverlay.open'))return;
  try{
   const r=await db.from('portal_month_archives').select('client_id,month_start');if(r.error)return;
   const signature=rows=>rows.map(x=>x.client_id+'|'+x.month_start).sort().join(',');
-  if(signature(r.data||[])===signature(archivedEditorialMonths)||document.querySelector('#modalWrap.open,#detailOverlay.open'))return;
+  const shared=await Promise.all(['contents','editorial_items','editorial_production_notes'].map(table=>db.from(table).select('updated_at',{count:'exact'}).order('updated_at',{ascending:false}).limit(1)));
+  if(shared.some(x=>x.error))return;
+  const sharedSignature=shared.map(x=>String(x.count)+'|'+(x.data?.[0]?.updated_at||'')).join(';');
+  if((signature(r.data||[])===signature(archivedEditorialMonths)&&sharedSignature===portalSharedRevisionSignature)||document.querySelector('#modalWrap.open,#detailOverlay.open'))return;
   const keep={client:currentClient,role,scope:adminViewClient,route};
   await hydrateFromBackend(authUser);role=keep.role;adminViewClient=keep.scope;route=keep.route;
   if(clients.some(c=>c.id===keep.client))currentClient=keep.client;
-  normalizeEditorialMonth(role==='client'?currentClient:adminViewClient);render();
+  normalizeEditorialMonth(role==='client'?currentClient:adminViewClient);portalSharedRevisionSignature=sharedSignature;render();
  }catch(e){console.warn('Atualização do período será repetida no próximo acesso.')}
 }
 window.addEventListener('focus',refreshPortalArchiveState);
