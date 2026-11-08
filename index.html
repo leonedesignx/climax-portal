@@ -1628,6 +1628,18 @@ input[type=month]{color-scheme:inherit}.field input[type=month]{background:var(-
 .editorial-client-actions .btn:hover{filter:brightness(1.06)}
 @media(max-width:600px){.editorial-client-actions{display:grid;grid-template-columns:minmax(0,1fr);padding:14px;gap:10px}.editorial-client-actions .btn{width:100%;min-height:58px;font-size:var(--type-body);padding:16px 18px}}
 
+.content-publication{display:flex;align-items:center;gap:9px;padding:12px 13px;border-bottom:1px solid var(--line);background:var(--panel-2);color:var(--text)}
+.content-publication-icon{display:grid;place-items:center;flex:0 0 auto}
+.content-publication svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8}
+.content-publication>div{min-width:0;display:grid;gap:3px;flex:1}
+.content-publication strong{font-size:var(--type-small);line-height:1.4}
+.content-publication small{font-size:var(--type-caption);color:var(--muted)}
+.content-publication>button{display:flex;align-items:center;gap:5px;min-height:36px;padding:5px 8px;background:transparent;border:1px solid var(--line);border-radius:9px;font-size:var(--type-caption);font-weight:750}
+.content-publication.state-ready .content-publication-icon{color:var(--muted)}
+.content-publication.state-scheduled .content-publication-icon{color:var(--info)}
+.content-publication.state-published .content-publication-icon{color:var(--lime)}
+.publication-filter-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:-4px 0 20px}
+.publication-filter-row>span{font-size:var(--type-small);color:var(--muted);margin-right:5px}
 </style>
 <link rel="stylesheet" href="./portal-personalization.css">
 </head>
@@ -1957,8 +1969,9 @@ const ICONS={
 }
 
 const statusLabel={waiting:'Aguardando aprovação',approved:'Aprovado',material:'Aguardando material',changes:'Em alteração',rejected:'Reprovado',draft:'Rascunho'};
-const publicationStatusLabel={not_ready:'Aguardando aprovação do conteúdo',ready:'Pronto para agendar',scheduled:'Agendado',published:'Publicado'};
-function publicationStatusOf(p){return p.publicationStatus||(p.status==='approved'?'ready':'not_ready')}
+const publicationStatusLabel={not_ready:'Aguardando aprovação do conteúdo',ready:'Publicação a agendar',scheduled:'Publicação agendada',published:'Publicado'};
+let publicationFilter='all';
+function publicationStatusOf(p){return p.status==='approved'?(['ready','scheduled','published'].includes(p.publicationStatus)?p.publicationStatus:'ready'):'not_ready'}
 const statusOrder=['waiting','approved','material','changes','rejected','draft'];
 let clients=[
   {id:'c1',name:'Clínica Viva Bem',init:'CV',contact:'Marina Souza',email:'marina@vivabem.com.br'},
@@ -2107,25 +2120,28 @@ function editorialMonthSelectorHTML(){
  const scope=role==='client'?currentClient:adminViewClient;normalizeEditorialMonth(scope);
  return '<section class="surface editorial-period"><div class="period-heading"><div><small>PLANEJAMENTO EDITORIAL</small><strong>Escolha o mês</strong></div><span>'+editorialMonth.slice(0,4)+'</span></div><div class="period-tabs" aria-label="Mês do editorial">'+availableEditorialMonths(scope).map(m=>'<button class="period-tab '+(m===editorialMonth?'active':'')+'" data-editorial-period="'+m.slice(0,7)+'" aria-pressed="'+(m===editorialMonth)+'"><span>'+escapeHtml(ptMonth(m).split(' de ')[0])+'</span><small>'+(editorialCycleHint(scope,m)||m.slice(0,4))+(editorials.some(e=>(scope==='all'||e.client===scope)&&e.monthStart===m&&e.items.length)?' · Disponível':' · A preparar')+'</small></button>').join('')+'</div>'+(role==='admin'?'<div class="period-other"><label for="editorialMonthSelect">Outro período</label><input id="editorialMonthSelect" type="month" data-editorial-month value="'+editorialMonth.slice(0,7)+'"></div>':'')+'</section>';
 }
-let portalSharedRevisionSignature='';
+let portalSharedRevisionSignature='',portalRefreshBusy=false;
+function portalRefreshBlocked(){return document.hidden||Boolean(document.querySelector('#modalWrap.open,#detailOverlay.open,#tutorialPlayer.open,[data-preview-carousel].is-fullscreen'))||Boolean(document.activeElement?.matches('input,textarea,select,[contenteditable="true"]'))}
+
 async function refreshPortalArchiveState(){
- if(!backendReady||!authUser||document.hidden||document.querySelector('#modalWrap.open,#detailOverlay.open'))return;
+ if(!backendReady||!authUser||portalRefreshBusy||portalRefreshBlocked())return;
+ portalRefreshBusy=true;
  try{
   const r=await db.from('portal_month_archives').select('client_id,month_start');if(r.error)return;
   const signature=rows=>rows.map(x=>x.client_id+'|'+x.month_start).sort().join(',');
   const shared=await Promise.all(['contents','editorial_items','editorial_production_notes'].map(table=>db.from(table).select('updated_at',{count:'exact'}).order('updated_at',{ascending:false}).limit(1)));
   if(shared.some(x=>x.error))return;
   const sharedSignature=shared.map(x=>String(x.count)+'|'+(x.data?.[0]?.updated_at||'')).join(';');
-  if((signature(r.data||[])===signature(archivedEditorialMonths)&&sharedSignature===portalSharedRevisionSignature)||document.querySelector('#modalWrap.open,#detailOverlay.open'))return;
+  if((signature(r.data||[])===signature(archivedEditorialMonths)&&sharedSignature===portalSharedRevisionSignature)||portalRefreshBlocked())return;
   const keep={client:currentClient,role,scope:adminViewClient,route};
   await hydrateFromBackend(authUser);role=keep.role;adminViewClient=keep.scope;route=keep.route;
   if(clients.some(c=>c.id===keep.client))currentClient=keep.client;
-  normalizeEditorialMonth(role==='client'?currentClient:adminViewClient);portalSharedRevisionSignature=sharedSignature;render();
- }catch(e){console.warn('Atualização do período será repetida no próximo acesso.')}
+  normalizeEditorialMonth(role==='client'?currentClient:adminViewClient);if(!portalRefreshBlocked()){portalSharedRevisionSignature=sharedSignature;render()}
+ }catch(e){console.warn('Atualização do período será repetida no próximo acesso.')}finally{portalRefreshBusy=false}
 }
 window.addEventListener('focus',refreshPortalArchiveState);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshPortalArchiveState()});
-setInterval(refreshPortalArchiveState,60000);
+setInterval(refreshPortalArchiveState,15000);
 function isEditorialMonthArchived(month,scope){
  const ids=scope==='all'?clients.map(c=>c.id):[scope];
  return ids.length>0&&ids.every(id=>archivedEditorialMonths.some(x=>x.client_id===id&&x.month_start===month));
@@ -2341,7 +2357,9 @@ async function logout(){
 
 async function persistContentStatus(index,status){
   const p=posts[index];if(!backendEnabled||!backendReady||!p)return;
-  const {error}=await db.from('contents').update({status}).eq('id',p.id);if(error)throw error;
+  const publicationStatus=status==='approved'?(['scheduled','published'].includes(p.publicationStatus)?p.publicationStatus:'ready'):'not_ready';
+  const {error}=await db.from('contents').update({status,publication_status:publicationStatus,updated_at:new Date().toISOString()}).eq('id',p.id);if(error)throw error;
+  p.publicationStatus=publicationStatus;
 }
 async function reviewContentBackend(id,action,note=''){if(!backendEnabled||!backendReady)return;const {error}=await db.rpc('review_content',{p_content_id:id,p_action:action,p_note:note||null});if(error)throw error}
 async function reviewEditorialBackend(ed,action,note=''){if(!backendEnabled||!backendReady||!ed?.versionId)return;const {error}=await db.rpc('review_editorial',{p_editorial_version_id:ed.versionId,p_action:action,p_note:note||null});if(error)throw error}
@@ -2460,7 +2478,7 @@ async function removeMediaKeys(keys=[]){
 }
 async function updateContentBackend(p,data){
   if(!backendEnabled||!backendReady)return;
-  const payload={client_id:data.client,title:data.title,type:data.type,delivery_kind:data.deliveryKind||inferDeliveryKind(data.type),caption:data.caption||'',drive_url:data.driveUrl||null,scheduled_at:data.scheduledAt||null,updated_at:new Date().toISOString()};
+  const payload={client_id:data.client,title:data.title,type:data.type,delivery_kind:data.deliveryKind||inferDeliveryKind(data.type),caption:data.caption||'',drive_url:data.driveUrl||null,scheduled_at:data.scheduledAt||null,planned_publish_date:data.scheduledAt?localDateParts(data.scheduledAt).date:p.plannedPublishDate||null,updated_at:new Date().toISOString()};
   const r=await db.from('contents').update(payload).eq('id',p.id).select().single();if(r.error)throw r.error;return r.data;
 }
 async function deleteContentBackend(p){
@@ -2540,16 +2558,19 @@ function postDateObject(p){if(p.scheduledAt){const d=new Date(p.scheduledAt);ret
 function shiftCalendarMonth(delta){calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()+Number(delta),1);render()}
 async function savePublicationStatus(button){
   const card=button.closest('[data-publication-card]'),id=card?.dataset.publicationId,p=posts.find(x=>String(x.id)===String(id)),next=button.dataset.publicationAction;
-  if(!p||!['ready','scheduled','published'].includes(next))return;
-  let scheduledAt=next==='ready'?null:p.scheduledAt||null;
-  if(next==='scheduled'){
+  if(role!=='admin'||!p||p.status!=='approved'||!['ready','scheduled','published'].includes(next))return;
+  let scheduledAt=p.scheduledAt||null;
+  const wasPublished=p.publicationStatus==='published';
+  if(next==='scheduled'||(next==='published'&&card.querySelector('[data-pub-date]')?.value)){
     const date=card.querySelector('[data-pub-date]')?.value,time=card.querySelector('[data-pub-time]')?.value;
     if(!date||!time){toast('Defina a data e o horário antes de marcar como agendado.','error');return}
     const parsed=new Date(date+'T'+time);if(Number.isNaN(parsed.getTime())){toast('Confira a data e o horário informados.','error');return}scheduledAt=parsed.toISOString();
   }
   await runBusy(button,'Salvando…',async()=>{
-    if(backendEnabled&&backendReady){const {error}=await db.from('contents').update({publication_status:next,scheduled_at:scheduledAt,published_at:next==='published'?new Date().toISOString():null,updated_at:new Date().toISOString()}).eq('id',p.id);if(error)throw error}
-    p.publicationStatus=next;p.scheduledAt=scheduledAt;p.date=contentDateLabel(p);p.publishedAt=next==='published'?new Date().toISOString():null;
+    const publishedAt=next==='published'?(wasPublished&&p.publishedAt?p.publishedAt:new Date().toISOString()):null;
+    if(backendEnabled&&backendReady){const {error}=await db.from('contents').update({publication_status:next,scheduled_at:scheduledAt,published_at:publishedAt,updated_at:new Date().toISOString()}).eq('id',p.id).eq('status','approved').select('id').single();if(error)throw error}
+    p.publicationStatus=next;p.scheduledAt=scheduledAt;p.date=contentDateLabel(p);p.publishedAt=publishedAt;
+    closeModal();
     toast(next==='scheduled'?'Conteúdo agendado e adicionado ao calendário.':next==='published'?'Publicação registrada.':'Agendamento reaberto.');render();
   }).catch(err=>toast(formatError(err,'Não foi possível atualizar a publicação.'),'error'));
 }
@@ -2630,8 +2651,8 @@ function openMobileSearch(){
   openModal('Buscar no portal',`<div class="field"><label>Buscar clientes e conteúdos</label><input id="mobileSearchInput" placeholder="Digite pelo menos 2 caracteres"></div>`,`<button class="btn btn-secondary" data-close-modal>Cancelar</button><button class="btn" id="mobileSearchGo">Buscar</button>`);
   const input=document.getElementById('mobileSearchInput'),go=document.getElementById('mobileSearchGo');const submit=()=>{const q=input.value;closeModal();openSearchResults(q)};go.onclick=submit;input.addEventListener('keydown',e=>{if(e.key==='Enter')submit()});
 }
-const adminNav=[['home','Dashboard','home'],['demands','Minhas demandas','clock'],['clients','Clientes','users'],['editorial','Editorial','plan'],['content','Conteúdos','content'],['publications','Publicações','send'],['calendar','Calendário','calendar'],['drive','Drive','drive'],['tutorials','Tutoriais','video'],['archive','Arquivos','files'],['settings','Configurações','settings']];
-const clientNav=[['home','Início','home'],['editorial','Planejamento editorial','plan'],['content','Conteúdos','content'],['publications','Publicações','send'],['calendar','Calendário','calendar'],['drive','Drive','drive'],['tutorials','Tutoriais','video'],['finance','Financeiro','files']];
+const adminNav=[['home','Dashboard','home'],['demands','Minhas demandas','clock'],['clients','Clientes','users'],['editorial','Editorial','plan'],['content','Conteúdos','content'],['calendar','Calendário','calendar'],['drive','Drive','drive'],['tutorials','Tutoriais','video'],['archive','Arquivos','files'],['settings','Configurações','settings']];
+const clientNav=[['home','Início','home'],['editorial','Planejamento editorial','plan'],['content','Conteúdos','content'],['calendar','Calendário','calendar'],['drive','Drive','drive'],['tutorials','Tutoriais','video'],['finance','Financeiro','files']];
 
 function clientById(id){return clients.find(c=>c.id===id)||{id:id||'',name:'Cliente',init:'CL',contact:'',email:'',displaySubtitle:''}}
 function activeAdminScope(){return role==='admin'?adminViewClient:currentClient}
@@ -2650,8 +2671,24 @@ function editorialOverviewAll(){
   const rows=clients.map(client=>{if(isEditorialMonthArchived(editorialMonth,client.id))return '';const ed=editorialForClient(client.id);if(!ed)return `<article class="surface editorial-overview-card empty"><div class="editorial-overview-avatar">${escapeHtml(client.init)}</div><div class="editorial-overview-main"><small>${escapeHtml(client.name)}</small><strong>Sem editorial neste mês</strong><span>Selecione o cliente para preparar este planejamento.</span></div><button class="btn btn-secondary" data-context-editorial-open="${escapeHtml(client.id)}">Selecionar cliente</button></article>`;return `<article class="surface editorial-overview-card"><div class="editorial-overview-avatar">${escapeHtml(client.init)}</div><div class="editorial-overview-main"><small>${escapeHtml(client.name)}</small><strong>${escapeHtml(ed.month)}</strong><span>${ed.items.length} publicações · versão ${ed.version}</span></div><span class="mini-badge st-${escapeHtml(ed.status)}"><span class="dot"></span>${escapeHtml(editorialStatusLabel[ed.status]||ed.status)}</span><button class="btn btn-secondary" data-context-editorial-open="${escapeHtml(client.id)}">Abrir editorial ${ICONS.right}</button></article>`}).join('');
   return `<div class="editorial-overview-grid">${rows||'<section class="surface empty-state"><strong>Nenhum cliente cadastrado</strong></section>'}</div>`;
 }
+function contentSortTime(p){const value=p.scheduledAt||(p.plannedPublishDate?p.plannedPublishDate+'T12:00:00':null);const time=value?Date.parse(value):NaN;return Number.isFinite(time)?time:Number.MAX_SAFE_INTEGER}
+function publicationBannerHTML(p){
+ if(p.status!=='approved')return '';
+ const state=publicationStatusOf(p),icon=state==='published'?ICONS.check:state==='scheduled'?ICONS.calendar:ICONS.clock;
+ const when=state==='published'&&p.publishedAt?p.publishedAt:state==='scheduled'?p.scheduledAt:null;
+ return `<div class="content-publication state-${escapeHtml(state)}"><span class="content-publication-icon">${icon}</span><div><strong>${escapeHtml(publicationStatusLabel[state]||publicationStatusLabel.ready)}</strong>${when?`<small>${escapeHtml(shortDateTime(when))}</small>`:''}</div>${role==='admin'?`<button type="button" data-manage-publication="${escapeHtml(p.id)}" aria-label="Gerenciar publicação de ${escapeHtml(p.title)}">Gerenciar ${ICONS.down}</button>`:''}</div>`;
+}
+function publicationFiltersHTML(){
+ return '<div class="publication-filter-row"><span>Publicação</span>'+[['all','Todas'],['ready','A agendar'],['scheduled','Agendadas'],['published','Publicadas']].map(([k,label])=>`<button class="chip ${publicationFilter===k?'active':''}" data-publication-filter="${k}" aria-pressed="${publicationFilter===k}">${label}</button>`).join('')+'</div>';
+}
+function openPublicationManager(id){
+ const p=posts.find(x=>String(x.id)===String(id));if(!p||role!=='admin'||p.status!=='approved')return;
+ const parts=p.scheduledAt?localDateParts(p.scheduledAt):{date:p.plannedPublishDate||'',time:''};
+ openModal('Publicação do conteúdo',`<div data-publication-card data-publication-id="${escapeHtml(p.id)}"><h3>${escapeHtml(p.title)}</h3><p class="hint" style="margin:10px 0 20px">${escapeHtml(publicationStatusLabel[publicationStatusOf(p)])} · Este controle registra o agendamento feito por você.</p><div class="form-grid"><div class="field"><label for="publicationDate">Data da postagem</label><input id="publicationDate" type="date" data-pub-date value="${escapeHtml(parts.date)}"></div><div class="field"><label for="publicationTime">Horário</label><input id="publicationTime" type="time" data-pub-time value="${escapeHtml(parts.time)}"></div></div><div class="publication-actions" style="margin-top:20px"><button class="btn btn-secondary" data-publication-action="ready">${ICONS.clock} A agendar</button><button class="btn btn-secondary" data-publication-action="scheduled">${ICONS.calendar} Marcar como agendado</button><button class="btn" data-publication-action="published">${ICONS.check} Marcar como publicado</button></div></div>`,'<button class="btn btn-secondary" data-close-modal>Fechar</button>');
+ document.querySelectorAll('#modalBody [data-publication-action]').forEach(b=>b.onclick=()=>savePublicationStatus(b));
+}
 function filteredPosts(){
-  const base=visiblePosts().filter(p=>!contentMonthFilter||postMonthKey(p)===contentMonthFilter);
+  const base=visiblePosts().filter(p=>(!contentMonthFilter||postMonthKey(p)===contentMonthFilter)&&(publicationFilter==='all'||(p.status==='approved'&&publicationStatusOf(p)===publicationFilter))).slice().sort((a,b)=>contentSortTime(a)-contentSortTime(b)||String(a.id).localeCompare(String(b.id)));
   if(activeFilter==='all') return base;
   if(activeFilter==='waiting') return base.filter(p=>p.status==='waiting');
   if(activeFilter==='approved') return base.filter(p=>p.status==='approved');
@@ -2784,7 +2821,7 @@ function postCard(p){
   const quick=role==='client'&&p.status==='waiting'?`<div class="review-quick-row"><button class="review-btn primary" data-quick-approve="${escapeHtml(p.id)}">Aprovar</button><button class="review-btn" data-quick-changes="${escapeHtml(p.id)}">Pedir mudanças</button><button class="review-btn danger review-reject" data-quick-reject="${escapeHtml(p.id)}">Reprovar</button></div>`:'';
   const adminTools=role==='admin'?`<button class="icon-action" data-whatsapp-content="${escapeHtml(p.id)}" title="Enviar WhatsApp" aria-label="Enviar WhatsApp">${ICONS.message}</button><button class="icon-action" data-edit-content="${escapeHtml(p.id)}" title="Editar" aria-label="Editar">${ICONS.edit}</button><button class="icon-action danger" data-delete-content="${escapeHtml(p.id)}" title="Excluir" aria-label="Excluir">${ICONS.trash}</button>`:'';
   const changeAlert=role==='admin'&&['changes','rejected'].includes(p.status)&&p.reviewNote?`<div class="change-request-card ${p.status==='rejected'?'rejected':''}">${ICONS.message}<div><small>${p.status==='rejected'?'CONTEÚDO REPROVADO':'ALTERAÇÃO SOLICITADA PELO CLIENTE'}</small><strong>${escapeHtml(p.reviewNote)}</strong>${p.reviewAt?`<span>${escapeHtml(shortDateTime(p.reviewAt)||'')}</span>`:''}</div></div>`:'';
-  return `<article class="post-card ${assets.length?'has-preview':''}"><div class="post-cover ${escapeHtml(p.cover)} ${assets.length?'has-image':''}" data-open-post="${escapeHtml(p.id)}">${contentPreviewCover(p)}<span class="media-type">${escapeHtml(p.type)}</span></div><div class="post-body"><div><div class="post-client">${role==='admin'?escapeHtml(c.name):escapeHtml(p.type)}</div><div class="post-title">${escapeHtml(p.title)}</div></div><div class="post-meta"><span>${escapeHtml(deliveryKindLabel(p.deliveryKind))} · ${escapeHtml(p.type)}</span><span>${escapeHtml(p.date)}</span></div><div class="content-badges">${previewBadge}${mediaBadge}</div>${driveCTA}${statusPillHTML(p,idx,role==='admin')}${changeAlert}${quick}<div class="card-actions"><button class="card-action" data-history="${escapeHtml(p.id)}">${ICONS.clock} Histórico</button>${adminTools}<button class="card-action primary" data-open-post="${escapeHtml(p.id)}">${role==='client'?'Revisar':'Abrir'}</button></div></div></article>`;
+  return `<article class="post-card ${assets.length?'has-preview':''}" data-content-id="${escapeHtml(p.id)}">${publicationBannerHTML(p)}<div class="post-cover ${escapeHtml(p.cover)} ${assets.length?'has-image':''}" data-open-post="${escapeHtml(p.id)}">${contentPreviewCover(p)}<span class="media-type">${escapeHtml(p.type)}</span></div><div class="post-body"><div><div class="post-client">${role==='admin'?escapeHtml(c.name):escapeHtml(p.type)}</div><div class="post-title">${escapeHtml(p.title)}</div></div><div class="post-meta"><span>${escapeHtml(deliveryKindLabel(p.deliveryKind))} · ${escapeHtml(p.type)}</span><span>${escapeHtml(p.date)}</span></div><div class="content-badges">${previewBadge}${mediaBadge}</div>${driveCTA}${statusPillHTML(p,idx,role==='admin')}${changeAlert}${quick}<div class="card-actions"><button class="card-action" data-history="${escapeHtml(p.id)}">${ICONS.clock} Histórico</button>${adminTools}<button class="card-action primary" data-open-post="${escapeHtml(p.id)}">${role==='client'?'Revisar':'Abrir'}</button></div></div></article>`;
 }
 function compactRow(p){const c=clientById(p.client),assets=p.previewAssets||[],cover=assets.find(a=>a.isCover&&a.url)||assets.find(a=>a.url),thumb=cover?`<img src="${escapeHtml(cover.url)}" alt="" loading="lazy" decoding="async">`:p.type==='Reels'?'▶':'▧';return `<div class="content-row" data-open-post="${escapeHtml(p.id)}"><div class="row-thumb ${escapeHtml(p.cover)}">${thumb}</div><div class="row-copy"><strong>${escapeHtml(p.title)}</strong><span>${role==='admin'?escapeHtml(c.name)+' · ':''}${escapeHtml(p.type)} · ${escapeHtml(p.date)}</span></div><div class="row-status"><span class="mini-badge st-${escapeHtml(p.status)}"><span class="dot"></span>${escapeHtml(statusLabel[p.status]||p.status)}</span></div></div>`}
 function statCard(icon,label,value,trend='',klass=''){
@@ -2976,36 +3013,16 @@ function contentView(){
 
   const heading=role==='client'?'Seus conteúdos':'Conteúdos';
   const sub=role==='client'?'Visualize as artes, deslize pelos carrosséis e aprove cada conteúdo com facilidade.':'Toda a produção da Clímax, com prévias visuais, arquivos, Drive e status de aprovação.';
-  const action=role==='admin'?'<button class="btn btn-secondary" data-monthly-message="contents-month">'+ICONS.copy+' Copiar mensagem</button>'+primaryBtn('Novo conteúdo'):'';
+  const action=role==='admin'?'<button class="btn btn-secondary" data-refresh-contents>'+ICONS.clock+' Atualizar lista</button><button class="btn btn-secondary" data-monthly-message="contents-month">'+ICONS.copy+' Copiar mensagem</button>'+primaryBtn('Novo conteúdo'):'';
   const fp=filteredPosts();let gate='';
   if(role==='client'||adminViewClient!=='all'){
     const scoped=role==='client'?currentClient:adminViewClient;if(role==='admin')currentClient=scoped;
     const ed=editorialForClient(scoped,contentMonthFilter?contentMonthFilter+'-01':currentMonthStart());
     gate=!ed?`<div class="editorial-note" style="margin:0 0 16px"><div class="editorial-note-icon">!</div><div><strong>Sem editorial para este cliente</strong><p>Você ainda pode gerenciar os conteúdos existentes desta conta.</p></div></div>`:role==='client'||ed.status==='approved'?`<div class="editorial-approved-banner"><div><strong>${ed.status==='approved'?'✓ Produção vinculada ao editorial aprovado':'Conteúdos produzidos a partir do planejamento aprovado'}</strong><span>${ed.month} · versão ${ed.version}</span></div><button class="btn btn-secondary" data-route="editorial" data-editorial-month-target="${escapeHtml(ed.monthStart||currentMonthStart())}">Ver editorial</button></div>`:`<div class="editorial-note" style="margin:0 0 16px"><div class="editorial-note-icon">!</div><div><strong>Editorial ainda não aprovado</strong><p>A produção deve começar depois que o cliente aprovar o planejamento mensal.</p></div></div>`;
   }
-  return `${pageHead(heading,sub,action)}${contextSelectorHTML('conteúdo')}${contentMonthSelectorHTML()}${gate}<div class="content-layout-toolbar">${filtersHTML()}<div class="view-switch"><button data-content-layout="cards">Conteúdos</button><button data-content-layout="feed">Prévia do feed</button></div></div>${contentLayout==='feed'?contentFeedHTML(fp):`<div class="post-grid">${fp.map(postCard).join('')||'<section class="surface empty-state"><strong>Nenhum conteúdo neste filtro</strong><p>Tente outro cliente ou status.</p></section>'}</div>`}`;
+  return `${pageHead(heading,sub,action)}${contextSelectorHTML('conteúdo')}${contentMonthSelectorHTML()}${gate}<div class="content-layout-toolbar">${filtersHTML()}<div class="view-switch"><button data-content-layout="cards">Conteúdos</button><button data-content-layout="feed">Prévia do feed</button></div></div>${publicationFiltersHTML()}${contentLayout==='feed'?contentFeedHTML(fp):`<div class="post-grid">${fp.map(postCard).join('')||'<section class="surface empty-state"><strong>Nenhum conteúdo neste filtro</strong><p>Tente outro cliente ou status.</p></section>'}</div>`}`;
 }
-function publicationsView(){
-  const eligible=visiblePosts().filter(p=>p.status==='approved');
-  const counts={ready:eligible.filter(p=>publicationStatusOf(p)==='ready').length,scheduled:eligible.filter(p=>publicationStatusOf(p)==='scheduled').length,published:eligible.filter(p=>publicationStatusOf(p)==='published').length};
-  const client=role==='client';
-  const cards=eligible.map(p=>{
-    const state=publicationStatusOf(p),dateValue=p.scheduledAt?new Date(p.scheduledAt):null;
-    const dateInput=dateValue&&!Number.isNaN(dateValue.getTime())?String(dateValue.getFullYear())+'-'+String(dateValue.getMonth()+1).padStart(2,'0')+'-'+String(dateValue.getDate()).padStart(2,'0'):(p.plannedPublishDate||'');
-    const timeInput=dateValue&&!Number.isNaN(dateValue.getTime())?String(dateValue.getHours()).padStart(2,'0')+':'+String(dateValue.getMinutes()).padStart(2,'0'):'';
-    const scheduledText=dateValue&&!Number.isNaN(dateValue.getTime())?dateValue.toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'A definir';
-    const card='<article class="surface publication-card" data-publication-card data-publication-id="'+escapeHtml(p.id)+'"><div class="publication-main"><div><span class="publication-state state-'+state+'">'+escapeHtml(publicationStatusLabel[state]||state)+'</span><h3>'+escapeHtml(p.title)+'</h3><p>'+escapeHtml(p.type)+' · '+escapeHtml(clientById(p.client).name)+'</p></div><button class="btn btn-secondary publication-open" data-open-post="'+escapeHtml(p.id)+'">Ver conteúdo</button></div>';
-    const plan=p.plannedPublishDate?'<p class="publication-plan-date">Data prevista no planejamento: '+escapeHtml(new Date(p.plannedPublishDate+'T12:00:00').toLocaleDateString('pt-BR'))+'</p>':'';
-    const controls=client
-      ? '<div class="publication-readonly"><span>'+(state==='published'&&p.publishedAt?'Publicado em '+escapeHtml(new Date(p.publishedAt).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})):state==='scheduled'?'Publicação prevista para '+escapeHtml(scheduledText):'A Clímax está preparando o agendamento.')+'</span></div>'
-      : '<div class="publication-controls"><div class="field"><label>Data</label><input type="date" data-pub-date value="'+escapeHtml(dateInput)+'"></div><div class="field"><label>Horário</label><input type="time" data-pub-time value="'+escapeHtml(timeInput)+'"></div><div class="publication-actions">'+(state==='ready'?'<button class="btn" data-publication-action="scheduled">Marcar como agendado</button>':'')+(state==='scheduled'?'<button class="btn" data-publication-action="scheduled">Salvar data e horário</button><button class="btn" data-publication-action="published">Marcar como publicado</button><button class="btn btn-secondary" data-publication-action="ready">Voltar para pronto</button>':'')+(state==='published'?'<button class="btn btn-secondary" data-publication-action="ready">Reabrir agendamento</button>':'')+'</div></div>';
-    return card+plan+controls+'</article>';
-  }).join('');
-  return pageHead('Publicações',client?'Acompanhe o que está pronto, agendado e já publicado.':'Gerencie o agendamento e o histórico de publicação dos conteúdos aprovados.')
-    +contextSelectorHTML('publicações')
-    +'<div class="publication-summary"><div class="surface"><span>Prontos para agendar</span><strong>'+counts.ready+'</strong></div><div class="surface"><span>Agendados</span><strong>'+counts.scheduled+'</strong></div><div class="surface"><span>Publicados</span><strong>'+counts.published+'</strong></div></div><div class="publication-list">'
-    +(cards||'<section class="surface empty-state"><strong>Nenhum conteúdo pronto para publicação</strong><p>Quando um conteúdo for aprovado em Conteúdos, ele aparecerá aqui.</p></section>')+'</div>';
-}
+function publicationsView(){return contentView()}
 function calendarView(){
   const year=calendarCursor.getFullYear(),month=calendarCursor.getMonth(),label=monthLabelFromDate(calendarCursor),postsInMonth=visiblePosts().filter(p=>['scheduled','published'].includes(publicationStatusOf(p))).map(p=>({p,d:postDateObject(p)})).filter(x=>x.d&&x.d.getFullYear()===year&&x.d.getMonth()===month).sort((a,b)=>a.d-b.d);
   const first=new Date(year,month,1),last=new Date(year,month+1,0),offset=(first.getDay()+6)%7,total=Math.ceil((offset+last.getDate())/7)*7;const cells=[];
@@ -3383,10 +3400,10 @@ function renderSidebarClients(){
 function renderNavigation(){
   const nav=role==='admin'?adminNav:clientNav;
   setSafeHTML('#sideNav',nav.map(([k,l,i])=>`<button class="nav-btn ${route===k?'active':''}" data-route="${k}">${ICONS[i]||''}<span>${l}</span>${k==='drive'&&role==='admin'&&driveSubmissions.some(x=>!x.reviewed_at)?`<span class="nav-badge">${driveSubmissions.filter(x=>!x.reviewed_at).length}</span>`:''}${k==='content'&&visiblePosts().filter(p=>p?.status==='waiting').length?`<span class="nav-badge">${visiblePosts().filter(p=>p?.status==='waiting').length}</span>`:''}</button>`).join(''));
-  const mobileMain=role==='admin'?[['home','Dashboard','home'],['demands','Demandas','clock'],['content','Conteúdos','content'],['publications','Publicações','send']]:[['home','Início','home'],['editorial','Editorial','plan'],['content','Conteúdos','content'],['publications','Publicações','send']];
+  const mobileMain=role==='admin'?[['home','Dashboard','home'],['demands','Demandas','clock'],['content','Conteúdos','content'],['calendar','Calendário','calendar']]:[['home','Início','home'],['editorial','Editorial','plan'],['content','Conteúdos','content'],['calendar','Calendário','calendar']];
   setSafeHTML('#mobileNav',mobileMain.map(([k,l,i])=>`<button class="${route===k?'active':''}" data-route="${k}">${ICONS[i]||''}<span>${l}</span></button>`).join('')+`<button id="moreBtn" class="${!mobileMain.some(x=>x[0]===route)?'active':''}">${ICONS.more}<span>Mais</span></button>`);
   const extra=role==='admin'?[['clients','Clientes','users'],['editorial','Editorial','plan'],['calendar','Calendário','calendar'],['drive','Drive','drive'],['tutorials','Tutoriais','video'],['archive','Arquivos','files'],['settings','Configurações','settings']]:[['calendar','Calendário','calendar'],['drive','Drive','drive'],['tutorials','Tutoriais','video'],['finance','Financeiro','files']];
-  setSafeHTML('#mobileMore',`<small>Navegação</small>${extra.map(([k,l,i])=>`<button class="${route===k?'active':''}" data-route="${k}">${ICONS[i]||''}${l}</button>`).join('')}<button data-mobile-search>${ICONS.search||'⌕'} Buscar</button><button data-mobile-notifications>${ICONS.clock} Notificações</button><div class="menu-sep"></div><small>Aparência</small><button data-toggle-theme><span data-theme-label>${currentTheme==='dark'?'Modo claro':'Modo escuro'}</span></button>${actualRole==='admin'?`<div class="menu-sep"></div><small>Visualização</small><button data-switch-role>${role==='admin'?'Visualizar como cliente':'Voltar ao painel da Clímax'}</button>`:''}`);
+  setSafeHTML('#mobileMore',`<small>Navegação</small>${extra.filter(([k])=>!mobileMain.some(x=>x[0]===k)).map(([k,l,i])=>`<button class="${route===k?'active':''}" data-route="${k}">${ICONS[i]||''}${l}</button>`).join('')}<button data-mobile-search>${ICONS.search||'⌕'} Buscar</button><button data-mobile-notifications>${ICONS.clock} Notificações</button><div class="menu-sep"></div><small>Aparência</small><button data-toggle-theme><span data-theme-label>${currentTheme==='dark'?'Modo claro':'Modo escuro'}</span></button>${actualRole==='admin'?`<div class="menu-sep"></div><small>Visualização</small><button data-switch-role>${role==='admin'?'Visualizar como cliente':'Voltar ao painel da Clímax'}</button>`:''}`);
   const pc=clientById(currentClient),profileRole=document.getElementById('profileRole'),rolePillText=document.getElementById('rolePillText');
   if(profileRole)profileRole.textContent=role==='admin'?'Admin · Clímax Studio':(pc?.displaySubtitle?pc.displaySubtitle+' · Portal do cliente':'Portal do cliente');
   if(rolePillText)rolePillText.textContent=role==='admin'?'Painel administrativo':'Portal do cliente';
@@ -3396,6 +3413,7 @@ function renderNavigation(){
 function render(){
   try{
     syncClientAppearance();
+    if(route==='publications'){route='content';activeFilter='approved'}
     if(!views[route])route='home';
     if(role==='client'&&['demands','clients','clientspace','archive','settings'].includes(route))route='home';
     renderNavigation();
@@ -3435,11 +3453,14 @@ function bindUI(){
   document.querySelectorAll('[data-toggle-theme]').forEach(b=>b.onclick=()=>{toggleTheme();closeMobileMore();render()});
   document.querySelectorAll('[data-route]').forEach(b=>b.onclick=()=>{route=b.dataset.route;if(b.dataset.editorialMonthTarget)editorialMonth=b.dataset.editorialMonthTarget;activeFilter='all';closeMobileMore();render();window.scrollTo({top:0,behavior:'smooth'})});
   document.querySelectorAll('[data-tutorial-play]').forEach(b=>b.onclick=()=>openTutorialPlayer(b.dataset.tutorialPlay));
-  document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{activeFilter=b.dataset.filter;render()});
+  document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{activeFilter=b.dataset.filter;publicationFilter='all';render()});
   document.querySelectorAll('[data-view-client-scope]').forEach(s=>s.onchange=()=>{adminViewClient=s.value;if(s.value!=='all')currentClient=s.value;activeFilter='all';render();window.scrollTo({top:0,behavior:'smooth'})});
   document.querySelectorAll('[data-context-editorial-open]').forEach(b=>b.onclick=()=>{adminViewClient=b.dataset.contextEditorialOpen;currentClient=b.dataset.contextEditorialOpen;activeFilter='all';render();window.scrollTo({top:0,behavior:'smooth'})});
   document.querySelectorAll('[data-demand-filter]').forEach(b=>b.onclick=()=>{demandFilter=b.dataset.demandFilter;render()});
   document.querySelectorAll('[data-calendar-shift]').forEach(b=>b.onclick=()=>shiftCalendarMonth(b.dataset.calendarShift));
+  document.querySelectorAll('[data-refresh-contents]').forEach(b=>b.onclick=()=>runBusy(b,'Atualizando…',async()=>{portalSharedRevisionSignature='';await refreshPortalArchiveState()}));
+  document.querySelectorAll('[data-manage-publication]').forEach(b=>b.onclick=e=>{e.stopPropagation();openPublicationManager(b.dataset.managePublication)});
+  document.querySelectorAll('[data-publication-filter]').forEach(b=>b.onclick=()=>{publicationFilter=b.dataset.publicationFilter;if(publicationFilter!=='all')activeFilter='all';render()});
   document.querySelectorAll('[data-publication-action]').forEach(b=>b.onclick=()=>savePublicationStatus(b));
   document.querySelectorAll('[data-open-post]').forEach(b=>b.onclick=()=>openPost(b.dataset.openPost));
   document.querySelectorAll('[data-history]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();openHistory(b.dataset.history)});
@@ -3451,7 +3472,7 @@ function bindUI(){
   document.querySelectorAll('[data-delete-editorial-item]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();openDeleteEditorialItemConfirm(b.dataset.deleteEditorialItem)});
   document.querySelectorAll('[data-request-editorial-adjustment]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();openEditorialItemAdjustment(b.dataset.requestEditorialAdjustment)});
   document.querySelectorAll('[data-status-toggle]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();const idx=b.dataset.statusToggle;document.querySelectorAll('.status-menu').forEach(m=>{if(m.id!==`status-${idx}`)m.classList.remove('open')});document.getElementById(`status-${idx}`)?.classList.toggle('open')});
-  document.querySelectorAll('[data-status-set]').forEach(b=>b.onclick=async(e)=>{e.stopPropagation();const [idx,s]=b.dataset.statusSet.split('|'),i=Number(idx),old=posts[i]?.status;if(!posts[i])return;posts[i].status=s;render();try{await persistContentStatus(i,s);toast('Status atualizado.')}catch(err){posts[i].status=old;render();toast(formatError(err,'Não foi possível atualizar o status.'),'error')}});
+  document.querySelectorAll('[data-status-set]').forEach(b=>b.onclick=async(e)=>{e.stopPropagation();const [idx,s]=b.dataset.statusSet.split('|'),i=Number(idx),old=posts[i]?.status;if(!posts[i])return;posts[i].status=s;render();try{await persistContentStatus(i,s);render();toast('Status atualizado.')}catch(err){posts[i].status=old;render();toast(formatError(err,'Não foi possível atualizar o status.'),'error')}});
   document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>handleAction(b.dataset.action,b));
   document.querySelectorAll('[data-access-client]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();openClientAccess(b.dataset.accessClient)});
   document.querySelectorAll('[data-finance-client]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();openClientFinanceAdmin(b.dataset.financeClient)});document.querySelectorAll('[data-whatsapp-client]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();openWhatsAppComposer(b.dataset.whatsappClient,'generic')});document.querySelectorAll('[data-whatsapp-editorial]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();const ed=currentEditorial();openWhatsAppComposer(b.dataset.whatsappEditorial,'editorial',{month:ed?.month||'',monthStart:ed?.monthStart||editorialMonth})});document.querySelectorAll('[data-whatsapp-content]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();const p=posts.find(x=>String(x.id)===String(b.dataset.whatsappContent));if(p)openWhatsAppComposer(p.client,(p.reviewNote&&p.version>1)||p.status==='changes'||p.status==='rejected'?'version':'content',{id:p.id,title:p.title,type:p.type,deliveryKind:p.deliveryKind,date:p.date})});
@@ -3506,7 +3527,7 @@ function bindDetail(){
   const ver=document.querySelector('[data-new-version]');if(ver)ver.onclick=()=>{const id=String(detailPostId);closeDetail();openNewVersionModal(id)};
   const copy=document.querySelector('[data-copy-link]');if(copy)copy.onclick=async()=>{const url=location.href.split('#')[0]+'#conteudo-'+encodeURIComponent(detailPostId);try{await navigator.clipboard.writeText(url);copy.textContent='Link copiado ✓';toast('Link copiado.')}catch(e){toast('Não foi possível copiar automaticamente.','error')}};
   document.querySelectorAll('[data-status-toggle]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();document.getElementById(`status-${b.dataset.statusToggle}`)?.classList.toggle('open')});
-  document.querySelectorAll('[data-status-set]').forEach(b=>b.onclick=async(e)=>{e.stopPropagation();const [idx,s]=b.dataset.statusSet.split('|'),i=Number(idx),old=posts[i]?.status;if(!posts[i])return;posts[i].status=s;openPost(detailPostId);renderNavigation();try{await persistContentStatus(i,s);toast('Status atualizado.')}catch(err){posts[i].status=old;openPost(detailPostId);renderNavigation();toast(formatError(err,'Não foi possível atualizar.'),'error')}});
+  document.querySelectorAll('[data-status-set]').forEach(b=>b.onclick=async(e)=>{e.stopPropagation();const [idx,s]=b.dataset.statusSet.split('|'),i=Number(idx),old=posts[i]?.status;if(!posts[i])return;posts[i].status=s;openPost(detailPostId);renderNavigation();try{await persistContentStatus(i,s);render();toast('Status atualizado.')}catch(err){posts[i].status=old;openPost(detailPostId);renderNavigation();toast(formatError(err,'Não foi possível atualizar.'),'error')}});
 }
 function closeDetail(){document.querySelectorAll('[data-preview-carousel].is-fullscreen').forEach(c=>setPreviewFullscreen(c,false));const o=document.getElementById('detailOverlay');o.classList.remove('open');o.setAttribute('aria-hidden','true');document.body.style.overflow='';render()}
 function openModal(title,body,actions){document.getElementById('modalWrap').classList.remove('editorial-reading','branding-editing');document.getElementById('modalTitle').textContent=title;setSafeHTML('#modalBody',body);setSafeHTML('#modalActions',actions);const wrap=document.getElementById('modalWrap');wrap.classList.add('open');wrap.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';document.querySelectorAll('[data-close-modal]').forEach(b=>b.onclick=closeModal);setTimeout(()=>{if(wrap.classList.contains('open'))(wrap.querySelector('#modalBody input:not([disabled]),#modalBody textarea:not([disabled]),#modalBody select:not([disabled]),#modalActions button:not([disabled])')||wrap.querySelector('[data-close-modal]'))?.focus()},20)}
@@ -3568,7 +3589,7 @@ function openEditContent(id){
     if(!title)throw new Error('Informe o título.');if(!date)throw new Error('Informe a data.');if(driveUrl&&!safeUrl(driveUrl))throw new Error('Informe um link do Drive válido, começando com http:// ou https://.');if((p.previewAssets||[]).length+previewFiles.length>20)throw new Error('O conteúdo pode ter no máximo 20 imagens de apresentação.');
     const local=new Date(`${date}T${time}:00`);if(Number.isNaN(local.getTime()))throw new Error('Data ou horário inválido.');const scheduledAt=local.toISOString();
     await updateContentBackend(p,{client,title,type,deliveryKind,caption,driveUrl,scheduledAt});
-    Object.assign(p,{client,title,type,deliveryKind,caption,driveUrl,scheduledAt,date:scheduledLabel(scheduledAt)});
+    Object.assign(p,{client,title,type,deliveryKind,caption,driveUrl,scheduledAt,plannedPublishDate:date,date:scheduledLabel(scheduledAt)});
     if(previewFiles.length)await appendPreviewAssets(p,previewFiles);
     closeModal();toast(previewFiles.length?'Conteúdo e imagens atualizados.':'Conteúdo atualizado.');render();
   }).catch(err=>toast(formatError(err,'Não foi possível salvar.'),'error'));
