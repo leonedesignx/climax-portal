@@ -1885,7 +1885,7 @@ function applyTheme(theme,persist=true){
  const meta=document.getElementById('themeColorMeta');if(meta)meta.content=currentTheme==='light'?'#f3f5ef':'#090a08';
  if(!DARK_LOGO){const first=document.querySelector('.brand-logo,.auth-showcase-logo');if(first)DARK_LOGO=first.src}
  document.querySelectorAll('.brand-logo,.mobile-logo,.auth-showcase-logo,.auth-mobile-logo').forEach(img=>{if(DARK_LOGO)img.src=currentTheme==='light'?LIGHT_LOGO:DARK_LOGO});
- appearanceSignature='';syncThemeUI();
+ appearanceSignature='';syncThemeUI();syncPortalLogos();
 }
 
 function toggleTheme(){openPortalAppearance()}

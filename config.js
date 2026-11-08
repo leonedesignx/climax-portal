@@ -5,18 +5,18 @@ window.CLIMAX_CONFIG = {
   DEMO_MODE: false
 };
 
+// Choose the logo before authentication starts; never reset it after page load.
 window.PORTAL_BRAND_LOGO = './portal-logo-new.svg';
-(function applyPortalBrand(){
-  const logo=window.PORTAL_BRAND_LOGO;
-  const apply=()=>{
-    document.querySelectorAll('.brand-logo,.mobile-logo,.auth-showcase-logo,.auth-mobile-logo,.boot-loader-icon').forEach(img=>{ if(img && img.src!==new URL(logo,location.href).href) img.src=logo; });
-    let icon=document.querySelector('link[rel~="icon"]');
-    if(!icon){ icon=document.createElement('link'); icon.rel='icon'; document.head.appendChild(icon); }
-    icon.href=logo;
-  };
-  apply();
-  document.addEventListener('DOMContentLoaded',apply,{once:true});
-  const observer=new MutationObserver(apply);
-  observer.observe(document.documentElement,{subtree:true,childList:true});
-  window.addEventListener('load',()=>setTimeout(()=>{apply();observer.disconnect();},1600),{once:true});
-})();
+window.syncPortalBrandImages = function(theme){
+  const light=theme==='light';
+  const logo=light?'./assets/brand/portal-light.svg':window.PORTAL_BRAND_LOGO;
+  const mark='./assets/brand/monogram-'+(light?'black':'green')+'.svg';
+  document.querySelectorAll('.brand-logo,.mobile-logo,.auth-showcase-logo,.auth-mobile-logo').forEach(img=>{
+    if(img.getAttribute('src')!==logo)img.src=logo;
+    img.alt='Clímax · Portal do cliente';
+  });
+  document.querySelectorAll('.brand-monogram,.boot-loader-icon').forEach(img=>{
+    if(img.getAttribute('src')!==mark)img.src=mark;
+  });
+};
+window.syncPortalBrandImages(document.documentElement.dataset.theme);

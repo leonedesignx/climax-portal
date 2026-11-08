@@ -243,10 +243,5 @@ function openClientBranding(clientId){
 }
 /* Resolve the supplied vector identity from the current surface and appearance. */
 function syncPortalLogos(){
- const custom=backendReady&&role==='client'&&portalThemeMode==='brand'&&portalBrand(currentClient).enabled;
- const variant=currentTheme==='light'?'black':custom?'white':'green';
- const full='./assets/brand/'+(variant==='green'?'climax-green.svg':'portal-'+variant+'.svg');
- const mark='./assets/brand/monogram-'+variant+'.svg';
- document.querySelectorAll('.brand-logo,.mobile-logo,.auth-showcase-logo,.auth-mobile-logo').forEach(img=>{if(img.getAttribute('src')!==full)img.src=full;img.alt='Clímax · Portal do cliente'});
- document.querySelectorAll('.brand-monogram,.boot-loader-icon').forEach(img=>{if(img.getAttribute('src')!==mark)img.src=mark});
+ window.syncPortalBrandImages(currentTheme);
 }
