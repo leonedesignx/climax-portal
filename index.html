@@ -1628,16 +1628,20 @@ input[type=month]{color-scheme:inherit}.field input[type=month]{background:var(-
 .editorial-client-actions .btn:hover{filter:brightness(1.06)}
 @media(max-width:600px){.editorial-client-actions{display:grid;grid-template-columns:minmax(0,1fr);padding:14px;gap:10px}.editorial-client-actions .btn{width:100%;min-height:58px;font-size:var(--type-body);padding:16px 18px}}
 
-.content-publication{display:flex;align-items:center;gap:9px;padding:12px 13px;border-bottom:1px solid var(--line);background:var(--panel-2);color:var(--text)}
-.content-publication-icon{display:grid;place-items:center;flex:0 0 auto}
-.content-publication svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8}
-.content-publication>div{min-width:0;display:grid;gap:3px;flex:1}
-.content-publication strong{font-size:var(--type-small);line-height:1.4}
-.content-publication small{font-size:var(--type-caption);color:var(--muted)}
-.content-publication>button{display:flex;align-items:center;gap:5px;min-height:36px;padding:5px 8px;background:transparent;border:1px solid var(--line);border-radius:9px;font-size:var(--type-caption);font-weight:750}
+.post-card.has-publication>.content-publication{grid-column:1/-1;display:flex;align-items:center;gap:9px;min-height:68px;padding:12px;border-radius:inherit;border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom:1px solid var(--line);background:var(--panel-2);color:var(--text)}
+.post-card.has-publication>.post-cover{border-top-left-radius:0;border-top-right-radius:0}
+.content-publication-icon{display:grid;place-items:center;width:30px;height:30px;flex:0 0 30px;border:1px solid var(--line);border-radius:9px;background:var(--panel)}
+.content-publication svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8}
+.content-publication>div{min-width:0;display:grid;gap:4px;flex:1}
+.content-publication strong{font-size:var(--type-label);font-weight:750;line-height:1.25}
+.content-publication small{font-size:var(--type-caption);line-height:1.3;color:var(--muted);font-variant-numeric:tabular-nums}
+.content-publication>button{display:flex;align-items:center;justify-content:center;gap:5px;flex:0 0 auto;min-height:34px;padding:6px 9px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:9px;font-size:var(--type-caption);font-weight:700;transition:background .18s,border-color .18s}
+.content-publication>button:hover{background:var(--panel-3);border-color:var(--line-strong)}
+.content-publication>button svg{width:13px;height:13px}
 .content-publication.state-ready .content-publication-icon{color:var(--muted)}
 .content-publication.state-scheduled .content-publication-icon{color:var(--info)}
 .content-publication.state-published .content-publication-icon{color:var(--lime)}
+@media(max-width:650px){.post-card.has-publication>.content-publication{min-height:64px}.post-card.has-publication:not(.has-preview)>.post-cover{border-radius:0 0 0 14px}}
 .publication-filter-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:-4px 0 20px}
 .publication-filter-row>span{font-size:var(--type-small);color:var(--muted);margin-right:5px}
 </style>
@@ -2676,7 +2680,8 @@ function publicationBannerHTML(p){
  if(p.status!=='approved')return '';
  const state=publicationStatusOf(p),icon=state==='published'?ICONS.check:state==='scheduled'?ICONS.calendar:ICONS.clock;
  const when=state==='published'&&p.publishedAt?p.publishedAt:state==='scheduled'?p.scheduledAt:null;
- return `<div class="content-publication state-${escapeHtml(state)}"><span class="content-publication-icon">${icon}</span><div><strong>${escapeHtml(publicationStatusLabel[state]||publicationStatusLabel.ready)}</strong>${when?`<small>${escapeHtml(shortDateTime(when))}</small>`:''}</div>${role==='admin'?`<button type="button" data-manage-publication="${escapeHtml(p.id)}" aria-label="Gerenciar publicação de ${escapeHtml(p.title)}">Gerenciar ${ICONS.down}</button>`:''}</div>`;
+ const label={ready:'A agendar',scheduled:'Agendado',published:'Publicado'}[state]||'A agendar',detail=when?shortDateTime(when):state==='published'?'Publicação registrada':'Conteúdo aprovado';
+ return `<div class="content-publication state-${escapeHtml(state)}"><span class="content-publication-icon">${icon}</span><div><strong>${escapeHtml(label)}</strong><small>${escapeHtml(detail)}</small></div>${role==='admin'?`<button type="button" data-manage-publication="${escapeHtml(p.id)}" aria-label="Gerenciar publicação de ${escapeHtml(p.title)}">Gerenciar ${ICONS.down}</button>`:''}</div>`;
 }
 function publicationFiltersHTML(){
  return '<div class="publication-filter-row"><span>Publicação</span>'+[['all','Todas'],['ready','A agendar'],['scheduled','Agendadas'],['published','Publicadas']].map(([k,label])=>`<button class="chip ${publicationFilter===k?'active':''}" data-publication-filter="${k}" aria-pressed="${publicationFilter===k}">${label}</button>`).join('')+'</div>';
@@ -2821,7 +2826,7 @@ function postCard(p){
   const quick=role==='client'&&p.status==='waiting'?`<div class="review-quick-row"><button class="review-btn primary" data-quick-approve="${escapeHtml(p.id)}">Aprovar</button><button class="review-btn" data-quick-changes="${escapeHtml(p.id)}">Pedir mudanças</button><button class="review-btn danger review-reject" data-quick-reject="${escapeHtml(p.id)}">Reprovar</button></div>`:'';
   const adminTools=role==='admin'?`<button class="icon-action" data-whatsapp-content="${escapeHtml(p.id)}" title="Enviar WhatsApp" aria-label="Enviar WhatsApp">${ICONS.message}</button><button class="icon-action" data-edit-content="${escapeHtml(p.id)}" title="Editar" aria-label="Editar">${ICONS.edit}</button><button class="icon-action danger" data-delete-content="${escapeHtml(p.id)}" title="Excluir" aria-label="Excluir">${ICONS.trash}</button>`:'';
   const changeAlert=role==='admin'&&['changes','rejected'].includes(p.status)&&p.reviewNote?`<div class="change-request-card ${p.status==='rejected'?'rejected':''}">${ICONS.message}<div><small>${p.status==='rejected'?'CONTEÚDO REPROVADO':'ALTERAÇÃO SOLICITADA PELO CLIENTE'}</small><strong>${escapeHtml(p.reviewNote)}</strong>${p.reviewAt?`<span>${escapeHtml(shortDateTime(p.reviewAt)||'')}</span>`:''}</div></div>`:'';
-  return `<article class="post-card ${assets.length?'has-preview':''}" data-content-id="${escapeHtml(p.id)}">${publicationBannerHTML(p)}<div class="post-cover ${escapeHtml(p.cover)} ${assets.length?'has-image':''}" data-open-post="${escapeHtml(p.id)}">${contentPreviewCover(p)}<span class="media-type">${escapeHtml(p.type)}</span></div><div class="post-body"><div><div class="post-client">${role==='admin'?escapeHtml(c.name):escapeHtml(p.type)}</div><div class="post-title">${escapeHtml(p.title)}</div></div><div class="post-meta"><span>${escapeHtml(deliveryKindLabel(p.deliveryKind))} · ${escapeHtml(p.type)}</span><span>${escapeHtml(p.date)}</span></div><div class="content-badges">${previewBadge}${mediaBadge}</div>${driveCTA}${statusPillHTML(p,idx,role==='admin')}${changeAlert}${quick}<div class="card-actions"><button class="card-action" data-history="${escapeHtml(p.id)}">${ICONS.clock} Histórico</button>${adminTools}<button class="card-action primary" data-open-post="${escapeHtml(p.id)}">${role==='client'?'Revisar':'Abrir'}</button></div></div></article>`;
+  return `<article class="post-card ${assets.length?'has-preview':''} ${p.status==='approved'?'has-publication':''}" data-content-id="${escapeHtml(p.id)}">${publicationBannerHTML(p)}<div class="post-cover ${escapeHtml(p.cover)} ${assets.length?'has-image':''}" data-open-post="${escapeHtml(p.id)}">${contentPreviewCover(p)}<span class="media-type">${escapeHtml(p.type)}</span></div><div class="post-body"><div><div class="post-client">${role==='admin'?escapeHtml(c.name):escapeHtml(p.type)}</div><div class="post-title">${escapeHtml(p.title)}</div></div><div class="post-meta"><span>${escapeHtml(deliveryKindLabel(p.deliveryKind))} · ${escapeHtml(p.type)}</span><span>${escapeHtml(p.date)}</span></div><div class="content-badges">${previewBadge}${mediaBadge}</div>${driveCTA}${statusPillHTML(p,idx,role==='admin')}${changeAlert}${quick}<div class="card-actions"><button class="card-action" data-history="${escapeHtml(p.id)}">${ICONS.clock} Histórico</button>${adminTools}<button class="card-action primary" data-open-post="${escapeHtml(p.id)}">${role==='client'?'Revisar':'Abrir'}</button></div></div></article>`;
 }
 function compactRow(p){const c=clientById(p.client),assets=p.previewAssets||[],cover=assets.find(a=>a.isCover&&a.url)||assets.find(a=>a.url),thumb=cover?`<img src="${escapeHtml(cover.url)}" alt="" loading="lazy" decoding="async">`:p.type==='Reels'?'▶':'▧';return `<div class="content-row" data-open-post="${escapeHtml(p.id)}"><div class="row-thumb ${escapeHtml(p.cover)}">${thumb}</div><div class="row-copy"><strong>${escapeHtml(p.title)}</strong><span>${role==='admin'?escapeHtml(c.name)+' · ':''}${escapeHtml(p.type)} · ${escapeHtml(p.date)}</span></div><div class="row-status"><span class="mini-badge st-${escapeHtml(p.status)}"><span class="dot"></span>${escapeHtml(statusLabel[p.status]||p.status)}</span></div></div>`}
 function statCard(icon,label,value,trend='',klass=''){
