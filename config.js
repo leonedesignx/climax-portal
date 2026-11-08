@@ -11,11 +11,11 @@ window.syncPortalBrandImages = function(theme){
   const light=theme==='light';
   const logo=light?'./assets/brand/portal-light.svg':window.PORTAL_BRAND_LOGO;
   const mark='./assets/brand/monogram-'+(light?'black':'green')+'.svg';
-  document.querySelectorAll('.brand-logo,.mobile-logo,.auth-showcase-logo,.auth-mobile-logo').forEach(img=>{
+  document.querySelectorAll('.brand-logo,.mobile-logo,.auth-showcase-logo,.auth-mobile-logo,.boot-loader-icon').forEach(img=>{
     if(img.getAttribute('src')!==logo)img.src=logo;
     img.alt='Clímax · Portal do cliente';
   });
-  document.querySelectorAll('.brand-monogram,.boot-loader-icon').forEach(img=>{
+  document.querySelectorAll('.brand-monogram').forEach(img=>{
     if(img.getAttribute('src')!==mark)img.src=mark;
   });
 };
