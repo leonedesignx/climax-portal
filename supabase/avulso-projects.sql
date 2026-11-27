@@ -104,7 +104,7 @@ begin
  if pid is null then raise exception 'Este link expirou ou foi desativado.';end if;
  select * into p from public.avulso_projects where id=pid for update;
  if not p.active or p.expires_at<=now() then raise exception 'Este link expirou ou foi desativado.';end if;
- if p_action not in ('approved','changes','rejected') or length(coalesce(p_note,''))>3000 then raise exception 'Resposta inválida.';end if;
+ if p_revision is null or p_revision<1 or p_action is null or p_action not in ('approved','changes','rejected') or length(coalesce(p_note,''))>3000 then raise exception 'Resposta inválida.';end if;
  if p_action in ('changes','rejected') and length(trim(coalesce(p_note,'')))=0 then raise exception 'Conte o que precisa mudar.';end if;
  if p_scope='editorial' then
   if p_entry_id is not null or p.editorial_revision<>p_revision or not exists(select 1 from public.avulso_entries where project_id=pid and kind='editorial' and published) then raise exception 'O editorial foi atualizado. Recarregue antes de aprovar.';end if;
