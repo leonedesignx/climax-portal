@@ -71,6 +71,7 @@ begin
  return new;
 end;$$;
 create trigger avulso_entry_revision before insert or update on public.avulso_entries for each row execute function public.avulso_entry_revision();
+revoke all on function public.avulso_entry_revision() from public,anon,authenticated;
 
 create function public.avulso_token_project(p_token text) returns uuid language sql stable security definer set search_path=public,pg_temp as $$
  select id from public.avulso_projects where length(p_token)=64 and access_token=p_token and active and expires_at>now()
